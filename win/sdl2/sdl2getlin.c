@@ -145,6 +145,7 @@ sdl2_getline_run(
     data->m_contents = buf;
     data->m_contents_size = 0;
     data->m_contents_alloc = bufsize;
+    buf[0] = 0;
 
     /* Set the prompt */
     free(data->m_prompt);
