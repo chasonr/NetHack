@@ -20,12 +20,14 @@
 # 1. Which window system(s) should be included in this binary?
 WANT_WIN_TTY=1
 #WANT_WIN_X11=1
-WANT_WIN_QT=1
+#WANT_WIN_QT=1
+WANT_WIN_SDL2=1
 
 # 1a. What is the default window system?
 #WANT_DEFAULT=tty
 #WANT_DEFAULT=x11
 WANT_DEFAULT=Qt
+WANT_DEFAULT=sdl2
 
 # 1b. If you set WANT_WIN_QT, you need to
 #  A) set QTDIR either here or in the environment to point to the Qt5
@@ -128,6 +130,18 @@ $(error QTDIR not defined in the environment or Makefile)
 endif	# QTDIR
 # XXX make sure QTDIR points to something reasonable
 endif	# WANT_WIN_QT
+
+ifdef WANT_WIN_SDL2
+CFLAGS += -DSDL2_GRAPHICS -DPOSITIONBAR
+CFLAGS += $(shell sdl2-config --cflags)
+WINLIB += $(shell sdl2-config --static-libs)
+WINSRC += $(WINSDL2SRC)
+WINOBJ0 += $(WINSDL2OBJ)
+WINLIB += $(WINSDL2LIB)
+LINK=$(CXX)
+VARDATND += nhtiles.bmp
+SDL2FONT = sdl2font_mac.o
+endif	# WANT_WIN_SDL2
 
 # prevent duplicate tile.o in WINOBJ
 WINOBJ = $(sort $(WINOBJ0))
