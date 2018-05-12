@@ -56,7 +56,7 @@ static void
 sdl2_text_create(win)
 struct SDL2Window *win;
 {
-    struct TextPrivate *data = (struct TextPrivate *) alloc(sizeof(data));
+    struct TextPrivate *data = (struct TextPrivate *) alloc(sizeof(*data));
     memset(data, 0, sizeof(*data));
     win->data = data;
 

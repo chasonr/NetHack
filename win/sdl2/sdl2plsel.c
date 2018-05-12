@@ -203,7 +203,7 @@ select_gender()
     sdl2_menu_startMenu(menu);
 
     id.a_void = NULL;
-    for (i = 0; genders[i].adj != NULL; ++i) {
+    for (i = 0; i < 2; ++i) {
         if (valid_selection(flags.initrole, flags.initrace, i, flags.initalign)) {
             const char *text = genders[i].adj;
 
@@ -276,7 +276,7 @@ selectAlignment()
     sdl2_menu_startMenu(menu);
 
     id.a_void = NULL;
-    for (i = 0; aligns[i].adj != NULL; ++i) {
+    for (i = 0; i < 3; ++i) {
         if (valid_selection(flags.initrole, flags.initrace, flags.initgend, i)) {
             const char *text = aligns[i].adj;
 
