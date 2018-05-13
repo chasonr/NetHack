@@ -9,7 +9,6 @@
 #include "sdl2getlin.h"
 #include "sdl2window.h"
 #include "sdl2font.h"
-#include "sdl2unicode.h"
 
 static const int margin = 3;
 static const int min_width = 400;
