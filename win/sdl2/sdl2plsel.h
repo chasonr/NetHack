@@ -3,6 +3,6 @@
 #ifndef WIN_SDL2_SDL2PLSEL_H
 #define WIN_SDL2_SDL2PLSEL_H
 
-extern boolean NDECL(sdl2_player_select);
+extern boolean sdl2_player_select(void);
 
 #endif

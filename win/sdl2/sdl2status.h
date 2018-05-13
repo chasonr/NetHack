@@ -11,11 +11,11 @@ extern int sdl2_status_height_hint(struct SDL2Window *window);
 extern int sdl2_status_width_hint(struct SDL2Window *window);
 extern void sdl2_status_resize(struct SDL2Window *window,
         int left, int top, int right, int bottom);
-extern void FDECL(sdl2_status_do_enablefield, (struct SDL2Window *win,
+extern void sdl2_status_do_enablefield(struct SDL2Window *win,
             int index, const char *name, const char *format,
-            BOOLEAN_P enable));
-extern void FDECL(sdl2_status_do_update, (struct SDL2Window *window,
+            boolean enable);
+extern void sdl2_status_do_update(struct SDL2Window *window,
             int index, genericptr_t ptr, int chg, int percent, int color,
-            const unsigned long *colormasks));
+            const unsigned long *colormasks);
 
 #endif

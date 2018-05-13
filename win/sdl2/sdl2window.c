@@ -67,93 +67,84 @@ static struct SDL2Window *map_window;
 static struct SDL2Window *posbar_window;
 #endif
 
-static Uint32 FDECL(timer_callback, (Uint32 interval, genericptr_t param));
-static struct SDL2Window *FDECL(find_window, (winid id));
-static void NDECL(arrange_windows);
-static void NDECL(new_display);
-static void FDECL(non_key_event, (const SDL_Event *event));
-static void NDECL(do_message_fade);
-static void NDECL(fade_message);
-static void NDECL(next_video_mode);
+static Uint32 timer_callback(Uint32 interval, genericptr_t param);
+static struct SDL2Window *find_window(winid id);
+static void arrange_windows(void);
+static void new_display(void);
+static void non_key_event(const SDL_Event *event);
+static void do_message_fade(void);
+static void fade_message(void);
+static void next_video_mode(void);
 
-static void FDECL(sdl2_init_nhwindows, (int, char **));
-static void FDECL(sdl2_exit_nhwindows, (const char *));
-static void NDECL(sdl2_player_selection);
-static void NDECL(sdl2_askname);
-static void NDECL(sdl2_get_nh_event);
-static void FDECL(sdl2_suspend_nhwindows, (const char *str));
-static void NDECL(sdl2_resume_nhwindows);
-static winid FDECL(sdl2_create_nhwindow, (int));
-static void FDECL(sdl2_clear_nhwindow, (winid));
-static void FDECL(sdl2_display_nhwindow, (winid, BOOLEAN_P));
-static void FDECL(sdl2_destroy_nhwindow, (winid));
-static void FDECL(sdl2_curs, (winid, int, int));
-static void FDECL(sdl2_putstr, (winid, int, const char *));
-static void FDECL(sdl2_putmixed, (winid, int, const char *));
-static void FDECL(sdl2_display_file, (const char *, BOOLEAN_P));
-static void FDECL(sdl2_start_menu, (winid));
-static void FDECL(sdl2_add_menu, (winid, int, const ANY_P *, CHAR_P, CHAR_P,
-        int, const char *, BOOLEAN_P));
-static void FDECL(sdl2_end_menu, (winid, const char *));
-static int  FDECL(sdl2_select_menu, (winid, int, MENU_ITEM_P **));
-static void NDECL(sdl2_update_inventory);
-static void NDECL(sdl2_mark_synch);
-static void NDECL(sdl2_wait_synch);
+static void sdl2_init_nhwindows(int *, char **);
+static void sdl2_exit_nhwindows(const char *);
+static void sdl2_player_selection(void);
+static void sdl2_askname(void);
+static void sdl2_get_nh_event(void);
+static void sdl2_suspend_nhwindows(const char *str);
+static void sdl2_resume_nhwindows(void);
+static winid sdl2_create_nhwindow(int);
+static void sdl2_clear_nhwindow(winid);
+static void sdl2_display_nhwindow(winid, BOOLEAN_P);
+static void sdl2_destroy_nhwindow(winid);
+static void sdl2_curs(winid, int, int);
+static void sdl2_putstr(winid, int, const char *);
+static void sdl2_putmixed(winid, int, const char *);
+static void sdl2_display_file(const char *, BOOLEAN_P);
+static void sdl2_start_menu(winid);
+static void sdl2_add_menu(winid, int, const anything *, CHAR_P, CHAR_P, int,
+                          const char *, BOOLEAN_P);
+static void sdl2_end_menu(winid, const char *);
+static int  sdl2_select_menu(winid, int, menu_item **);
+static void sdl2_update_inventory(void);
+static void sdl2_mark_synch(void);
+static void sdl2_wait_synch(void);
 #ifdef CLIPPING
-static void FDECL(sdl2_cliparound, (int, int));
+static void sdl2_cliparound(int, int);
 #endif
 #ifdef POSITIONBAR
-static void FDECL(sdl2_update_positionbar, (char *));
+static void sdl2_update_positionbar(char *);
 #endif
-static void FDECL(sdl2_print_glyph, (winid, XCHAR_P, XCHAR_P, int, int));
-static void FDECL(sdl2_raw_print, (const char *str));
-static void FDECL(sdl2_raw_print_bold, (const char *str));
-static int  NDECL(sdl2_nhgetch);
-static int  FDECL(sdl2_nh_poskey, (int *x, int *y, int *mod));
-static void NDECL(sdl2_nhbell);
-static int  NDECL(sdl2_doprev_message);
-static char FDECL(sdl2_yn_function, (const char *ques, const char *choices,
-        CHAR_P def));
-static void FDECL(sdl2_getlin, (const char *ques, char *input));
-static int  NDECL(sdl2_get_ext_cmd);
-static void FDECL(sdl2_number_pad, (int state));
-static void NDECL(sdl2_delay_output);
-static void NDECL(sdl2_start_screen);
-static void NDECL(sdl2_end_screen);
-static void FDECL(sdl2_preference_update, (const char *pref));
-static void NDECL(sdl2_status_init);
-static void NDECL(sdl2_status_finish);
-static void FDECL(sdl2_status_enablefield, (int fieldidx, const char *nm,
-            const char *fmt, BOOLEAN_P enable));
-static void FDECL(sdl2_status_update, (int idx, genericptr_t ptr, int chg,
-            int percent, int color, unsigned long *colormasks));
+static void sdl2_print_glyph(winid, XCHAR_P, XCHAR_P, int, int);
+static void sdl2_raw_print(const char *str);
+static void sdl2_raw_print_bold(const char *str);
+static int  sdl2_nhgetch(void);
+static int  sdl2_nh_poskey(int *x, int *y, int *mod);
+static void sdl2_nhbell(void);
+static int  sdl2_doprev_message(void);
+static char sdl2_yn_function(const char *ques, const char *choices,
+                             CHAR_P def);
+static void sdl2_getlin(const char *ques, char *input);
+static int  sdl2_get_ext_cmd(void);
+static void sdl2_number_pad(int state);
+static void sdl2_delay_output(void);
+static void sdl2_start_screen(void);
+static void sdl2_end_screen(void);
+static void sdl2_preference_update(const char *pref);
+static void sdl2_status_init(void);
+static void sdl2_status_finish(void);
+static void sdl2_status_enablefield(int fieldidx, const char *nm,
+        const char *fmt, BOOLEAN_P enable);
+static void sdl2_status_update(int idx, genericptr_t ptr, int chg,
+        int percent, int color, unsigned long *colormasks);
 
-static void FDECL(sdl2_window_clear, (struct SDL2Window *win));
-static void FDECL(sdl2_window_setVisible,
-                (struct SDL2Window *win, BOOLEAN_P visible));
-static void FDECL(sdl2_window_setCursor,
-                (struct SDL2Window *win, int x, int y));
-static void FDECL(sdl2_window_putStr,
-                (struct SDL2Window *win, int attr, const char *str,
-                 BOOLEAN_P mixed));
-static void FDECL(sdl2_window_startMenu, (struct SDL2Window *win));
-static void FDECL(sdl2_window_addMenu,
-                (struct SDL2Window *win, int glyph,
-                 const anything *identifier, CHAR_P ch, CHAR_P gch, int attr,
-                 const char *str, BOOLEAN_P preselected));
-static void FDECL(sdl2_window_endMenu,
-                (struct SDL2Window *win, const char *prompt));
-static int  FDECL(sdl2_window_selectMenu,
-                (struct SDL2Window *win, int how, menu_item ** menu_list));
-static void FDECL(sdl2_window_printGlyph,
-                (struct SDL2Window *win, XCHAR_P x, XCHAR_P y,
-                 int glyph, int bkglyph));
-static void FDECL(sdl2_window_redraw, (struct SDL2Window *win));
+static void sdl2_window_clear(struct SDL2Window *win);
+static void sdl2_window_setVisible(struct SDL2Window *win, boolean visible);
+static void sdl2_window_setCursor(struct SDL2Window *win, int x, int y);
+static void sdl2_window_putStr(struct SDL2Window *win, int attr,
+        const char *str, boolean mixed);
+static void sdl2_window_startMenu(struct SDL2Window *win);
+static void sdl2_window_addMenu(struct SDL2Window *win, int glyph,
+        const anything *identifier, char ch, char gch, int attr,
+        const char *str, boolean preselected);
+static void sdl2_window_endMenu(struct SDL2Window *win, const char *prompt);
+static int  sdl2_window_selectMenu(struct SDL2Window *win, int how, menu_item ** menu_list);
+static void sdl2_window_printGlyph(struct SDL2Window *win, xchar x, xchar y,
+        int glyph, int bkglyph);
+static void sdl2_window_redraw(struct SDL2Window *win);
 
 static void
-sdl2_init_nhwindows(argc, argv)
-int argc;
-char **argv;
+sdl2_init_nhwindows(int *argc, char **argv)
 {
     if (main_window != NULL) return;
 
@@ -201,9 +192,8 @@ char **argv;
 }
 
 /*ARGSUSED*/
-static Uint32 timer_callback(interval, param)
-Uint32 interval;
-genericptr_t param;
+static Uint32
+timer_callback(Uint32 interval, genericptr_t param)
 {
     /* The timer callback is executed in a separate thread and we cannot do
        much directly.  Instead, we must post an event to the event queue. */
@@ -220,8 +210,7 @@ genericptr_t param;
 }
 
 static void
-sdl2_exit_nhwindows(str)
-const char *str;
+sdl2_exit_nhwindows(const char *str)
 {
     /* TODO: make this a popup if we have a main window */
     printf("%s\n", str);
@@ -236,7 +225,7 @@ const char *str;
 }
 
 static void
-sdl2_player_selection()
+sdl2_player_selection(void)
 {
     boolean selected = sdl2_player_select();
     if (!selected) {
@@ -247,7 +236,7 @@ sdl2_player_selection()
 }
 
 static void
-sdl2_askname()
+sdl2_askname(void)
 {
     struct SDL2Window *window = sdl2_window_create(&sdl2_getline_procs);
     sdl2_getline_run(window, "What is your name?", plname, SIZE(plname));
@@ -255,29 +244,27 @@ sdl2_askname()
 }
 
 static void
-sdl2_get_nh_event()
+sdl2_get_nh_event(void)
 {
     /* Place holder */
 }
 
 /*ARGSUSED*/
 static void
-sdl2_suspend_nhwindows(str)
-const char *str;
+sdl2_suspend_nhwindows(const char *str)
 {
     /* Place holder */
 }
 
 static void
-sdl2_resume_nhwindows()
+sdl2_resume_nhwindows(void)
 {
     /* Place holder */
 }
 
 
 static winid
-sdl2_create_nhwindow(type)
-int type;
+sdl2_create_nhwindow(int type)
 {
     struct SDL2Window *window = NULL;
     switch (type) {
@@ -314,8 +301,7 @@ int type;
 
 /* Create the window structure */
 struct SDL2Window *
-sdl2_window_create(methods)
-struct SDL2Window_Methods const *methods;
+sdl2_window_create(struct SDL2Window_Methods const *methods)
 {
     struct SDL2Window *window;
 
@@ -344,15 +330,13 @@ struct SDL2Window_Methods const *methods;
 }
 
 static void
-sdl2_destroy_nhwindow(id)
-winid id;
+sdl2_destroy_nhwindow(winid id)
 {
     sdl2_window_destroy(find_window(id));
 }
 
 void
-sdl2_window_destroy(window)
-struct SDL2Window *window;
+sdl2_window_destroy(struct SDL2Window *window)
 {
     unsigned index;
 
@@ -399,8 +383,7 @@ struct SDL2Window *window;
 }
 
 static void
-sdl2_clear_nhwindow(id)
-winid id;
+sdl2_clear_nhwindow(winid id)
 {
     struct SDL2Window *window = find_window(id);
     if (window != NULL) {
@@ -409,9 +392,7 @@ winid id;
 }
 
 static void
-sdl2_display_nhwindow(id, blocking)
-winid id;
-boolean blocking;
+sdl2_display_nhwindow(winid id, BOOLEAN_P blocking)
 {
     struct SDL2Window *window = find_window(id);
     sdl2_window_setVisible(window, TRUE);
@@ -425,9 +406,7 @@ boolean blocking;
 }
 
 static void
-sdl2_curs(id, x, y)
-winid id;
-int x, y;
+sdl2_curs(winid id, int x, int y)
 {
     struct SDL2Window *window = find_window(id);
     if (window != NULL) {
@@ -437,10 +416,7 @@ int x, y;
 
 
 static void
-sdl2_putstr(id, attr, str)
-winid id;
-int attr;
-const char *str;
+sdl2_putstr(winid id, int attr, const char *str)
 {
     struct SDL2Window *window = find_window(id);
     if (window != NULL) {
@@ -449,10 +425,7 @@ const char *str;
 }
 
 static void
-sdl2_putmixed(id, attr, str)
-winid id;
-int attr;
-const char *str;
+sdl2_putmixed(winid id, int attr, const char *str)
 {
     struct SDL2Window *window = find_window(id);
     if (window != NULL) {
@@ -461,9 +434,7 @@ const char *str;
 }
 
 static void
-sdl2_display_file(filename, complain)
-const char *filename;
-boolean complain;
+sdl2_display_file(const char *filename, BOOLEAN_P complain)
 {
     dlb *file;
 
@@ -498,8 +469,7 @@ boolean complain;
 }
 
 static void
-sdl2_start_menu(id)
-winid id;
+sdl2_start_menu(winid id)
 {
     struct SDL2Window *window = find_window(id);
     if (window != NULL) {
@@ -508,15 +478,8 @@ winid id;
 }
 
 static void
-sdl2_add_menu(id, glyph, identifier, ch, gch, attr, str, preselected)
-winid id;
-int glyph;
-const anything *identifier;
-char ch;
-char gch;
-int attr;
-const char *str;
-boolean preselected;
+sdl2_add_menu(winid id, int glyph, const anything *identifier, CHAR_P ch,
+              CHAR_P gch, int attr, const char *str, BOOLEAN_P preselected)
 {
     struct SDL2Window *window = find_window(id);
     if (window != NULL) {
@@ -526,9 +489,7 @@ boolean preselected;
 }
 
 static void
-sdl2_end_menu(id, prompt)
-winid id;
-const char *prompt;
+sdl2_end_menu(winid id, const char *prompt)
 {
     struct SDL2Window *window = find_window(id);
     if (window != NULL) {
@@ -537,10 +498,7 @@ const char *prompt;
 }
 
 static int
-sdl2_select_menu(id, how, menu_list)
-winid id;
-int how;
-menu_item **menu_list;
+sdl2_select_menu(winid id, int how, menu_item **menu_list)
 {
     struct SDL2Window *window = find_window(id);
     int rc;
@@ -553,19 +511,19 @@ menu_item **menu_list;
 }
 
 static void
-sdl2_update_inventory()
+sdl2_update_inventory(void)
 {
     /* Place holder */
 }
 
 static void
-sdl2_mark_synch()
+sdl2_mark_synch(void)
 {
     sdl2_redraw();
 }
 
 static void
-sdl2_wait_synch()
+sdl2_wait_synch(void)
 {
     if (main_window != NULL) {
         sdl2_redraw();
@@ -578,8 +536,7 @@ sdl2_wait_synch()
 
 #ifdef CLIPPING
 static void
-sdl2_cliparound(x, y)
-int x, y;
+sdl2_cliparound(int x, int y)
 {
     sdl2_map_cliparound(map_window, x, y);
 }
@@ -587,18 +544,14 @@ int x, y;
 
 #ifdef POSITIONBAR
 static void
-sdl2_update_positionbar(features)
-char *features;
+sdl2_update_positionbar(char *features)
 {
     sdl2_posbar_update(posbar_window, features);
 }
 #endif
 
 static void
-sdl2_print_glyph(id, x, y, glyph, bkglyph)
-winid id;
-xchar x, y;
-int glyph, bkglyph;
+sdl2_print_glyph(winid id, XCHAR_P x, XCHAR_P y, int glyph, int bkglyph)
 {
     struct SDL2Window *window = find_window(id);
     if (window != NULL) {
@@ -607,8 +560,7 @@ int glyph, bkglyph;
 }
 
 static void
-sdl2_raw_print(str)
-const char *str;
+sdl2_raw_print(const char *str)
 {
     if (message_window != NULL) {
         sdl2_window_putStr(message_window, 0, str, FALSE);
@@ -618,8 +570,7 @@ const char *str;
 }
 
 static void
-sdl2_raw_print_bold(str)
-const char *str;
+sdl2_raw_print_bold(const char *str)
 {
     if (message_window != NULL) {
         sdl2_window_putStr(message_window, ATR_BOLD, str, FALSE);
@@ -629,7 +580,7 @@ const char *str;
 }
 
 static int
-sdl2_nhgetch()
+sdl2_nhgetch(void)
 {
     Uint32 ch;
 
@@ -641,9 +592,7 @@ sdl2_nhgetch()
 }
 
 static int
-sdl2_nh_poskey(x, y, mod)
-int *x, *y;
-int *mod;
+sdl2_nh_poskey(int *x, int *y, int *mod)
 {
     Uint32 ch;
 
@@ -658,24 +607,21 @@ int *mod;
 }
 
 static void
-sdl2_nhbell()
+sdl2_nhbell(void)
 {
     /* TODO:  perhaps SDL_mixer or some visual indication */
     fputc('\a', stdout);
 }
 
 static int
-sdl2_doprev_message()
+sdl2_doprev_message(void)
 {
     sdl2_message_previous(message_window);
     return 0;
 }
 
 static char
-sdl2_yn_function(ques, choices, def)
-const char *ques;
-const char *choices;
-char def;
+sdl2_yn_function(const char *ques, const char *choices, CHAR_P def)
 {
     /* Table to determine the quit character */
     static struct {
@@ -745,9 +691,7 @@ char def;
 }
 
 static void
-sdl2_getlin(ques, input)
-const char *ques;
-char *input;
+sdl2_getlin(const char *ques, char *input)
 {
     struct SDL2Window *window = sdl2_window_create(&sdl2_getline_procs);
 
@@ -756,7 +700,7 @@ char *input;
 }
 
 static int
-sdl2_get_ext_cmd()
+sdl2_get_ext_cmd(void)
 {
     struct SDL2Window *window = sdl2_window_create(&sdl2_getline_procs);
     int cmd = sdl2_extcmd_run(window);
@@ -766,34 +710,32 @@ sdl2_get_ext_cmd()
 
 /*ARGSUSED*/
 static void
-sdl2_number_pad(state)
-int state;
+sdl2_number_pad(int state)
 {
     /* Place holder */
 }
 
 static void
-sdl2_delay_output()
+sdl2_delay_output(void)
 {
     sdl2_redraw();
     SDL_Delay(1);
 }
 
 static void
-sdl2_start_screen()
+sdl2_start_screen(void)
 {
     /* Place holder */
 }
 
 static void
-sdl2_end_screen()
+sdl2_end_screen(void)
 {
     /* Place holder */
 }
 
 static void
-sdl2_preference_update(pref)
-const char *pref;
+sdl2_preference_update(const char *pref)
 {
     if (strcmp(pref, "align_status") == 0 ||
         strcmp(pref, "align_message") == 0) {
@@ -802,7 +744,7 @@ const char *pref;
 }
 
 static void
-sdl2_status_init()
+sdl2_status_init(void)
 {
     if (status_window == NULL) {
         status_window = sdl2_window_create(&sdl2_status_procs);
@@ -811,7 +753,7 @@ sdl2_status_init()
 }
 
 static void
-sdl2_status_finish()
+sdl2_status_finish(void)
 {
     sdl2_window_destroy(status_window);
 }
@@ -836,8 +778,7 @@ sdl2_status_update(int idx, genericptr_t ptr, int chg,
 }
 
 static struct SDL2Window *
-find_window(id)
-winid id;
+find_window(winid id)
 {
     unsigned i;
 
@@ -851,7 +792,7 @@ winid id;
 
 /* Arrange the main windows: message, map, position bar and status */
 static void
-arrange_windows()
+arrange_windows(void)
 {
     SDL_Rect message_rect;
     SDL_Rect map_rect;
@@ -1005,12 +946,9 @@ arrange_windows()
 }
 
 void
-sdl2_window_set_font(window, name_option, size_option, default_name, default_size)
-struct SDL2Window *window;
-const char *name_option;
-int size_option;
-const char *default_name;
-int default_size;
+sdl2_window_set_font(struct SDL2Window *window, const char *name_option,
+                     int size_option, const char *default_name,
+                     int default_size)
 {
     const char *name;
     int size;
@@ -1028,10 +966,7 @@ int default_size;
 }
 
 void
-sdl2_window_resize(window, x1, y1, x2, y2)
-struct SDL2Window *window;
-int x1, y1;
-int x2, y2;
+sdl2_window_resize(struct SDL2Window *window, int x1, int y1, int x2, int y2)
 {
     if (x1 < x2) {
         window->m_xmin = x1;
@@ -1050,11 +985,8 @@ int x2, y2;
 }
 
 void
-sdl2_window_blit(window, window_rect, surface, surface_rect)
-struct SDL2Window *window;
-const SDL_Rect *window_rect;
-SDL_Surface *surface;
-const SDL_Rect *surface_rect;
+sdl2_window_blit(struct SDL2Window *window, const SDL_Rect *window_rect,
+                 SDL_Surface *surface, const SDL_Rect *surface_rect)
 {
     SDL_Surface *main_surface = SDL_GetWindowSurface(main_window);
     SDL_Rect window_rect2;
@@ -1074,10 +1006,8 @@ const SDL_Rect *surface_rect;
 }
 
 void
-sdl2_window_fill(window, window_rect, color)
-struct SDL2Window *window;
-const SDL_Rect *window_rect;
-SDL_Color color;
+sdl2_window_fill(struct SDL2Window *window, const SDL_Rect *window_rect,
+                 SDL_Color color)
 {
     SDL_Surface *main_surface;
     SDL_Rect window_rect2;
@@ -1186,12 +1116,8 @@ SDL_Color color;
 /* Render text at given coordinates without stretching */
 /* Return rectangle in which the text was rendered */
 SDL_Rect
-sdl2_window_renderStrBG(win, str, x, y, fg, bg)
-struct SDL2Window *win;
-const char *str;
-int x, y;
-SDL_Color fg;
-SDL_Color bg;
+sdl2_window_renderStrBG(struct SDL2Window *win, const char *str,
+                        int x, int y, SDL_Color fg, SDL_Color bg)
 {
     SDL_Surface *text = sdl2_font_renderStrBG(win->m_font, str, fg, bg);
     SDL_Rect win_rect;
@@ -1213,12 +1139,8 @@ SDL_Color bg;
 /* Render single character at given coordinates without stretching */
 /* Return rectangle in which the text was rendered */
 SDL_Rect
-sdl2_window_renderCharBG(win, chr, x, y, fg, bg)
-struct SDL2Window *win;
-Uint32 chr;
-int x, y;
-SDL_Color fg;
-SDL_Color bg;
+sdl2_window_renderCharBG(struct SDL2Window *win, Uint32 chr, int x, int y,
+                         SDL_Color fg, SDL_Color bg)
 {
     SDL_Surface *text = sdl2_font_renderCharBG(win->m_font, chr, fg, bg);
     SDL_Rect win_rect;
@@ -1240,12 +1162,8 @@ SDL_Color bg;
 /* Render text that may contain glyph escapes */
 /* Return rectangle in which the text was rendered */
 SDL_Rect
-sdl2_window_render_mixed(win, str, x, y, fg, bg)
-struct SDL2Window *win;
-const char *str;
-int x, y;
-SDL_Color fg;
-SDL_Color bg;
+sdl2_window_render_mixed(struct SDL2Window *win, const char *str, int x, int y,
+                         SDL_Color fg, SDL_Color bg)
 {
     char esc[20];
     char *str2;
@@ -1326,11 +1244,8 @@ SDL_Color bg;
 
 /* Draw a hollow rectangle in the given color */
 void
-sdl2_window_draw_box(win, x1, y1, x2, y2, color)
-struct SDL2Window *win;
-int x1, y1;
-int x2, y2;
-SDL_Color color;
+sdl2_window_draw_box(struct SDL2Window *win, int x1, int y1, int x2, int y2,
+                     SDL_Color color)
 {
     SDL_Rect rect;
 
@@ -1358,8 +1273,7 @@ SDL_Color color;
 }
 
 Uint32
-sdl2_chr_convert(ch)
-Uint32 ch;
+sdl2_chr_convert(Uint32 ch)
 {
     static const unsigned short cp437table[] = {
         0x0000, 0x263A, 0x263B, 0x2665, 0x2666, 0x2663, 0x2660, 0x2022,
@@ -1425,8 +1339,7 @@ Uint32 ch;
 /****************************************************************************/
 
 static void
-sdl2_window_clear(win)
-struct SDL2Window *win;
+sdl2_window_clear(struct SDL2Window *win)
 {
     if (win->methods->clear != NULL) {
         win->methods->clear(win);
@@ -1434,9 +1347,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_window_setVisible(win, visible)
-struct SDL2Window *win;
-boolean visible;
+sdl2_window_setVisible(struct SDL2Window *win, boolean visible)
 {
     win->m_visible = visible;
     if (win->methods->setVisible != NULL) {
@@ -1445,9 +1356,7 @@ boolean visible;
 }
 
 static void
-sdl2_window_setCursor(win, x, y)
-struct SDL2Window *win;
-int x, y;
+sdl2_window_setCursor(struct SDL2Window *win, int x, int y)
 {
     if (win->methods->setCursor != NULL) {
         win->methods->setCursor(win, x, y);
@@ -1455,11 +1364,8 @@ int x, y;
 }
 
 static void
-sdl2_window_putStr(win, attr, str, mixed)
-struct SDL2Window *win;
-int attr;
-const char *str;
-boolean mixed;
+sdl2_window_putStr(struct SDL2Window *win, int attr, const char *str,
+                   boolean mixed)
 {
     if (win->methods->putStr != NULL) {
         win->methods->putStr(win, attr, str, mixed);
@@ -1467,8 +1373,7 @@ boolean mixed;
 }
 
 static void
-sdl2_window_startMenu(win)
-struct SDL2Window *win;
+sdl2_window_startMenu(struct SDL2Window *win)
 {
     if (win->methods->startMenu != NULL) {
         win->methods->startMenu(win);
@@ -1476,15 +1381,9 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_window_addMenu(win, glyph, identifier, ch, gch, attr, str, preselected)
-struct SDL2Window *win;
-int glyph;
-const anything *identifier;
-char ch;
-char gch;
-int attr;
-const char *str;
-boolean preselected;
+sdl2_window_addMenu(struct SDL2Window *win, int glyph,
+                    const anything *identifier, char ch, char gch, int attr,
+                    const char *str, boolean preselected)
 {
     if (win->methods->addMenu != NULL) {
         win->methods->addMenu(win, glyph, identifier, ch, gch, attr, str,
@@ -1493,9 +1392,7 @@ boolean preselected;
 }
 
 static void
-sdl2_window_endMenu(win, prompt)
-struct SDL2Window *win;
-const char *prompt;
+sdl2_window_endMenu(struct SDL2Window *win, const char *prompt)
 {
     if (win->methods->endMenu != NULL) {
         win->methods->endMenu(win, prompt);
@@ -1503,10 +1400,7 @@ const char *prompt;
 }
 
 static int
-sdl2_window_selectMenu(win, how, menu_list)
-struct SDL2Window *win;
-int how;
-menu_item ** menu_list;
+sdl2_window_selectMenu(struct SDL2Window *win, int how, menu_item ** menu_list)
 {
     int rc;
 
@@ -1519,11 +1413,8 @@ menu_item ** menu_list;
 }
 
 static void
-sdl2_window_printGlyph(win, x, y, glyph, bkglyph)
-struct SDL2Window *win;
-xchar x, y;
-int glyph;
-int bkglyph;
+sdl2_window_printGlyph(struct SDL2Window *win, xchar x, xchar y,
+                       int glyph, int bkglyph)
 {
     if (win->methods->printGlyph != NULL) {
         win->methods->printGlyph(win, x, y, glyph, bkglyph);
@@ -1531,8 +1422,7 @@ int bkglyph;
 }
 
 static void
-sdl2_window_redraw(win)
-struct SDL2Window *win;
+sdl2_window_redraw(struct SDL2Window *win)
 {
     if (win->methods->redraw != NULL) {
         win->methods->redraw(win);
@@ -1544,14 +1434,13 @@ struct SDL2Window *win;
 /****************************************************************************/
 
 void
-sdl2_display_size(x, y)
-int *x, *y;
+sdl2_display_size(int *x, int *y)
 {
     SDL_GetWindowSize(main_window, x, y);
 }
 
 static void
-new_display()
+new_display(void)
 {
     int display = SDL_GetWindowDisplayIndex(main_window);
     int num_modes = SDL_GetNumDisplayModes(display);
@@ -1596,7 +1485,7 @@ new_display()
 }
 
 void
-sdl2_redraw()
+sdl2_redraw(void)
 {
     size_t i;
 
@@ -1647,10 +1536,7 @@ sdl2_redraw()
 }
 
 Uint32
-sdl2_get_key(cmd, x, y, mod)
-boolean cmd;
-int *x, *y;
-int *mod;
+sdl2_get_key(boolean cmd, int *x, int *y, int *mod)
 {
     Uint32 ch;
     boolean shift;
@@ -1850,8 +1736,7 @@ end:
 }
 
 static void
-non_key_event(event)
-const SDL_Event *event;
+non_key_event(const SDL_Event *event)
 {
     switch (event->type) {
     case SDL_WINDOWEVENT:
@@ -1882,7 +1767,7 @@ const SDL_Event *event;
 }
 
 static void
-do_message_fade()
+do_message_fade(void)
 {
     if (m_message_time != 0 && m_message != NULL) {
         /* Message is present and it is being faded */
@@ -1896,8 +1781,7 @@ do_message_fade()
 }
 
 void
-sdl2_set_message(message)
-const char *message;
+sdl2_set_message(const char *message)
 {
     free(m_message);
     m_message = dupstr(message);
@@ -1905,7 +1789,7 @@ const char *message;
 }
 
 static void
-fade_message()
+fade_message(void)
 {
     if (m_message_time == 0 && m_message != NULL) {
         m_message_time = SDL_GetTicks();
@@ -1916,7 +1800,7 @@ fade_message()
 }
 
 static void
-next_video_mode()
+next_video_mode(void)
 {
     int display = SDL_GetWindowDisplayIndex(main_window);
     int num_modes = SDL_GetNumDisplayModes(display);
@@ -1946,8 +1830,7 @@ next_video_mode()
 /* Underline is implemented as bold on a gray background */
 /* Blink is not implemented */
 SDL_Color
-sdl2_text_fg(attr)
-int attr;
+sdl2_text_fg(int attr)
 {
     static const SDL_Color black = {   0,   0,   0, 255 };
     static const SDL_Color gray  = { 128, 128, 128, 255 };
@@ -1972,8 +1855,7 @@ int attr;
 }
 
 SDL_Color
-sdl2_text_bg(attr)
-int attr;
+sdl2_text_bg(int attr)
 {
     static const SDL_Color clear = {   0,   0,   0,   0 };
     static const SDL_Color gray  = { 128, 128, 128, 255 };
