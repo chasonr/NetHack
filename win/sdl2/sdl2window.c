@@ -752,6 +752,7 @@ char *input;
     struct SDL2Window *window = sdl2_window_create(&sdl2_getline_procs);
 
     sdl2_getline_run(window, ques, input, BUFSZ);
+    sdl2_window_destroy(window);
 }
 
 static int
