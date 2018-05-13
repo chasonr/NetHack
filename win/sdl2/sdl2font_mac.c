@@ -7,7 +7,6 @@
 #include <CoreText/CoreText.h>
 
 #include "sdl2font.h"
-#include "sdl2unicode.h"
 
 /* RGB color space */
 static CGColorSpaceRef rgb_colorspace = NULL;
@@ -39,71 +38,21 @@ singleChar(UniChar str16[3], Uint32 ch)
     return str16;
 }
 
-/* UTF-8 to UTF-16 conversion */
+/* ISO 8859-1 to UTF-16 conversion */
 static UniChar *
 appleString(const char *inpstr)
 {
-    size_t i, j;
+    size_t i;
     UniChar *outstr;
 
     /* Allocate the output string */
     outstr = (UniChar *) alloc((strlen(inpstr) + 1U) * sizeof(UniChar));
 
     /* Convert to UTF-16 */
-    j = 0U;
-    i = 0U;
-    while (inpstr[i] != '\0') {
-        unsigned char byte = (unsigned char) inpstr[i++];
-        Uint32 ch32;
-        Uint32 min;
-        unsigned count;
-
-        if (byte < 0x80) {
-            ch32 = byte;
-            min = 0x00;
-            count = 0;
-        } else if (byte < 0xC0) {
-            ch32 = 0xFFFD;
-            min = 0x00;
-            count = 0;
-        } else if (byte < 0xE0) {
-            ch32 = byte & 0x1F;
-            min = 0x80;
-            count = 1;
-        } else if (byte < 0xF0) {
-            ch32 = byte & 0x0F;
-            min = 0x800;
-            count = 2;
-        } else if (byte < 0xF5) {
-            ch32 = byte & 0x07;
-            min = 0x10000;
-            count = 3;
-        } else {
-            ch32 = 0xFFFD;
-            min = 0x00;
-            count = 0;
-        }
-
-        for (; count != 0; --count) {
-            byte = (unsigned char) inpstr[i];
-            if (byte < 0x80 || 0xBF < byte) {
-                break;
-            }
-            ch32 = (ch32 << 6) | (byte & 0x3F);
-            ++i;
-        }
-        if (count != 0 || ch32 > 0x10FFFF
-                || (0xD800 <= ch32 && ch32 <= 0xDFFF)) {
-            ch32 = 0xFFFD;
-        }
-        if (ch32 < 0x10000) {
-            outstr[j++] = ch32;
-        } else {
-            outstr[j++] = 0xD7C0 + (ch32 >> 10);
-            outstr[j++] = 0xDC00 + (ch32 & 0x3FF);
-        }
+    for (i = 0U; inpstr[i] != '\0'; ++i) {
+        outstr[i] = (unsigned char) inpstr[i];
     }
-    outstr[j] = 0U;
+    outstr[i] = 0U;
 
     return outstr;
 }

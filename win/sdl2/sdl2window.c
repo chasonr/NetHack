@@ -1211,6 +1211,33 @@ SDL_Color bg;
     return win_rect;
 }
 
+/* Render single character at given coordinates without stretching */
+/* Return rectangle in which the text was rendered */
+SDL_Rect
+sdl2_window_renderCharBG(win, chr, x, y, fg, bg)
+struct SDL2Window *win;
+Uint32 chr;
+int x, y;
+SDL_Color fg;
+SDL_Color bg;
+{
+    SDL_Surface *text = sdl2_font_renderCharBG(win->m_font, chr, fg, bg);
+    SDL_Rect win_rect;
+    SDL_Rect txt_rect;
+
+    win_rect.x = x;
+    win_rect.y = y;
+    win_rect.w = text->w;
+    win_rect.h = text->h;
+    txt_rect.x = 0;
+    txt_rect.y = 0;
+    txt_rect.w = text->w;
+    txt_rect.h = text->h;
+    sdl2_window_blit(win, &win_rect, text, &txt_rect);
+    SDL_FreeSurface(text);
+    return win_rect;
+}
+
 /* Render text that may contain glyph escapes */
 /* Return rectangle in which the text was rendered */
 SDL_Rect
@@ -1282,8 +1309,7 @@ SDL_Color bg;
         /* Render the glyph */
         mapglyph(glyph, &ch, &oc, &os, 0, 0);
         ch32 = sdl2_chr_convert(ch);
-        sdl2_uni_convert_char(utf8, ch32);
-        txt_rect = sdl2_window_renderStrBG(win, utf8,
+        txt_rect = sdl2_window_renderCharBG(win, ch32,
                 x + all_rect.w, y,
                 sdl2_colors[oc], bg);
 

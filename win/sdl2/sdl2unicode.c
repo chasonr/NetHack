@@ -5,29 +5,6 @@
 #include "sdl2.h"
 #include "sdl2unicode.h"
 
-void
-sdl2_uni_convert_char(char ch[5], Uint32 ch32)
-{
-    if (ch32 < 0x80) {
-        ch[0] = (char) ch32;
-        ch[1] = 0;
-    } else if (ch32 < 0x800) {
-        ch[0] = (char) (0xC0 | (ch32 >> 6));
-        ch[1] = (char) (0x80 | (ch32 & 0x3F));
-    } else if (ch32 < 0x10000) {
-        ch[0] = (char) (0xE0 | (ch32 >> 12));
-        ch[1] = (char) (0x80 | ((ch32 >> 6) & 0x3F));
-        ch[2] = (char) (0x80 | (ch32 & 0x3F));
-        ch[3] = 0;
-    } else {
-        ch[0] = (char) (0xE0 | (ch32 >> 18));
-        ch[1] = (char) (0x80 | ((ch32 >> 12) & 0x3F));
-        ch[2] = (char) (0x80 | ((ch32 >> 6) & 0x3F));
-        ch[3] = (char) (0x80 | (ch32 & 0x3F));
-        ch[4] = 0;
-    }
-}
-
 Uint32 *
 sdl2_uni_8to32(const char *inpstr)
 {
