@@ -18,9 +18,6 @@
 #include "sdl2text.h"
 #include "sdl2unicode.h"
 
-/* Temporary declarations for window method lists */
-extern int sdl2_extcmd_run(struct SDL2Window *window);
-
 const SDL_Color sdl2_colors[] =
 {
     {  96,  96,  96, 255 }, /* "black" is really dark gray (e.g., black dragon) */
