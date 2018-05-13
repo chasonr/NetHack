@@ -27,12 +27,12 @@ struct StatusPrivate {
     unsigned column2;
 };
 
-static void FDECL(sdl2_status_create, (struct SDL2Window *win));
-static void FDECL(sdl2_status_destroy, (struct SDL2Window *win));
-static void FDECL(sdl2_status_redraw, (struct SDL2Window *win));
+static void sdl2_status_create(struct SDL2Window *win);
+static void sdl2_status_destroy(struct SDL2Window *win);
+static void sdl2_status_redraw(struct SDL2Window *win);
 
-static SDL_Color FDECL(sdl2_status_fg, (int color));
-static SDL_Color FDECL(sdl2_status_bg, (int color));
+static SDL_Color sdl2_status_fg(int color);
+static SDL_Color sdl2_status_bg(int color);
 
 struct SDL2Window_Methods const sdl2_status_procs = {
     sdl2_status_create,
@@ -50,8 +50,7 @@ struct SDL2Window_Methods const sdl2_status_procs = {
 };
 
 static void
-sdl2_status_create(win)
-struct SDL2Window *win;
+sdl2_status_create(struct SDL2Window *win)
 {
     struct StatusPrivate *data = (struct StatusPrivate *) alloc(sizeof(*data));
     win->data = data;
@@ -65,8 +64,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_status_destroy(win)
-struct SDL2Window *win;
+sdl2_status_destroy(struct SDL2Window *win)
 {
     struct StatusPrivate *data = (struct StatusPrivate *) win->data;
     size_t i;
@@ -79,8 +77,7 @@ struct SDL2Window *win;
 }
 
 int
-sdl2_status_width_hint(win)
-struct SDL2Window *win;
+sdl2_status_width_hint(struct SDL2Window *win)
 {
     struct StatusPrivate *data = (struct StatusPrivate *) win->data;
 
@@ -92,24 +89,19 @@ struct SDL2Window *win;
 }
 
 int
-sdl2_status_height_hint(win)
-struct SDL2Window *win;
+sdl2_status_height_hint(struct SDL2Window *win)
 {
     return win->m_line_height * 2;
 }
 
 void
-sdl2_status_resize(win, x1, y1, x2, y2)
-struct SDL2Window *win;
-int x1, y1;
-int x2, y2;
+sdl2_status_resize(struct SDL2Window *win, int x1, int y1, int x2, int y2)
 {
     sdl2_window_resize(win, x1, y1, x2, y2);
 }
 
 static void
-sdl2_status_redraw(win)
-struct SDL2Window *win;
+sdl2_status_redraw(struct SDL2Window *win)
 {
     struct CondData {
         const char *name;
@@ -764,8 +756,7 @@ struct SDL2Window *win;
 }
 
 static SDL_Color
-sdl2_status_fg(color)
-int color;
+sdl2_status_fg(int color)
 {
     SDL_Color fg;
 
@@ -799,8 +790,7 @@ int color;
 }
 
 static SDL_Color
-sdl2_status_bg(color)
-int color;
+sdl2_status_bg(int color)
 {
     SDL_Color bg;
 
@@ -832,12 +822,8 @@ int color;
 
 /*ARGSUSED*/
 void
-sdl2_status_do_enablefield(win, index, name, format, enable)
-struct SDL2Window *win;
-int index;
-const char *name;
-const char *format;
-boolean enable;
+sdl2_status_do_enablefield(struct SDL2Window *win, int index, const char *name,
+                           const char *format, boolean enable)
 {
     struct StatusPrivate *data = (struct StatusPrivate *) win->data;
 
@@ -854,14 +840,9 @@ boolean enable;
 
 /*ARGSUSED*/
 void
-sdl2_status_do_update(win, index, ptr, change, percent, color, colormasks)
-struct SDL2Window *win;
-int index;
-genericptr_t ptr;
-int change;
-int percent;
-int color;
-const unsigned long *colormasks;
+sdl2_status_do_update(struct SDL2Window *win, int index, genericptr_t ptr,
+                      int change, int percent, int color,
+                      const unsigned long *colormasks)
 {
     struct StatusPrivate *data = (struct StatusPrivate *) win->data;
 

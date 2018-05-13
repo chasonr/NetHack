@@ -8,15 +8,15 @@
 #include "sdl2plsel.h"
 #include "sdl2menu.h"
 
-static boolean NDECL(select_role);
-static boolean NDECL(select_race);
-static boolean NDECL(select_gender);
-static boolean NDECL(selectAlignment);
+static boolean select_role(void);
+static boolean select_race(void);
+static boolean select_gender(void);
+static boolean selectAlignment(void);
 
-static boolean FDECL(valid_selection, (int role, int race, int gend, int alignment));
+static boolean valid_selection(int role, int race, int gend, int alignment);
 
 boolean
-sdl2_player_select()
+sdl2_player_select(void)
 {
     return select_role()
         && select_race()
@@ -25,7 +25,7 @@ sdl2_player_select()
 }
 
 static boolean
-select_role()
+select_role(void)
 {
     int role;
     unsigned count;
@@ -108,7 +108,7 @@ return_false:
 }
 
 static boolean
-select_race()
+select_race(void)
 {
     int race;
     unsigned count;
@@ -181,7 +181,7 @@ return_false:
 }
 
 static boolean
-select_gender()
+select_gender(void)
 {
     int gend;
     unsigned count;
@@ -254,7 +254,7 @@ return_false:
 }
 
 static boolean
-selectAlignment()
+selectAlignment(void)
 {
     int alignment;
     unsigned count;
@@ -327,11 +327,7 @@ return_false:
 }
 
 static boolean
-valid_selection(role, race, gender, alignment)
-int role;
-int race;
-int gender;
-int alignment;
+valid_selection(int role, int race, int gender, int alignment)
 {
     /* Any input set to -1 is unspecified; the combination is valid if there
        exists a setting which is valid with the others */
