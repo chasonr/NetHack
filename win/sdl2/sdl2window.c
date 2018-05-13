@@ -968,6 +968,7 @@ arrange_windows()
     if (excess > 0) {
         switch (iflags.wc_align_message) {
         case ALIGN_TOP:
+        default:
             message_rect.h += excess;
             map_rect.y += excess;
             map_rect.h -= excess;
