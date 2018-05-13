@@ -61,6 +61,9 @@ extern void FDECL(sdl2_window_fill, (struct SDL2Window *window,
 extern SDL_Rect FDECL(sdl2_window_renderStrBG,
         (struct SDL2Window *win, const char *str, int x, int y,
          SDL_Color fg, SDL_Color bg));
+extern SDL_Rect sdl2_window_renderCharBG(
+         struct SDL2Window *win, Uint32 chr, int x, int y,
+         SDL_Color fg, SDL_Color bg);
 extern SDL_Rect FDECL(sdl2_window_render_mixed,
         (struct SDL2Window *win, const char *str, int x, int y,
          SDL_Color fg, SDL_Color bg));
