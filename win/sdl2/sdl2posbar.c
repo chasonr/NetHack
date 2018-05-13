@@ -7,7 +7,6 @@
 #include "sdl2posbar.h"
 #include "sdl2font.h"
 #include "sdl2map.h"
-#include "sdl2unicode.h"
 #include "sdl2window.h"
 
 struct PosbarPrivate {
@@ -121,14 +120,12 @@ struct SDL2Window *win;
         Uint32 glyph;
         int pos;
         int x;
-        char utf8[5];
 
         glyph = (unsigned char) (data->m_data[i + 0]);
         pos = (unsigned char) (data->m_data[i + 1]);
         if (pos < 1 || pos >= COLNO) { continue; }
         x = pos * width / COLNO;
-        sdl2_uni_convert_char(utf8, glyph);
-        sdl2_window_renderStrBG(win, utf8, x, 0, white, clear);
+        sdl2_window_renderCharBG(win, glyph, x, 0, white, clear);
     }
 }
 
