@@ -1271,7 +1271,6 @@ SDL_Color bg;
         int oc;
         unsigned os;
         Uint32 ch32;
-        char utf8[5];
 
         /* Find the next glyph escape */
         p2 = strstr(p1, esc);
