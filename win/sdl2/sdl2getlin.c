@@ -199,12 +199,7 @@ Uint32 ch;
     if (ch > 0x10FFFF) { return; }
 
     if ((ch == '\b' || ch == '\177') && data->m_contents_size != 0) {
-        size_t i = data->m_contents_size - 1;
-        while (i != 0 && (data->m_contents[i] & 0xC0) == 0x80) {
-            --i;
-        }
-        data->m_contents_size = i;
-        data->m_contents[i] = '\0';
+        data->m_contents[--data->m_contents_size] = '\0';
     } else {
         /* Don't include control characters in the string */
         if (ch < 0x20 || (0x7F <= ch && ch <= 0x9F)) { return; }
@@ -215,6 +210,7 @@ Uint32 ch;
         if (ch <= 0xFF && data->m_contents_size + 2 < data->m_contents_alloc) {
             /* Add this character */
             data->m_contents[data->m_contents_size++] = (char) ch;
+            data->m_contents[data->m_contents_size] = '\0';
         }
     }
 
