@@ -2,7 +2,6 @@
 
 #include "hack.h"
 #undef yn
-#include <assert.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreText/CoreText.h>
@@ -44,24 +43,11 @@ singleChar(UniChar str16[3], Uint32 ch)
 static UniChar *
 appleString(const char *inpstr)
 {
-    size_t outsize;
     size_t i, j;
     UniChar *outstr;
 
-    /* Determine the output size */
-    outsize = 1U;
-    for (i = 0U; inpstr[i] != '\0'; ++i) {
-        unsigned char byte = (unsigned char) inpstr[i];
-        if (byte < 0x80 || 0xBF < byte) {
-            ++outsize;
-        }
-        if (byte >= 0xF0) {
-            ++outsize;
-        }
-    }
-
     /* Allocate the output string */
-    outstr = (UniChar *) alloc(outsize * sizeof(UniChar));
+    outstr = (UniChar *) alloc((strlen(inpstr) + 1U) * sizeof(UniChar));
 
     /* Convert to UTF-16 */
     j = 0U;
@@ -117,7 +103,6 @@ appleString(const char *inpstr)
             outstr[j++] = 0xDC00 + (ch32 & 0x3FF);
         }
     }
-    assert(j < outsize);
     outstr[j] = 0U;
 
     return outstr;
