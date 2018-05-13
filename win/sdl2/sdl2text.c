@@ -25,17 +25,17 @@ struct TextPrivate {
     unsigned m_page_size;
 };
 
-static void FDECL(sdl2_text_create, (struct SDL2Window *win));
-static void FDECL(sdl2_text_destroy, (struct SDL2Window *win));
-static void FDECL(sdl2_text_clear, (struct SDL2Window *win));
-static void FDECL(sdl2_text_setVisible, (struct SDL2Window *win,
-        BOOLEAN_P visible));
-static void FDECL(sdl2_text_put_string, (struct SDL2Window *win, int attr,
-        const char *str, BOOLEAN_P mixed));
-static void FDECL(sdl2_text_redraw, (struct SDL2Window *win));
+static void sdl2_text_create(struct SDL2Window *win);
+static void sdl2_text_destroy(struct SDL2Window *win);
+static void sdl2_text_clear(struct SDL2Window *win);
+static void sdl2_text_setVisible(struct SDL2Window *win,
+        boolean visible);
+static void sdl2_text_put_string(struct SDL2Window *win, int attr,
+        const char *str, boolean mixed);
+static void sdl2_text_redraw(struct SDL2Window *win);
 
-static void FDECL(doPage, (struct SDL2Window *win, Uint32 ch));
-static void FDECL(expandText, (struct SDL2Window *win));
+static void doPage(struct SDL2Window *win, Uint32 ch);
+static void expandText(struct SDL2Window *win);
 
 struct SDL2Window_Methods const sdl2_text_procs = {
     sdl2_text_create,
@@ -53,8 +53,7 @@ struct SDL2Window_Methods const sdl2_text_procs = {
 };
 
 static void
-sdl2_text_create(win)
-struct SDL2Window *win;
+sdl2_text_create(struct SDL2Window *win)
 {
     struct TextPrivate *data = (struct TextPrivate *) alloc(sizeof(*data));
     memset(data, 0, sizeof(*data));
@@ -69,8 +68,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_text_destroy(win)
-struct SDL2Window *win;
+sdl2_text_destroy(struct SDL2Window *win)
 {
     struct TextPrivate *data = (struct TextPrivate *) win->data;
     size_t i;
@@ -82,8 +80,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_text_redraw(win)
-struct SDL2Window *win;
+sdl2_text_redraw(struct SDL2Window *win)
 {
     static const SDL_Color white = { 255, 255, 255, 255 };
     static const SDL_Color black = {   0,   0,   0, 160 };
@@ -128,8 +125,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_text_clear(win)
-struct SDL2Window *win;
+sdl2_text_clear(struct SDL2Window *win)
 {
     struct TextPrivate *data = (struct TextPrivate *) win->data;
     size_t i;
@@ -141,11 +137,8 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_text_put_string(win, attr, str, mixed)
-struct SDL2Window *win;
-int attr;
-const char *str;
-boolean mixed;
+sdl2_text_put_string(struct SDL2Window *win, int attr, const char *str,
+                     boolean mixed)
 {
     struct TextPrivate *data = (struct TextPrivate *) win->data;
     struct Line *new_line;
@@ -158,9 +151,7 @@ boolean mixed;
 }
 
 static void
-sdl2_text_setVisible(win, visible)
-struct SDL2Window *win;
-boolean visible;
+sdl2_text_setVisible(struct SDL2Window *win, boolean visible)
 {
     if (visible) {
         struct TextPrivate *data = (struct TextPrivate *) win->data;
@@ -210,9 +201,7 @@ boolean visible;
 }
 
 static void
-doPage(win, ch)
-struct SDL2Window *win;
-Uint32 ch;
+doPage(struct SDL2Window *win, Uint32 ch)
 {
     struct TextPrivate *data = (struct TextPrivate *) win->data;
 
@@ -252,8 +241,7 @@ Uint32 ch;
 }
 
 static void
-expandText(win)
-struct SDL2Window *win;
+expandText(struct SDL2Window *win)
 {
     struct TextPrivate *data = (struct TextPrivate *) win->data;
 

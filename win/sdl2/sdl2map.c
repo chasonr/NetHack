@@ -51,20 +51,20 @@ struct MapPrivate {
     enum ZoomMode m_zoom_mode;
 };
 
-static void FDECL(sdl2_map_create, (struct SDL2Window *win));
-static void FDECL(sdl2_map_destroy, (struct SDL2Window *win));
-static void FDECL(sdl2_map_clear, (struct SDL2Window *win));
-static void FDECL(sdl2_map_setCursor, (struct SDL2Window *win, int x, int y));
-static void FDECL(sdl2_map_printGlyph, (struct SDL2Window *win,
-        XCHAR_P x, XCHAR_P y, int glyph, int bkglyph));
-static void FDECL(sdl2_map_redraw, (struct SDL2Window *win));
+static void sdl2_map_create(struct SDL2Window *win);
+static void sdl2_map_destroy(struct SDL2Window *win);
+static void sdl2_map_clear(struct SDL2Window *win);
+static void sdl2_map_setCursor(struct SDL2Window *win, int x, int y);
+static void sdl2_map_printGlyph(struct SDL2Window *win,
+        xchar x, xchar y, int glyph, int bkglyph);
+static void sdl2_map_redraw(struct SDL2Window *win);
 
-static void FDECL(sdl2_map_setup, (struct SDL2Window *win));
-static void FDECL(sdl2_map_draw, (struct SDL2Window *win, int x, int y,
-        BOOLEAN_P cursor));
-static boolean FDECL(sdl2_map_wall_draw, (struct SDL2Window *win,
-        Uint32 ch, const SDL_Rect *rect, SDL_Color color));
-static SDL_Surface *FDECL(convert_tile, (int));
+static void sdl2_map_setup(struct SDL2Window *win);
+static void sdl2_map_draw(struct SDL2Window *win, int x, int y,
+        boolean cursor);
+static boolean sdl2_map_wall_draw(struct SDL2Window *win,
+        Uint32 ch, const SDL_Rect *rect, SDL_Color color);
+static SDL_Surface *convert_tile(int);
 
 struct SDL2Window_Methods const sdl2_map_procs = {
     sdl2_map_create,
@@ -82,8 +82,7 @@ struct SDL2Window_Methods const sdl2_map_procs = {
 };
 
 static void
-sdl2_map_create(win)
-struct SDL2Window *win;
+sdl2_map_create(struct SDL2Window *win)
 {
     SDL_Rect rect;
     struct MapPrivate *data = (struct MapPrivate *)
@@ -137,8 +136,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_map_destroy(win)
-struct SDL2Window *win;
+sdl2_map_destroy(struct SDL2Window *win)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
     int i;
@@ -156,18 +154,14 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_map_resize(win, x1, y1, x2, y2)
-struct SDL2Window *win;
-int x1, y1;
-int x2, y2;
+sdl2_map_resize(struct SDL2Window *win, int x1, int y1, int x2, int y2)
 {
     sdl2_window_resize(win, x1, y1, x2, y2);
     sdl2_map_setup(win);
 }
 
 static void
-sdl2_map_redraw(win)
-struct SDL2Window *win;
+sdl2_map_redraw(struct SDL2Window *win)
 {
     static const SDL_Color background = {  96,  32,   0, 255 };
     struct MapPrivate *data = (struct MapPrivate *) win->data;
@@ -249,8 +243,7 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_map_clear(win)
-struct SDL2Window *win;
+sdl2_map_clear(struct SDL2Window *win)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
     int background_glyph = cmap_to_glyph(S_stone);
@@ -288,11 +281,8 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_map_printGlyph(win, x, y, glyph, bkglyph)
-struct SDL2Window *win;
-xchar x, y;
-int glyph;
-int bkglyph;
+sdl2_map_printGlyph(struct SDL2Window *win, xchar x, xchar y, int glyph,
+                    int bkglyph)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -315,9 +305,7 @@ int bkglyph;
 }
 
 void
-sdl2_map_setCursor(win, x, y)
-struct SDL2Window *win;
-int x, y;
+sdl2_map_setCursor(struct SDL2Window *win, int x, int y)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -334,9 +322,7 @@ int x, y;
 }
 
 void
-sdl2_map_cliparound(win, x, y)
-struct SDL2Window *win;
-int x, y;
+sdl2_map_cliparound(struct SDL2Window *win, int x, int y)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
     int width  = win->m_xmax - win->m_xmin + 1;
@@ -392,8 +378,7 @@ int x, y;
 }
 
 void
-sdl2_map_toggle_tile_mode(win)
-struct SDL2Window *win;
+sdl2_map_toggle_tile_mode(struct SDL2Window *win)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -413,8 +398,7 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_map_next_zoom_mode(win)
-struct SDL2Window *win;
+sdl2_map_next_zoom_mode(struct SDL2Window *win)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -445,8 +429,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_map_setup(win)
-struct SDL2Window *win;
+sdl2_map_setup(struct SDL2Window *win)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -505,10 +488,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_map_draw(win, x, y, cursor)
-struct SDL2Window *win;
-int x, y;
-boolean cursor;
+sdl2_map_draw(struct SDL2Window *win, int x, int y, boolean cursor)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -623,11 +603,8 @@ boolean cursor;
 }
 
 boolean
-sdl2_map_wall_draw(win, ch, rect, color)
-struct SDL2Window *win;
-Uint32 ch;
-const SDL_Rect *rect;
-SDL_Color color;
+sdl2_map_wall_draw(struct SDL2Window *win, Uint32 ch, const SDL_Rect *rect,
+                   SDL_Color color)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -899,8 +876,7 @@ SDL_Color color;
 }
 
 int
-sdl2_map_height_hint(win)
-struct SDL2Window *win;
+sdl2_map_height_hint(struct SDL2Window *win)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
     int tile_height;
@@ -918,8 +894,7 @@ struct SDL2Window *win;
 }
 
 int
-sdl2_map_width(win)
-struct SDL2Window *win;
+sdl2_map_width(struct SDL2Window *win)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -927,8 +902,7 @@ struct SDL2Window *win;
 }
 
 int
-sdl2_map_xpos(win)
-struct SDL2Window *win;
+sdl2_map_xpos(struct SDL2Window *win)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -937,10 +911,8 @@ struct SDL2Window *win;
 
 
 boolean
-sdl2_map_mouse(win, x_in, y_in, x_out, y_out)
-struct SDL2Window *win;
-int x_in, y_in;
-int *x_out, *y_out;
+sdl2_map_mouse(struct SDL2Window *win, int x_in, int y_in,
+               int *x_out, int *y_out)
 {
     struct MapPrivate *data = (struct MapPrivate *) win->data;
 
@@ -953,8 +925,7 @@ int *x_out, *y_out;
 }
 
 static SDL_Surface *
-convert_tile(tilenum)
-int tilenum;
+convert_tile(int tilenum)
 {
     const struct TileImage *tile = get_tile(tilenum);
     SDL_Surface *sdltile;

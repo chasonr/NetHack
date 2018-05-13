@@ -6,9 +6,9 @@
 #include "sdl2window.h"
 
 extern struct SDL2Window_Methods const sdl2_getline_procs;
-extern boolean FDECL(sdl2_getline_run, (struct SDL2Window *window,
-        const char *prompt, char *buf, size_t bufsize));
+extern boolean sdl2_getline_run(struct SDL2Window *window,
+        const char *prompt, char *buf, size_t bufsize);
 
-extern int FDECL(sdl2_extcmd_run, (struct SDL2Window *window));
+extern int sdl2_extcmd_run(struct SDL2Window *window);
 
 #endif

@@ -175,7 +175,7 @@ sdl2_font_renderStr(SDL2Font *font, const char *text, SDL_Color foreground)
     return sdl2_font_renderStrBG(font, text, foreground, transparent);
 }
 
-extern SDL_Surface *
+SDL_Surface *
 sdl2_font_renderCharBG(SDL2Font *font, utf32_t ch, SDL_Color foreground,
         SDL_Color background)
 {

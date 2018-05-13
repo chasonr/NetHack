@@ -35,17 +35,17 @@ struct MessagePrivate {
     boolean m_combine;
 };
 
-static void FDECL(sdl2_message_create, (struct SDL2Window *win));
-static void FDECL(sdl2_message_destroy, (struct SDL2Window *win));
-static void FDECL(sdl2_message_put_string, (struct SDL2Window *win, int attr,
-        const char *str, BOOLEAN_P mixed));
-static void FDECL(sdl2_message_redraw, (struct SDL2Window *win));
+static void sdl2_message_create(struct SDL2Window *win);
+static void sdl2_message_destroy(struct SDL2Window *win);
+static void sdl2_message_put_string(struct SDL2Window *win, int attr,
+        const char *str, boolean mixed);
+static void sdl2_message_redraw(struct SDL2Window *win);
 
 static void initLineList(struct LineList *list, size_t size);
 static void freeLineList(struct LineList *list);
 static size_t numberOfLines(const struct LineList *list);
-static struct Line *FDECL(addLine,
-        (struct LineList *list, int attr, const char *str, BOOLEAN_P mixed));
+static struct Line *addLine(struct LineList *list, int attr, const char *str,
+                            boolean mixed);
 
 struct SDL2Window_Methods const sdl2_message_procs = {
     sdl2_message_create,
@@ -63,8 +63,7 @@ struct SDL2Window_Methods const sdl2_message_procs = {
 };
 
 static void
-sdl2_message_create(win)
-struct SDL2Window *win;
+sdl2_message_create(struct SDL2Window *win)
 {
     struct MessagePrivate *data =
             (struct MessagePrivate *) alloc(sizeof(*data));
@@ -81,8 +80,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_message_destroy(win)
-struct SDL2Window *win;
+sdl2_message_destroy(struct SDL2Window *win)
 {
     struct MessagePrivate *data = (struct MessagePrivate *) win->data;
 
@@ -94,8 +92,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_message_redraw(win)
-struct SDL2Window *win;
+sdl2_message_redraw(struct SDL2Window *win)
 {
     struct MessagePrivate *data = (struct MessagePrivate *) win->data;
     int width  = win->m_xmax - win->m_xmin + 1;
@@ -158,8 +155,7 @@ struct SDL2Window *win;
 }
 
 int
-sdl2_message_width_hint(win)
-struct SDL2Window *win;
+sdl2_message_width_hint(struct SDL2Window *win)
 {
     struct MessagePrivate *data = (struct MessagePrivate *) win->data;
 
@@ -171,18 +167,14 @@ struct SDL2Window *win;
 }
 
 int
-sdl2_message_height_hint(win)
-struct SDL2Window *win;
+sdl2_message_height_hint(struct SDL2Window *win)
 {
     return win->m_line_height * 2;
 }
 
 static void
-sdl2_message_put_string(win, attr, str, mixed)
-struct SDL2Window *win;
-int attr;
-const char *str;
-boolean mixed;
+sdl2_message_put_string(struct SDL2Window *win, int attr, const char *str,
+                        boolean mixed)
 {
     struct MessagePrivate *data = (struct MessagePrivate *) win->data;
     int width = win->m_xmax - win->m_xmin + 1;
@@ -279,8 +271,7 @@ boolean mixed;
 }
 
 void
-sdl2_message_previous(win)
-struct SDL2Window *win;
+sdl2_message_previous(struct SDL2Window *win)
 {
     struct MessagePrivate *data = (struct MessagePrivate *) win->data;
     unsigned height = (unsigned)(win->m_ymax - win->m_ymin + 1);
@@ -296,8 +287,7 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_message_more(win)
-struct SDL2Window *win;
+sdl2_message_more(struct SDL2Window *win)
 {
     struct MessagePrivate *data = (struct MessagePrivate *) win->data;
 
@@ -307,8 +297,7 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_message_new_turn(win)
-struct SDL2Window *win;
+sdl2_message_new_turn(struct SDL2Window *win)
 {
     struct MessagePrivate *data = (struct MessagePrivate *) win->data;
 
@@ -316,18 +305,13 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_message_resize(win, x1, y1, x2, y2)
-struct SDL2Window *win;
-int x1, y1;
-int x2, y2;
+sdl2_message_resize(struct SDL2Window *win, int x1, int y1, int x2, int y2)
 {
     sdl2_window_resize(win, x1, y1, x2, y2);
 }
 
 static void
-initLineList(list, size)
-struct LineList *list;
-size_t size;
+initLineList(struct LineList *list, size_t size)
 {
     size_t i;
 
@@ -341,8 +325,7 @@ size_t size;
 }
 
 void
-freeLineList(list)
-struct LineList *list;
+freeLineList(struct LineList *list)
 {
     size_t i;
 
@@ -353,8 +336,7 @@ struct LineList *list;
 }
 
 size_t
-numberOfLines(list)
-const struct LineList *list;
+numberOfLines(const struct LineList *list)
 {
     size_t count = list->tail - list->head;
     if (list->tail < list->head) {
@@ -364,11 +346,7 @@ const struct LineList *list;
 }
 
 static struct Line *
-addLine(list, attr, str, mixed)
-struct LineList *list;
-int attr;
-const char *str;
-int mixed;
+addLine(struct LineList *list, int attr, const char *str, boolean mixed)
 {
     struct Line *new_line = &list->lines[list->tail++];
     if (list->tail >= list->size) {

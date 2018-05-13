@@ -45,24 +45,23 @@ struct MenuPrivate {
     size_t m_num_columns;
 };
 
-static void FDECL(sdl2_menu_create, (struct SDL2Window *win));
-static void FDECL(sdl2_menu_destroy, (struct SDL2Window *win));
-static void FDECL(sdl2_menu_clear, (struct SDL2Window *win));
-static void FDECL(sdl2_menu_setVisible, (struct SDL2Window *win,
-        BOOLEAN_P visible));
-static void FDECL(sdl2_menu_put_string, (struct SDL2Window *win, int attr,
-        const char *str, BOOLEAN_P mixed));
-static void FDECL(sdl2_menu_redraw, (struct SDL2Window *win));
+static void sdl2_menu_create(struct SDL2Window *win);
+static void sdl2_menu_destroy(struct SDL2Window *win);
+static void sdl2_menu_clear(struct SDL2Window *win);
+static void sdl2_menu_setVisible(struct SDL2Window *win, boolean visible);
+static void sdl2_menu_put_string(struct SDL2Window *win, int attr,
+        const char *str, boolean mixed);
+static void sdl2_menu_redraw(struct SDL2Window *win);
 
-static char **FDECL(tabSplit, (const char *str));
+static char **tabSplit(const char *str);
 static void freeColumns(char **columns);
-static size_t FDECL(numColumns, (char **columns));
-static size_t FDECL(numColumnsInStr, (const char *str));
-static void FDECL(expandMenu, (struct SDL2Window *win));
-static void FDECL(setWindowSize, (struct SDL2Window *win));
-static boolean FDECL(selectEntry, (struct SDL2Window *win, Uint32 ch, int how));
-static void FDECL(doPage, (struct SDL2Window *win, Uint32 ch));
-static int FDECL(buildColumnTable, (struct SDL2Window *win));
+static size_t numColumns(char **columns);
+static size_t numColumnsInStr(const char *str);
+static void expandMenu(struct SDL2Window *win);
+static void setWindowSize(struct SDL2Window *win);
+static boolean selectEntry(struct SDL2Window *win, Uint32 ch, int how);
+static void doPage(struct SDL2Window *win, Uint32 ch);
+static int buildColumnTable(struct SDL2Window *win);
 
 struct SDL2Window_Methods const sdl2_menu_procs = {
     sdl2_menu_create,
@@ -80,8 +79,7 @@ struct SDL2Window_Methods const sdl2_menu_procs = {
 };
 
 static void
-sdl2_menu_create(win)
-struct SDL2Window *win;
+sdl2_menu_create(struct SDL2Window *win)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) alloc(sizeof(*data));
     memset(data, 0, sizeof(*data));
@@ -98,8 +96,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_menu_destroy(win)
-struct SDL2Window *win;
+sdl2_menu_destroy(struct SDL2Window *win)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
     size_t i;
@@ -113,8 +110,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_menu_clear(win)
-struct SDL2Window *win;
+sdl2_menu_clear(struct SDL2Window *win)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
     size_t i;
@@ -130,8 +126,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_menu_redraw(win)
-struct SDL2Window *win;
+sdl2_menu_redraw(struct SDL2Window *win)
 {
     static const SDL_Color white  = { 255, 255, 255, 255 };
     static const SDL_Color black  = {   0,   0,   0, 160 };
@@ -222,8 +217,7 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_menu_startMenu(win)
-struct SDL2Window *win;
+sdl2_menu_startMenu(struct SDL2Window *win)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
 
@@ -231,15 +225,9 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_menu_addMenu(win, glyph, identifier, ch, gch, attr, str, preselected)
-struct SDL2Window *win;
-int glyph;
-const anything* identifier;
-char ch;
-char gch;
-int attr;
-const char *str;
-boolean preselected;
+sdl2_menu_addMenu(struct SDL2Window *win, int glyph,
+                  const anything* identifier, char ch, char gch, int attr,
+                  const char *str, boolean preselected)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
     struct MenuEntry *entry;
@@ -270,9 +258,7 @@ boolean preselected;
 }
 
 void
-sdl2_menu_endMenu(win, prompt)
-struct SDL2Window *win;
-const char *prompt;
+sdl2_menu_endMenu(struct SDL2Window *win, const char *prompt)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
 
@@ -281,10 +267,7 @@ const char *prompt;
 }
 
 int
-sdl2_menu_selectMenu(win, how, menu_list)
-struct SDL2Window *win;
-int how;
-menu_item ** menu_list;
+sdl2_menu_selectMenu(struct SDL2Window *win, int how, menu_item ** menu_list)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
     Uint32 ch;
@@ -347,11 +330,8 @@ menu_item ** menu_list;
 
 /* For text windows */
 static void
-sdl2_menu_put_string(win, attr, str, mixed)
-struct SDL2Window *win;
-int attr;
-const char *str;
-boolean mixed;
+sdl2_menu_put_string(struct SDL2Window *win, int attr, const char *str,
+                     boolean mixed)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
     struct MenuEntry *entry;
@@ -375,9 +355,7 @@ boolean mixed;
 }
 
 static void
-sdl2_menu_setVisible(win, visible)
-struct SDL2Window *win;
-boolean visible;
+sdl2_menu_setVisible(struct SDL2Window *win, boolean visible)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
 
@@ -394,8 +372,7 @@ boolean visible;
 }
 
 static void
-setWindowSize(win)
-struct SDL2Window *win;
+setWindowSize(struct SDL2Window *win)
 {
     static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
@@ -456,8 +433,7 @@ struct SDL2Window *win;
 }
 
 static int
-buildColumnTable(win)
-struct SDL2Window *win;
+buildColumnTable(struct SDL2Window *win)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
     size_t i;
@@ -534,10 +510,7 @@ struct SDL2Window *win;
 }
 
 static boolean
-selectEntry(win, ch, how)
-struct SDL2Window *win;
-Uint32 ch;
-int how;
+selectEntry(struct SDL2Window *win, Uint32 ch, int how)
 {
     size_t i;
     boolean selected;
@@ -655,9 +628,7 @@ int how;
 }
 
 static void
-doPage(win, ch)
-struct SDL2Window *win;
-Uint32 ch;
+doPage(struct SDL2Window *win, Uint32 ch)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
 
@@ -697,8 +668,7 @@ Uint32 ch;
 }
 
 static void
-expandMenu(win)
-struct SDL2Window *win;
+expandMenu(struct SDL2Window *win)
 {
     struct MenuPrivate *data = (struct MenuPrivate *) win->data;
 
@@ -719,8 +689,7 @@ struct SDL2Window *win;
 
 /* Returned data structure is freed by freeColumns */
 static char **
-tabSplit(str)
-const char *str;
+tabSplit(const char *str)
 {
     const char *p, *q;
     char **columns;
@@ -763,8 +732,7 @@ freeColumns(char **columns)
 }
 
 static size_t
-numColumns(columns)
-char **columns;
+numColumns(char **columns)
 {
     size_t cols;
 
@@ -774,8 +742,7 @@ char **columns;
 
 /* Count the columns in the string */
 static size_t
-numColumnsInStr(str)
-const char *str;
+numColumnsInStr(const char *str)
 {
     size_t num_columns = 1;
     size_t i;
