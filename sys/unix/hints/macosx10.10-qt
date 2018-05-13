@@ -115,7 +115,7 @@ CFLAGS += -Wno-variadic-macros
 endif	# WANT_WIN_X11
 
 ifdef WANT_WIN_QT
-CFLAGS += -DQT_GRAPHICS -DNOUSER_SOUNDS
+CFLAGS += -DQT_GRAPHICS -DNOUSER_SOUNDS -DSTATUES_LOOK_LIKE_MONSTERS
 CFLAGS += $(shell PKG_CONFIG_PATH=$(QTDIR)/lib/pkgconfig pkg-config Qt5Gui Qt5Widgets Qt5Multimedia --cflags)
 WINLIB += $(shell PKG_CONFIG_PATH=$(QTDIR)/lib/pkgconfig pkg-config Qt5Gui Qt5Widgets Qt5Multimedia --libs)
 LINK=$(CXX)
@@ -132,7 +132,7 @@ endif	# QTDIR
 endif	# WANT_WIN_QT
 
 ifdef WANT_WIN_SDL2
-CFLAGS += -DSDL2_GRAPHICS -DPOSITIONBAR
+CFLAGS += -DSDL2_GRAPHICS -DPOSITIONBAR -DSTATUES_LOOK_LIKE_MONSTERS
 CFLAGS += $(shell sdl2-config --cflags)
 WINLIB += $(shell sdl2-config --static-libs)
 WINSRC += $(WINSDL2SRC)
