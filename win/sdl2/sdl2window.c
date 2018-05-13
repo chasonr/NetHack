@@ -1557,6 +1557,7 @@ new_display()
     int num_modes = SDL_GetNumDisplayModes(display);
     SDL_DisplayMode mode;
     int j;
+    int w, h;
 
     /* First pass; find the maximum number of bits per pixel */
     m_max_bits = 0;
@@ -1589,6 +1590,8 @@ new_display()
     SDL_GetDisplayMode(display, m_video_mode, &mode);
     SDL_SetWindowFullscreen(main_window, 0);
     SDL_SetWindowDisplayMode(main_window, &mode);
+    SDL_GetWindowSize(main_window, &w, &h);
+    SDL_SetWindowPosition(main_window, 0, mode.h - h);
     SDL_SetWindowFullscreen(main_window, SDL_WINDOW_FULLSCREEN);
 }
 
