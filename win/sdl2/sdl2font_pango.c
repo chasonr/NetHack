@@ -123,7 +123,7 @@ sdl2_font_height(SDL2Font *font)
 /* Text rendering */
 /* If no background is given, background is transparent */
 SDL_Surface *
-sdl2_font_renderChar(SDL2Font *font, utf32_t ch, SDL_Color foreground)
+sdl2_font_renderChar(SDL2Font *font, Uint32 ch, SDL_Color foreground)
 {
     static const SDL_Color transparent = { 0, 0, 0, 0 };
     return sdl2_font_renderCharBG(font, ch, foreground, transparent);
@@ -137,7 +137,7 @@ sdl2_font_renderStr(SDL2Font *font, const char *text, SDL_Color foreground)
 }
 
 SDL_Surface *
-sdl2_font_renderCharBG(SDL2Font *font, utf32_t ch, SDL_Color foreground,
+sdl2_font_renderCharBG(SDL2Font *font, Uint32 ch, SDL_Color foreground,
                        SDL_Color background)
 {
     char utf8[5];
@@ -232,7 +232,7 @@ sdl2_font_renderStrBG_UTF8(SDL2Font *font, const char *text,
 
 /* Text extent */
 SDL_Rect
-sdl2_font_textSizeChar(SDL2Font *font, utf32_t ch)
+sdl2_font_textSizeChar(SDL2Font *font, Uint32 ch)
 {
     char utf8[5];
     SDL_Rect rect;
