@@ -67,7 +67,7 @@ sdl2_uni_8to32(const char *inpstr)
             ch32 = (ch32 << 6) | (byte & 0x3F);
             ++i;
         }
-        if (count != 0 || ch32 > 0x10FFFF
+        if (count != 0 || ch32 > 0x10FFFF || ch32 < min
                 || (0xD800 <= ch32 && ch32 <= 0xDFFF)) {
             ch32 = 0xFFFD;
         }
