@@ -17,7 +17,12 @@ struct SDL2Font_Impl {
 static FT_Bitmap *FT_Bitmap_new(int width, int height);
 static void FT_Bitmap_free(FT_Bitmap *bitmap);
 
+/* Encoding conversions */
+static SDL_Rect sdl2_font_textSizeStr_UTF8(SDL2Font *font, const char *text);
+static SDL_Surface *sdl2_font_renderStrBG_UTF8(SDL2Font *font, const char *text,
+        SDL_Color foreground, SDL_Color background);
 static void ch_to_utf8(char utf8[5], Uint32 ch);
+static char * iso8859_1_to_utf8(const char *inpstr);
 
 static FT_Bitmap *
 FT_Bitmap_new(int width, int height)
@@ -139,13 +144,24 @@ sdl2_font_renderCharBG(SDL2Font *font, utf32_t ch, SDL_Color foreground,
     SDL_Surface *surface;
 
     ch_to_utf8(utf8, ch);
-    surface = sdl2_font_renderStrBG(font, utf8, foreground, background);
+    surface = sdl2_font_renderStrBG_UTF8(font, utf8, foreground, background);
     return surface;
 }
 
 SDL_Surface *
 sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground,
                       SDL_Color background)
+{
+    char *utf8 = iso8859_1_to_utf8(text);
+    SDL_Surface *surface = sdl2_font_renderStrBG_UTF8(font, utf8, foreground,
+                                                      background);
+    free(utf8);
+    return surface;
+}
+
+static SDL_Surface *
+sdl2_font_renderStrBG_UTF8(SDL2Font *font, const char *text,
+                           SDL_Color foreground, SDL_Color background)
 {
     pango_layout_set_text(font->layout, text, strlen(text));
 
@@ -222,12 +238,21 @@ sdl2_font_textSizeChar(SDL2Font *font, utf32_t ch)
     SDL_Rect rect;
 
     ch_to_utf8(utf8, ch);
-    rect = sdl2_font_textSizeStr(font, utf8);
+    rect = sdl2_font_textSizeStr_UTF8(font, utf8);
     return rect;
 }
 
 SDL_Rect
 sdl2_font_textSizeStr(SDL2Font *font, const char *text)
+{
+    char *utf8 = iso8859_1_to_utf8(text);
+    SDL_Rect rect = sdl2_font_textSizeStr_UTF8(font, utf8);
+    free(utf8);
+    return rect;
+}
+
+static SDL_Rect
+sdl2_font_textSizeStr_UTF8(SDL2Font *font, const char *text)
 {
     pango_layout_set_text(font->layout, text, strlen(text));
 
@@ -285,4 +310,28 @@ ch_to_utf8(char utf8[5], Uint32 ch)
         utf8[3] = (char) (0x80 | (ch & 0x3F));
         utf8[4] = '\0';
     }
+}
+
+/* Convert ISO 8859-1 string to UTF-8 */
+static char *
+iso8859_1_to_utf8(const char *inpstr)
+{
+    /* Max 2 output bytes per input byte */
+    char *outstr = (char *) alloc(strlen(inpstr) * 2U + 1U);
+    size_t i, j;
+
+    j = 0U;
+    for (i = 0U; inpstr[i] != '\0'; ++i) {
+        char ch = inpstr[i];
+
+        if ((ch & 0x80) != 0) {
+            outstr[j++] = (char) (0xC0 | (ch >> 6));
+            outstr[j++] = (char) (0x80 | (ch & 0x3F));
+        } else {
+            outstr[j++] = (char) ch;
+        }
+    }
+
+    outstr[j] = '\0';
+    return outstr;
 }
