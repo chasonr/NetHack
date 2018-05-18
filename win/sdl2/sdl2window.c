@@ -1180,6 +1180,8 @@ sdl2_window_render_mixed(struct SDL2Window *win, const char *str, int x, int y,
     /* p1 points to the part of the string we haven't rendered yet */
     all_rect.x = x;
     all_rect.y = y;
+    all_rect.w = 0;
+    all_rect.h = 0;
     while (*p1 != '\0') {
         char *p2;
         SDL_Rect txt_rect;
