@@ -299,12 +299,12 @@ ch_to_utf8(char utf8[5], Uint32 ch)
         utf8[1] = (char) (0x80 | (ch & 0x3F));
         utf8[2] = '\0';
     } else if (ch < 0x10000) {
-        utf8[0] = (char) (0xC0 | (ch >> 12));
+        utf8[0] = (char) (0xE0 | (ch >> 12));
         utf8[1] = (char) (0x80 | ((ch >> 6) & 0x3F));
         utf8[2] = (char) (0x80 | (ch & 0x3F));
         utf8[3] = '\0';
     } else {
-        utf8[0] = (char) (0xC0 |  (ch >> 18));
+        utf8[0] = (char) (0xF0 |  (ch >> 18));
         utf8[1] = (char) (0x80 | ((ch >> 12) & 0x3F));
         utf8[2] = (char) (0x80 | ((ch >>  6) & 0x3F));
         utf8[3] = (char) (0x80 | (ch & 0x3F));
