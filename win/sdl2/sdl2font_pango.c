@@ -14,15 +14,13 @@ struct SDL2Font_Impl {
 };
 
 /* Simplified functions to create and free an FT_Bitmap */
-static FT_Bitmap *FDECL(FT_Bitmap_new, (int width, int height));
-static void FDECL(FT_Bitmap_free, (FT_Bitmap *bitmap));
+static FT_Bitmap *FT_Bitmap_new(int width, int height);
+static void FT_Bitmap_free(FT_Bitmap *bitmap);
 
 static void ch_to_utf8(char utf8[5], Uint32 ch);
 
 static FT_Bitmap *
-FT_Bitmap_new(width, height)
-int width;
-int height;
+FT_Bitmap_new(int width, int height)
 {
     /* Per the pango-view example */
     FT_Bitmap *bitmap = (FT_Bitmap *) alloc(sizeof(FT_Bitmap));
@@ -39,8 +37,7 @@ int height;
 }
 
 static void
-FT_Bitmap_free(bitmap)
-FT_Bitmap *bitmap;
+FT_Bitmap_free(FT_Bitmap *bitmap)
 {
     if (bitmap != NULL) {
         free(bitmap->buffer);
@@ -48,13 +45,11 @@ FT_Bitmap *bitmap;
     }
 };
 
-static PangoFontMetrics *FDECL(getMetrics, (const SDL2Font *font));
+static PangoFontMetrics *getMetrics(const SDL2Font *font);
 
 /* Create a new SDL2Font */
 SDL2Font *
-sdl2_font_new(name, ptsize)
-const char *name;
-int ptsize;
+sdl2_font_new(const char *name, int ptsize)
 {
     SDL2Font *font = (SDL2Font *) alloc(sizeof(*font));
 
@@ -72,8 +67,7 @@ int ptsize;
 
 /* Free an SDL2Font */
 void
-sdl2_font_free(font)
-SDL2Font *font;
+sdl2_font_free(SDL2Font *font)
 {
     g_object_unref(font->layout);
     g_object_unref(font->ctx);
@@ -84,8 +78,7 @@ SDL2Font *font;
 
 /* Font metrics */
 int
-sdl2_font_ascent(font)
-SDL2Font *font;
+sdl2_font_ascent(SDL2Font *font)
 {
     PangoFontMetrics *metrics = getMetrics(font);
     int ascent = pango_font_metrics_get_ascent(metrics);
@@ -94,8 +87,7 @@ SDL2Font *font;
 }
 
 int
-sdl2_font_descent(font)
-SDL2Font *font;
+sdl2_font_descent(SDL2Font *font)
 {
     PangoFontMetrics *metrics = getMetrics(font);
     int descent = pango_font_metrics_get_descent(metrics);
@@ -104,8 +96,7 @@ SDL2Font *font;
 }
 
 int
-sdl2_font_lineSkip(font)
-SDL2Font *font;
+sdl2_font_lineSkip(SDL2Font *font)
 {
     PangoFontMetrics *metrics = getMetrics(font);
     int skip = pango_font_metrics_get_ascent(metrics)
@@ -115,8 +106,7 @@ SDL2Font *font;
 }
 
 int
-sdl2_font_height(font)
-SDL2Font *font;
+sdl2_font_height(SDL2Font *font)
 {
     PangoFontMetrics *metrics = getMetrics(font);
     int height = pango_font_metrics_get_ascent(metrics)
@@ -128,31 +118,21 @@ SDL2Font *font;
 /* Text rendering */
 /* If no background is given, background is transparent */
 SDL_Surface *
-sdl2_font_renderChar(font, ch, foreground)
-SDL2Font *font;
-Uint32 ch;
-SDL_Color foreground;
+sdl2_font_renderChar(SDL2Font *font, Uint32 ch, SDL_Color foreground)
 {
     static const SDL_Color transparent = { 0, 0, 0, 0 };
     return sdl2_font_renderCharBG(font, ch, foreground, transparent);
 }
 
 SDL_Surface *
-sdl2_font_renderStr(font, text, foreground)
-SDL2Font *font;
-const char *text;
-SDL_Color foreground;
+sdl2_font_renderStr(SDL2Font *font, const char *text, SDL_Color foreground)
 {
     static const SDL_Color transparent = { 0, 0, 0, 0 };
     return sdl2_font_renderStrBG(font, text, foreground, transparent);
 }
 
 SDL_Surface *
-sdl2_font_renderCharBG(font, ch, foreground, background)
-SDL2Font *font;
-Uint32 ch;
-SDL_Color foreground;
-SDL_Color background;
+sdl2_font_renderCharBG(SDL2Font *font, Uint32 ch, SDL_Color foreground, SDL_Color background)
 {
     char utf8[5];
     SDL_Surface *surface;
@@ -163,11 +143,7 @@ SDL_Color background;
 }
 
 SDL_Surface *
-sdl2_font_renderStrBG(font, text, foreground, background)
-SDL2Font *font;
-const char *text;
-SDL_Color foreground;
-SDL_Color background;
+sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground, SDL_Color background)
 {
     pango_layout_set_text(font->layout, text, strlen(text));
 
@@ -238,9 +214,7 @@ SDL_Color background;
 
 /* Text extent */
 SDL_Rect
-sdl2_font_textSizeChar(font, ch)
-SDL2Font *font;
-Uint32 ch;
+sdl2_font_textSizeChar(SDL2Font *font, Uint32 ch)
 {
     char utf8[5];
     SDL_Rect rect;
@@ -251,9 +225,7 @@ Uint32 ch;
 }
 
 SDL_Rect
-sdl2_font_textSizeStr(font, text)
-SDL2Font *font;
-const char *text;
+sdl2_font_textSizeStr(SDL2Font *font, const char *text)
 {
     pango_layout_set_text(font->layout, text, strlen(text));
 
