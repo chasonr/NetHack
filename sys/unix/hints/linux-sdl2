@@ -1,0 +1,45 @@
+#
+# NetHack 3.6  linux $NHDT-Date: 1432512814 2015/05/25 00:13:34 $  $NHDT-Branch: master $:$NHDT-Revision: 1.12 $
+# Copyright (c) Kenneth Lorber, Kensington, Maryland, 2007.
+# NetHack may be freely redistributed.  See license for details. 
+#
+#-PRE
+# Linux hints file
+# This hints file provides a single-user SDL2 build for Linux, specifically
+# for Fedora 27.
+
+
+#PREFIX=/usr
+PREFIX=$(wildcard ~)/nh/install
+HACKDIR=$(PREFIX)/games/lib/$(GAME)dir
+SHELLDIR = $(PREFIX)/games
+INSTDIR=$(HACKDIR)
+VARDIR = $(HACKDIR)
+
+
+POSTINSTALL=cp -n sys/unix/sysconf $(INSTDIR)/sysconf; $(CHOWN) $(GAMEUID) $(INSTDIR)/sysconf; $(CHGRP) $(GAMEGRP) $(INSTDIR)/sysconf; chmod $(VARFILEPERM) $(INSTDIR)/sysconf;
+
+
+CFLAGS=-g -O -I../include -DNOTPARMDECL -DDLB
+CFLAGS+=-DHACKDIR=\"$(HACKDIR)\"
+CFLAGS+=-DSYSCF -DSYSCF_FILE=\"$(HACKDIR)/sysconf\" -DSECURE
+CFLAGS+=-DCOMPRESS=\"/bin/gzip\" -DCOMPRESS_EXTENSION=\".gz\"
+CFLAGS+=-DTIMED_DELAY
+CFLAGS+=-DDUMPLOG
+CFLAGS+=-DCONFIG_ERROR_SECURE=FALSE
+CFLAGS+=-DSDL2_GRAPHICS -DDEFAULT_WINDOW_SYS=\"sdl2\" -DNOTTYGRAPHICS
+CFLAGS+=$(shell pkg-config sdl2 pangoft2 --cflags)
+
+LINK=$(CC)
+
+WINSRC = $(WINSDL2SRC)
+WINOBJ = $(WINSDL2OBJ)
+WINLIB = $(shell pkg-config sdl2 pangoft2 --libs)
+SDL2FONT = sdl2font_pango.o
+
+CHOWN=true
+CHGRP=true
+
+VARDIRPERM = 0755
+VARFILEPERM = 0600
+GAMEPERM = 0755
