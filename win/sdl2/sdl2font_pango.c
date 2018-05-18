@@ -3,15 +3,7 @@
 #include "hack.h"
 #undef yn
 #include <pango/pangoft2.h>
-#include "unicode.h"
 #include "sdl2font.h"
-
-/* For uint32_t; use stdint.h if we have it, else assume unsigned is 32 bits */
-#if defined(__STDC__) && __STDC__ >= 199901L
-#include <stdint.h>
-#else
-typedef unsigned uint32_t;
-#endif
 
 /* Classes and functions used internally here: */
 struct SDL2Font_Impl {
@@ -24,6 +16,13 @@ struct SDL2Font_Impl {
 /* Simplified functions to create and free an FT_Bitmap */
 static FT_Bitmap *FT_Bitmap_new(int width, int height);
 static void FT_Bitmap_free(FT_Bitmap *bitmap);
+
+/* Encoding conversions */
+static SDL_Rect sdl2_font_textSizeStr_UTF8(SDL2Font *font, const char *text);
+static SDL_Surface *sdl2_font_renderStrBG_UTF8(SDL2Font *font,
+        const char *text, SDL_Color foreground, SDL_Color background);
+static void ch_to_utf8(char utf8[5], Uint32 ch);
+static char * iso8859_1_to_utf8(const char *inpstr);
 
 static FT_Bitmap *
 FT_Bitmap_new(int width, int height)
@@ -124,7 +123,7 @@ sdl2_font_height(SDL2Font *font)
 /* Text rendering */
 /* If no background is given, background is transparent */
 SDL_Surface *
-sdl2_font_renderChar(SDL2Font *font, utf32_t ch, SDL_Color foreground)
+sdl2_font_renderChar(SDL2Font *font, Uint32 ch, SDL_Color foreground)
 {
     static const SDL_Color transparent = { 0, 0, 0, 0 };
     return sdl2_font_renderCharBG(font, ch, foreground, transparent);
@@ -138,25 +137,31 @@ sdl2_font_renderStr(SDL2Font *font, const char *text, SDL_Color foreground)
 }
 
 SDL_Surface *
-sdl2_font_renderCharBG(SDL2Font *font, utf32_t ch, SDL_Color foreground,
+sdl2_font_renderCharBG(SDL2Font *font, Uint32 ch, SDL_Color foreground,
                        SDL_Color background)
 {
-    str_context ctx = str_open_context("sdl2_font_renderCharBG");
-    utf32_t ch32[2];
-    char *utf8;
+    char utf8[5];
     SDL_Surface *surface;
 
-    ch32[0] = ch;
-    ch32[1] = 0;
-    utf8 = uni_32to8(ch32);
-    surface = sdl2_font_renderStrBG(font, utf8, foreground, background);
-    str_close_context(ctx);
+    ch_to_utf8(utf8, ch);
+    surface = sdl2_font_renderStrBG_UTF8(font, utf8, foreground, background);
     return surface;
 }
 
 SDL_Surface *
 sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground,
                       SDL_Color background)
+{
+    char *utf8 = iso8859_1_to_utf8(text);
+    SDL_Surface *surface = sdl2_font_renderStrBG_UTF8(font, utf8, foreground,
+                                                      background);
+    free(utf8);
+    return surface;
+}
+
+static SDL_Surface *
+sdl2_font_renderStrBG_UTF8(SDL2Font *font, const char *text,
+                           SDL_Color foreground, SDL_Color background)
 {
     pango_layout_set_text(font->layout, text, strlen(text));
 
@@ -176,11 +181,11 @@ sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground,
             0xFF000000); /* alpha */
     if (surface != NULL) {
         unsigned char *row1;
-        uint32_t *row2;
+        Uint32 *row2;
 
         for (int y = 0; y < bitmap->rows; ++y) {
             row1 = bitmap->buffer + bitmap->pitch * y;
-            row2 = (uint32_t *) ((unsigned char *) surface->pixels + surface->pitch * y);
+            row2 = (Uint32 *) ((unsigned char *) surface->pixels + surface->pitch * y);
             for (int x = 0; x < bitmap->width; ++x) {
                 unsigned char r, g, b, a;
                 unsigned char alpha = row1[x];
@@ -198,10 +203,10 @@ sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground,
                 } else {
                     /* srcA, dstA and outA are fixed point quantities
                        such that 0xFF00 represents an alpha of 1 */
-                    uint32_t srcA = foreground.a * 256 * alpha / 255;
-                    uint32_t dstA = background.a * 256;
+                    Uint32 srcA = foreground.a * 256 * alpha / 255;
+                    Uint32 dstA = background.a * 256;
                     dstA = dstA * (0xFF00 - srcA) / 0xFF00;
-                    uint32_t outA = srcA + dstA;
+                    Uint32 outA = srcA + dstA;
                     if (outA == 0) {
                         r = 0;
                         g = 0;
@@ -213,10 +218,10 @@ sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground,
                     }
                     a = outA / 256;
                 }
-                row2[x] = ((uint32_t) (r) <<  0)
-                        | ((uint32_t) (g) <<  8)
-                        | ((uint32_t) (b) << 16)
-                        | ((uint32_t) (a) << 24);
+                row2[x] = ((Uint32) (r) <<  0)
+                        | ((Uint32) (g) <<  8)
+                        | ((Uint32) (b) << 16)
+                        | ((Uint32) (a) << 24);
             }
         }
     }
@@ -227,23 +232,27 @@ sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground,
 
 /* Text extent */
 SDL_Rect
-sdl2_font_textSizeChar(SDL2Font *font, utf32_t ch)
+sdl2_font_textSizeChar(SDL2Font *font, Uint32 ch)
 {
-    str_context ctx = str_open_context("sdl2_font_textSizeChar");
-    utf32_t ch32[2];
-    char *utf8;
+    char utf8[5];
     SDL_Rect rect;
 
-    ch32[0] = ch;
-    ch32[1] = 0;
-    utf8 = uni_32to8(ch32);
-    rect = sdl2_font_textSizeStr(font, utf8);
-    str_close_context(ctx);
+    ch_to_utf8(utf8, ch);
+    rect = sdl2_font_textSizeStr_UTF8(font, utf8);
     return rect;
 }
 
 SDL_Rect
 sdl2_font_textSizeStr(SDL2Font *font, const char *text)
+{
+    char *utf8 = iso8859_1_to_utf8(text);
+    SDL_Rect rect = sdl2_font_textSizeStr_UTF8(font, utf8);
+    free(utf8);
+    return rect;
+}
+
+static SDL_Rect
+sdl2_font_textSizeStr_UTF8(SDL2Font *font, const char *text)
 {
     pango_layout_set_text(font->layout, text, strlen(text));
 
@@ -270,4 +279,59 @@ getMetrics(const SDL2Font *font)
 
     g_object_unref(pfont);
     return metrics;
+}
+
+/* Convert code point to UTF-8 */
+static void
+ch_to_utf8(char utf8[5], Uint32 ch)
+{
+    /* Filter invalid code points */
+    if (ch > 0x10FFFF || (0xD800 <= ch && ch <= 0xDFFF)) {
+        ch = 0xFFFD;
+    }
+
+    /* Convert */
+    if (ch < 0x80) {
+        utf8[0] = (char) ch;
+        utf8[1] = '\0';
+    } else if (ch < 0x800) {
+        utf8[0] = (char) (0xC0 | (ch >> 6));
+        utf8[1] = (char) (0x80 | (ch & 0x3F));
+        utf8[2] = '\0';
+    } else if (ch < 0x10000) {
+        utf8[0] = (char) (0xC0 | (ch >> 12));
+        utf8[1] = (char) (0x80 | ((ch >> 6) & 0x3F));
+        utf8[2] = (char) (0x80 | (ch & 0x3F));
+        utf8[3] = '\0';
+    } else {
+        utf8[0] = (char) (0xC0 |  (ch >> 18));
+        utf8[1] = (char) (0x80 | ((ch >> 12) & 0x3F));
+        utf8[2] = (char) (0x80 | ((ch >>  6) & 0x3F));
+        utf8[3] = (char) (0x80 | (ch & 0x3F));
+        utf8[4] = '\0';
+    }
+}
+
+/* Convert ISO 8859-1 string to UTF-8 */
+static char *
+iso8859_1_to_utf8(const char *inpstr)
+{
+    /* Max 2 output bytes per input byte */
+    char *outstr = (char *) alloc(strlen(inpstr) * 2U + 1U);
+    size_t i, j;
+
+    j = 0U;
+    for (i = 0U; inpstr[i] != '\0'; ++i) {
+        char ch = inpstr[i];
+
+        if ((ch & 0x80) != 0) {
+            outstr[j++] = (char) (0xC0 | (ch >> 6));
+            outstr[j++] = (char) (0x80 | (ch & 0x3F));
+        } else {
+            outstr[j++] = (char) ch;
+        }
+    }
+
+    outstr[j] = '\0';
+    return outstr;
 }
