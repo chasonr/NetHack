@@ -19,15 +19,15 @@ struct GetlinePrivate {
     size_t m_contents_alloc;
     int m_box_width;
     char *m_prompt;
-    void FDECL((*add_char), (struct SDL2Window *win, Uint32 ch));
+    void (*add_char)(struct SDL2Window *win, Uint32 ch);
 };
 
-static void FDECL(sdl2_getline_create, (struct SDL2Window *win));
-static void FDECL(sdl2_getline_destroy, (struct SDL2Window *win));
-static void FDECL(sdl2_getline_redraw, (struct SDL2Window *win));
+static void sdl2_getline_create(struct SDL2Window *win);
+static void sdl2_getline_destroy(struct SDL2Window *win);
+static void sdl2_getline_redraw(struct SDL2Window *win);
 
-static void FDECL(sdl2_getline_add_char, (struct SDL2Window *win, Uint32 ch));
-static void FDECL(sdl2_extcmd_add_char, (struct SDL2Window *win, Uint32 ch));
+static void sdl2_getline_add_char(struct SDL2Window *win, Uint32 ch);
+static void sdl2_extcmd_add_char(struct SDL2Window *win, Uint32 ch);
 
 struct SDL2Window_Methods const sdl2_getline_procs = {
     sdl2_getline_create,
@@ -45,8 +45,7 @@ struct SDL2Window_Methods const sdl2_getline_procs = {
 };
 
 static void
-sdl2_getline_create(win)
-struct SDL2Window *win;
+sdl2_getline_create(struct SDL2Window *win)
 {
     struct GetlinePrivate *data = (struct GetlinePrivate *) alloc(sizeof(*data));
     memset(data, 0, sizeof(*data));
@@ -64,8 +63,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_getline_destroy(win)
-struct SDL2Window *win;
+sdl2_getline_destroy(struct SDL2Window *win)
 {
     struct GetlinePrivate *data = (struct GetlinePrivate *) win->data;
 
@@ -74,8 +72,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_getline_redraw(win)
-struct SDL2Window *win;
+sdl2_getline_redraw(struct SDL2Window *win)
 {
     struct GetlinePrivate *data = (struct GetlinePrivate *) win->data;
     const SDL_Color black = {   0,   0,   0, 255 };
@@ -188,9 +185,7 @@ sdl2_getline_run(
 }
 
 void
-sdl2_getline_add_char(win, ch)
-struct SDL2Window *win;
-Uint32 ch;
+sdl2_getline_add_char(struct SDL2Window *win, Uint32 ch)
 {
     struct GetlinePrivate *data = (struct GetlinePrivate *) win->data;
 
@@ -217,8 +212,7 @@ Uint32 ch;
 }
 
 int
-sdl2_extcmd_run(win)
-struct SDL2Window *win;
+sdl2_extcmd_run(struct SDL2Window *win)
 {
     struct GetlinePrivate *data = (struct GetlinePrivate *) win->data;
     char cmd[BUFSZ];
@@ -241,9 +235,7 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_extcmd_add_char(win, ch)
-struct SDL2Window *win;
-Uint32 ch;
+sdl2_extcmd_add_char(struct SDL2Window *win, Uint32 ch)
 {
     struct GetlinePrivate *data = (struct GetlinePrivate *) win->data;
     unsigned matches;

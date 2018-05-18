@@ -14,9 +14,9 @@ struct PosbarPrivate {
     struct SDL2Window *m_map_window;
 };
 
-static void FDECL(sdl2_posbar_create, (struct SDL2Window *win));
-static void FDECL(sdl2_posbar_destroy, (struct SDL2Window *win));
-static void FDECL(sdl2_posbar_redraw, (struct SDL2Window *win));
+static void sdl2_posbar_create(struct SDL2Window *win);
+static void sdl2_posbar_destroy(struct SDL2Window *win);
+static void sdl2_posbar_redraw(struct SDL2Window *win);
 
 struct SDL2Window_Methods const sdl2_posbar_procs = {
     sdl2_posbar_create,
@@ -34,8 +34,7 @@ struct SDL2Window_Methods const sdl2_posbar_procs = {
 };
 
 static void
-sdl2_posbar_create(win)
-struct SDL2Window *win;
+sdl2_posbar_create(struct SDL2Window *win)
 {
     struct PosbarPrivate *data = (struct PosbarPrivate *) alloc(sizeof(*data));
     win->data = data;
@@ -50,9 +49,8 @@ struct SDL2Window *win;
 }
 
 void
-sdl2_posbar_set_map_window(win, map_window)
-struct SDL2Window *win;
-struct SDL2Window *map_window;
+sdl2_posbar_set_map_window(struct SDL2Window *win,
+                           struct SDL2Window *map_window)
 {
     struct PosbarPrivate *data = (struct PosbarPrivate *) win->data;
 
@@ -60,8 +58,7 @@ struct SDL2Window *map_window;
 }
 
 static void
-sdl2_posbar_destroy(win)
-struct SDL2Window *win;
+sdl2_posbar_destroy(struct SDL2Window *win)
 {
     struct PosbarPrivate *data = (struct PosbarPrivate *) win->data;
 
@@ -70,8 +67,7 @@ struct SDL2Window *win;
 }
 
 static void
-sdl2_posbar_redraw(win)
-struct SDL2Window *win;
+sdl2_posbar_redraw(struct SDL2Window *win)
 {
     static const SDL_Color black = {   0,   0,   0, 255 };
     static const SDL_Color brown = {  96,  32,   0, 255 };
@@ -130,16 +126,13 @@ struct SDL2Window *win;
 }
 
 int
-sdl2_posbar_height_hint(win)
-struct SDL2Window *win;
+sdl2_posbar_height_hint(struct SDL2Window *win)
 {
     return win->m_line_height;
 }
 
 void
-sdl2_posbar_update(win, features)
-struct SDL2Window *win;
-const char *features;
+sdl2_posbar_update(struct SDL2Window *win, const char *features)
 {
     struct PosbarPrivate *data = (struct PosbarPrivate *) win->data;
 
@@ -148,10 +141,7 @@ const char *features;
 }
 
 void
-sdl2_posbar_resize(win, x1, y1, x2, y2)
-struct SDL2Window *win;
-int x1, y1;
-int x2, y2;
+sdl2_posbar_resize(struct SDL2Window *win, int x1, int y1, int x2, int y2)
 {
     sdl2_window_resize(win, x1, y1, x2, y2);
 }
