@@ -19,8 +19,8 @@ static void FT_Bitmap_free(FT_Bitmap *bitmap);
 
 /* Encoding conversions */
 static SDL_Rect sdl2_font_textSizeStr_UTF8(SDL2Font *font, const char *text);
-static SDL_Surface *sdl2_font_renderStrBG_UTF8(SDL2Font *font, const char *text,
-        SDL_Color foreground, SDL_Color background);
+static SDL_Surface *sdl2_font_renderStrBG_UTF8(SDL2Font *font,
+        const char *text, SDL_Color foreground, SDL_Color background);
 static void ch_to_utf8(char utf8[5], Uint32 ch);
 static char * iso8859_1_to_utf8(const char *inpstr);
 
@@ -137,7 +137,8 @@ sdl2_font_renderStr(SDL2Font *font, const char *text, SDL_Color foreground)
 }
 
 SDL_Surface *
-sdl2_font_renderCharBG(SDL2Font *font, Uint32 ch, SDL_Color foreground, SDL_Color background)
+sdl2_font_renderCharBG(SDL2Font *font, Uint32 ch, SDL_Color foreground,
+                       SDL_Color background)
 {
     char utf8[5];
     SDL_Surface *surface;
@@ -148,7 +149,8 @@ sdl2_font_renderCharBG(SDL2Font *font, Uint32 ch, SDL_Color foreground, SDL_Colo
 }
 
 SDL_Surface *
-sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground, SDL_Color background)
+sdl2_font_renderStrBG(SDL2Font *font, const char *text, SDL_Color foreground,
+                      SDL_Color background)
 {
     char *utf8 = iso8859_1_to_utf8(text);
     SDL_Surface *surface = sdl2_font_renderStrBG_UTF8(font, utf8, foreground,
