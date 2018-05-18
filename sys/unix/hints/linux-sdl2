@@ -37,6 +37,8 @@ WINOBJ = $(WINSDL2OBJ)
 WINLIB = $(shell pkg-config sdl2 pangoft2 --libs)
 SDL2FONT = sdl2font_pango.o
 
+VARDATND = nhtiles.bmp
+
 CHOWN=true
 CHGRP=true
 
