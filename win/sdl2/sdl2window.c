@@ -1496,7 +1496,11 @@ sdl2_redraw(void)
     size_t i;
 
     SDL_Surface *main_surface = SDL_GetWindowSurface(main_window);
-    Uint32 background = SDL_MapRGBA(main_surface->format, 0, 0, 0, 255);
+    Uint32 background;
+
+    if (main_surface == NULL) return;
+
+    background = SDL_MapRGBA(main_surface->format, 0, 0, 0, 255);
     SDL_SetClipRect(main_surface, NULL);
     SDL_FillRect(main_surface, NULL, background);
 
