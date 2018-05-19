@@ -357,6 +357,9 @@ sdl2_window_destroy(struct SDL2Window *window)
     /* index-1 is the position of the window to close */
     window = window_stack[index-1];
     window->methods->destroy(window);
+    if (window->m_font) {
+        sdl2_font_free(window->m_font);
+    }
     free(window);
 
     /* Clear the saved pointers if applicable */
