@@ -9,7 +9,7 @@ STATIC_DCL void FDECL(center, (int, char *));
 
 #if defined(TTY_GRAPHICS) || defined(X11_GRAPHICS) || defined(GEM_GRAPHICS) \
     || defined(MSWIN_GRAPHICS) || defined(DUMPLOG) \
-    || defined(SDL2_GRAPHICS)
+    || defined(SDL2_GRAPHICS) || defined(CURSES_GRAPHICS)
 #define TEXT_TOMBSTONE
 #endif
 #if defined(mac) || defined(__BEOS__) || defined(WIN32_GRAPHICS)

@@ -381,7 +381,7 @@ doextlist(VOID_ARGS)
     return 0;
 }
 
-#ifdef TTY_GRAPHICS
+#if defined(TTY_GRAPHICS) || defined(CURSES_GRAPHICS)
 #define MAX_EXT_CMD 200 /* Change if we ever have more ext cmds */
 
 /*
@@ -524,7 +524,7 @@ extcmd_via_menu()
     }
     return ret;
 }
-#endif /* TTY_GRAPHICS */
+#endif /* TTY_GRAPHICS || CURSES_GRAPHICS */
 
 /* #monster command - use special monster ability while polymorphed */
 int

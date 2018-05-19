@@ -231,6 +231,16 @@ WINSDL2OBJ = sdl2getlin.o sdl2map.o sdl2menu.o sdl2message.o sdl2plsel.o \
 	sdl2posbar.o sdl2status.o sdl2text.o sdl2unicode.o sdl2window.o \
 	$(SDL2FONT) tile.o tileset.o bmptiles.o giftiles.o
 #
+# Files for a Curses port
+#
+WINCURSESSRC = ../win/curses/cursdial.c ../win/curses/cursinit.c \
+	../win/curses/cursmain.c ../win/curses/cursmesg.c \
+	../win/curses/cursmisc.c ../win/curses/cursstat.c \
+	../win/curses/curswins.c
+#
+WINCURSESOBJ = cursdial.o cursinit.o cursmain.o cursmesg.o cursmisc.o \
+	cursstat.o curswins.o
+#
 # Files for a Gnome port
 #
 WINGNOMESRC = ../win/gnome/gnaskstr.c ../win/gnome/gnbind.c \
@@ -294,6 +304,9 @@ WINQT5LIB = `pkg-config Qt5Gui Qt5Widgets Qt5Multimedia --libs`
 #
 # libraries for SDL2
 WINSDL2LIB =
+#
+# libraries for Curses
+WINCURSESLIB = $(WINTTYLIB)
 #
 # libraries for KDE (with Qt)
 WINKDELIB = -lkdecore -lkdeui -lXext
