@@ -456,7 +456,7 @@ buildColumnTable(struct SDL2Window *win)
     }
     free(data->m_columns);
     data->m_columns = (struct MenuColumn *)
-            alloc(data->m_num_columns * sizeof(struct MenuColumn *));
+            alloc(data->m_num_columns * sizeof(struct MenuColumn));
     for (i = 0; i < data->m_num_columns; ++i) {
         data->m_columns[i].x = 0;
         data->m_columns[i].width = 0;
