@@ -222,6 +222,7 @@ sdl2_exit_nhwindows(const char *str)
     SDL_RemoveTimer(m_timer_id);
     free(m_message);
     SDL_DestroyWindow(main_window);
+    SDL_Quit();
 }
 
 static void
