@@ -7,7 +7,6 @@
 #include <wchar.h>
 #include "hack.h"
 #undef yn
-#include "unicode.h"
 #include "sdl2font.h"
 
 struct SDL2Font_Impl
@@ -17,18 +16,16 @@ struct SDL2Font_Impl
 };
 
 static wchar_t *
-singleChar(utf32_t ch, wchar_t str16[3])
+singleChar(wchar_t str16[3], Uint32 ch)
 {
     if (ch > 0x10FFFF || (ch & 0xFFFFF800) == 0xD800) {
         ch = 0xFFFD;
     }
 
     if (ch < 0x10000) {
-        str16 = (wchar_t *) str_mem_alloc(2 * sizeof(wchar_t));
         str16[0] = (wchar_t) ch;
         str16[1] = 0;
     } else {
-        str16 = (wchar_t *) str_mem_alloc(3 * sizeof(wchar_t));
         str16[0] = 0xD7C0 + (ch >> 10);
         str16[1] = 0xDC00 + (ch & 0x3FF);
         str16[2] = 0;
@@ -37,27 +34,23 @@ singleChar(utf32_t ch, wchar_t str16[3])
 }
 
 
-/* UTF-8 to UTF-16 conversion; but don't depend on wchar_t being the same type
-   as utf16_t */
+/* ISO 8859-1 to UTF-16 conversion */
 static wchar_t *
-win32String(const char *str)
+win32String(const char *inpstr)
 {
-    str_context ctx = str_open_context("win32String");
+    size_t i;
+    wchar_t *outstr;
 
-    utf16_t *str16;
-    wchar_t *wstr16;
-    size_t size16, i;
+    /* Allocate the output string */
+    outstr = (wchar_t *) alloc((strlen(inpstr) + 1U) * sizeof(wchar_t));
 
-    str16 = uni_8to16(str);
-    size16 = uni_length16(str16);
-    wstr16 = (wchar_t *) str_mem_alloc((size16 + 1) * sizeof(wstr16[0]));
-    for (i = 0; str16[i] != 0; ++i) {
-        wstr16[i] = str16[i];
+    /* Convert to UTF-16 */
+    for (i = 0U; inpstr[i] != '\0'; ++i) {
+        outstr[i] = (unsigned char) inpstr[i];
     }
-    wstr16[i] = 0;
-    str_export(ctx, wstr16);
-    str_close_context(ctx);
-    return wstr16;
+    outstr[i] = 0U;
+
+    return outstr;
 }
 
 static SDL_Surface *renderImpl(
@@ -105,6 +98,7 @@ sdl2_font_new(const char *name, int ptsize)
     }
 
     SelectObject(font->memory_dc, font->hfont);
+    return font;
 }
 
 void
@@ -164,7 +158,7 @@ static const SDL_Color transparent = { 0, 0, 0, 0 };
 /* Text rendering */
 /* If no background is given, background is transparent */
 SDL_Surface *
-sdl2_font_renderChar(SDL2Font *font, utf32_t ch, SDL_Color foreground)
+sdl2_font_renderChar(SDL2Font *font, Uint32 ch, SDL_Color foreground)
 {
     return sdl2_font_renderCharBG(font, ch, foreground, transparent);
 }
@@ -176,12 +170,12 @@ sdl2_font_renderStr(SDL2Font *font, const char *text, SDL_Color foreground)
 }
 
 SDL_Surface *
-sdl2_font_renderCharBG(SDL2Font *font, utf32_t ch, SDL_Color foreground,
+sdl2_font_renderCharBG(SDL2Font *font, Uint32 ch, SDL_Color foreground,
         SDL_Color background)
 {
-    wchar_t wch[3];
+    wchar_t text16[3];
 
-    return renderImpl(font, singleChar(ch, wch), foreground, background);
+    return renderImpl(font, singleChar(text16, ch), foreground, background);
 }
 
 SDL_Surface *
@@ -191,11 +185,11 @@ sdl2_font_renderStrBG(
         SDL_Color foreground,
         SDL_Color background)
 {
-    str_context ctx = str_open_context("sdl2_font_render");
     SDL_Surface *surface;
+    wchar_t *text16 = win32String(text);
 
-    surface = renderImpl(font, win32String(text), foreground, background);
-    str_close_context(ctx);
+    surface = renderImpl(font, text16, foreground, background);
+    free(text16);
     return surface;
 }
 
@@ -325,21 +319,21 @@ error:
 
 /* Text extent */
 SDL_Rect
-sdl2_font_textSizeChar(SDL2Font *font, utf32_t ch)
+sdl2_font_textSizeChar(SDL2Font *font, Uint32 ch)
 {
-    wchar_t utf16[3];
+    wchar_t text16[3];
 
-    return textSizeImpl(font, singleChar(ch, utf16));
+    return textSizeImpl(font, singleChar(text16, ch));
 }
 
 extern SDL_Rect
 sdl2_font_textSizeStr(SDL2Font *font, const char *text)
 {
-    str_context ctx = str_open_context("sdl2_font_textSizeStr");
     SDL_Rect rect;
+    wchar_t *text16 = win32String(text);
 
-    rect = textSizeImpl(font, win32String(text));
-    str_close_context(ctx);
+    rect = textSizeImpl(font, text16);
+    free(text16);
     return rect;
 }
 
