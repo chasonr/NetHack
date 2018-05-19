@@ -76,6 +76,7 @@ DEBUGINFO = Y
 #
 
 WANT_WIN_QT4 = N
+WANT_WIN_SDL2 = N
 
 # WANT_WIN_QT4 requires Qt 4 or Qt 5, see
 # https://www.qt.io/download-open-source/
@@ -87,6 +88,14 @@ HAVE_QT5 = Y
 # For Qt 4, comment out the above two lines and use:
 #QT4_DIRECTORY = c:/Qt/4.8.6
 #HAVE_QT5 = N
+
+# Other external include and library files go under x86libs or x64libs in your
+# home directory:
+LIBRARIES = $(subst \,/,$(USERPROFILE))/$(TARGET_CPU)libs
+
+# WANT_WIN_SDL2 requires SDL2
+# SDL2 under SDL2-2.0.3, see https://libsdl.org/download-2.0.php
+SDL2_DIRECTORY = $(LIBRARIES)/SDL2-2.0.3
 
 # This marks the end of the BUILD DECISIONS section.
 #==============================================================================
@@ -125,8 +134,17 @@ TTY   = ../win/tty
 MSWIN = ../win/win32
 # window port files (Qt4)
 QT4 = ../win/Qt4
+# window port files (SDL2)
+SDL2 = ../win/sdl2
 # Tile support files
 WSHR  = ../win/share
+
+# Need this to build include and library paths for SDL2
+ifeq "$(TARGET_CPU)" "x86"
+    SDL2_ARCH = i686-w64-mingw32
+else
+    SDL2_ARCH = x86_64-w64-mingw32
+endif
 
 #
 #  Object directory.
@@ -194,6 +212,9 @@ WINPFLAG   = -DTILES -DMSWIN_GRAPHICS -DWIN32CON -D_WIN32_IE=0x0400 -D_WIN32_WIN
 ifeq "$(WANT_WIN_QT4)" "Y"
     WINPFLAG += -DQT_GRAPHICS -DPIXMAPDIR='"."'
 endif
+ifeq "$(WANT_WIN_SDL2)" "Y"
+    WINPFLAG += -DSDL2_GRAPHICS -DPOSITIONBAR -DPIXMAPDIR='"."'
+endif
 # To store all the level files,
 # help files, etc. in a single library file.
 # USE_DLB = Y is left uncommented
@@ -227,7 +248,7 @@ CFLAGSBASE  = -c $(cflags) -I$(INCL) $(WINPINC) $(cdebug)
 #LFLAGSBASEG = $(linkdebug) -mwindows
 
 conlibs = -lgdi32 -lwinmm
-guilibs = -lcomctl32 -lwinmm
+guilibs = -lcomctl32
 ifeq "$(WANT_WIN_QT4)" "Y"
     # Might be either Qt 4 or Qt 5
     ifeq "$(HAVE_QT5)" "Y"
@@ -241,6 +262,11 @@ ifeq "$(WANT_WIN_QT4)" "Y"
         conlibs += $(QT4_DIRECTORY)/lib/libQtCore4.a
     endif
 endif
+ifeq "$(WANT_WIN_SDL2)" "Y"
+    guilibs += $(SDL2_DIRECTORY)/$(SDL2_ARCH)/lib/libSDL2.a
+    guilibs +=-limm32 -lole32 -loleaut32 -lversion
+endif
+guilibs += -lwinmm
 
 #==========================================
 # Extra files needed for some ports
@@ -394,6 +420,12 @@ ifeq "$(WANT_WIN_QT4)" "Y"
 	$(O)qt4rip.o $(O)qt4set.o $(O)qt4stat.o $(O)qt4str.o $(O)qt4streq.o \
 	$(O)qt4svsel.o $(O)qt4win.o $(O)qt4xcmd.o $(O)qt4yndlg.o
 endif
+ifeq "$(WANT_WIN_SDL2)" "Y"
+    GUIOBJ += $(O)sdl2font_windows.o $(O)sdl2getlin.o $(O)sdl2map.o \
+    $(O)sdl2menu.o $(O)sdl2message.o $(O)sdl2plsel.o $(O)sdl2posbar.o \
+    $(O)sdl2status.o $(O)sdl2text.o $(O)sdl2unicode.o $(O)sdl2window.o \
+	$(O)tileset.o $(O)bmptiles.o $(O)giftiles.o
+endif
 
 GUIHDR = $(MSWIN)/mhaskyn.h $(MSWIN)/mhdlg.h $(MSWIN)/mhfont.h \
 	$(MSWIN)/mhinput.h $(MSWIN)/mhmain.h $(MSWIN)/mhmap.h \
@@ -408,6 +440,12 @@ ifeq "$(WANT_WIN_QT4)" "Y"
 	$(QT4)/qt4rip.h $(QT4)/qt4set.h $(QT4)/qt4stat.h $(QT4)/qt4str.h \
 	$(QT4)/qt4streq.h $(QT4)/qt4svsel.h $(QT4)/qt4win.h $(QT4)/qt4xcmd.h \
 	$(QT4)/qt4yndlg.h
+endif
+ifeq "$(WANT_WIN_SDL2)" "Y"
+    GUIHDR += $(SDL2)/sdl2.h $(SDL2)/sdl2font.h $(SDL2)/sdl2getlin.h \
+    $(SDL2)/sdl2map.h $(SDL2)/sdl2menu.h $(SDL2)/sdl2message.h \
+    $(SDL2)/sdl2plsel.h $(SDL2)/sdl2posbar.h $(SDL2)/sdl2status.h \
+    $(SDL2)/sdl2text.h $(SDL2)/sdl2unicode.h $(SDL2)/sdl2window.h
 endif
 
 KEYDLLS = $(GAMEDIR)/nhdefkey.dll $(GAMEDIR)/nh340key.dll $(GAMEDIR)/nhraykey.dll
@@ -548,6 +586,13 @@ $(OBJ)/%.o : $(QT4)/%.cpp
 
 $(QT4)/%.moc : $(QT4)/%.h
 	$(QT4_DIRECTORY)\bin\moc -o $@ $<
+
+#==========================================
+# Rules for files in win/sdl2
+#==========================================
+
+$(OBJ)/%.o : $(SDL2)/%.c
+	$(cc) $(CFLAGS) -I$(MSWIN) -I$(SDL2_DIRECTORY)/include -o$@  $<
 
 #==========================================
 #=============== TARGETS ==================
@@ -1512,5 +1557,7 @@ $(O)worm.o: worm.c $(HACK_H) $(INCL)/lev.h
 $(O)worn.o: worn.c $(HACK_H)
 $(O)write.o: write.c $(HACK_H)
 $(O)zap.o: zap.c $(HACK_H)
+$(O)tileset.o: $(WSHR)/tileset.c $(HACK_H) $(MSWIN)/winMS.h $(MSWIN)/resource.h
+	$(cc) $(CFLAGS) -I$(MSWIN) -c $< -o $@
 
 # end of file

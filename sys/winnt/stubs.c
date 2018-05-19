@@ -11,7 +11,7 @@
 
 int GUILaunched;
 struct window_procs mswin_procs = { "guistubs" };
-
+struct window_procs sdl2_procs = { "guistubs" };
 struct window_procs Qt_procs = { "guistubs" };
 int qt_tilewidth, qt_tileheight, qt_fontsize, qt_compact_mode;
 void
