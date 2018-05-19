@@ -77,6 +77,7 @@ sdl2_text_destroy(struct SDL2Window *win)
         free(data->m_contents[i].text);
     }
     free(data->m_contents);
+    free(data);
 }
 
 static void

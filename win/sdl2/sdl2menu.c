@@ -107,6 +107,7 @@ sdl2_menu_destroy(struct SDL2Window *win)
     free(data->m_menu);
     free(data->m_prompt);
     free(data->m_columns);
+    free(data);
 }
 
 static void
