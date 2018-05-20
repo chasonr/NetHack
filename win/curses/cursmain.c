@@ -7,6 +7,7 @@
 #include "patchlevel.h"
 #include "color.h"
 #include "wincurs.h"
+#include "cursstat.h"
 
 /* Public functions for curses NetHack interface */
 
@@ -103,10 +104,10 @@ struct window_procs curses_procs = {
     curses_preference_update,
     genl_getmsghistory,
     genl_putmsghistory,
-    genl_status_init,
-    genl_status_finish,
-    genl_status_enablefield,
-    genl_status_update,
+    curses_status_init,
+    curses_status_finish,
+    curses_status_enablefield,
+    curses_status_update,
     genl_can_suspend_no,
 };
 
