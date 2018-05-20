@@ -4,18 +4,18 @@
 
 /* Global declarations */
 
-void FDECL(curses_message_win_puts, (const char *message, int glyph, BOOLEAN_P recursed));
+void curses_message_win_puts(const char *message, int glyph, boolean recursed);
 
-int NDECL(curses_more);
+int curses_more(void);
 
-void NDECL(curses_clear_unhighlight_message_window);
+void curses_clear_unhighlight_message_window(void);
 
-void NDECL(curses_last_messages);
+void curses_last_messages(void);
 
-void NDECL(curses_init_mesg_history);
+void curses_init_mesg_history(void);
 
-void NDECL(curses_prev_mesg);
+void curses_prev_mesg(void);
 
-void FDECL(curses_count_window, (const char *count_text));
+void curses_count_window(const char *count_text);
 
 #endif  /* CURSMESG_H */

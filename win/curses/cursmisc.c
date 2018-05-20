@@ -15,7 +15,7 @@
 static int curs_x = -1;
 static int curs_y = -1;
 
-static int NDECL(parse_escape_sequence);
+static int parse_escape_sequence(void);
 
 /* Macros for Control and Alt keys */
 
@@ -34,7 +34,7 @@ static int NDECL(parse_escape_sequence);
 /* Read a character of input from the user */
 
 int
-curses_read_char()
+curses_read_char(void)
 {
     int ch, tmpch;
 
@@ -78,11 +78,7 @@ curses_read_char()
 /* Turn on or off the specified color and / or attribute */
 
 void
-curses_toggle_color_attr(win, color, attr, onoff)
-WINDOW *win;
-int color;
-int attr;
-int onoff;
+curses_toggle_color_attr(WINDOW *win, int color, int attr, int onoff)
 {
 #ifdef TEXTCOLOR
     int curses_color;
@@ -157,8 +153,7 @@ int onoff;
 /* clean up and quit - taken from tty port */
 
 void
-curses_bail(mesg)
-const char *mesg;
+curses_bail(const char *mesg)
 {
     clearlocks();
     curses_exit_nhwindows(mesg);
@@ -169,8 +164,7 @@ const char *mesg;
 /* Return a winid for a new window of the given type */
 
 winid
-curses_get_wid(type)
-int type;
+curses_get_wid(int type)
 {
     winid ret;
     static winid menu_wid = 20; /* Always even */
@@ -228,8 +222,7 @@ int type;
  */
 
 char *
-curses_copy_of(s)
-const char *s;
+curses_copy_of(const char *s)
 {
     if (!s) s = "";
     return strcpy((char *) alloc((unsigned) (strlen(s) + 1)), s);
@@ -240,9 +233,7 @@ const char *s;
 of the given width */
 
 int
-curses_num_lines(str, width)
-const char *str;
-int width;
+curses_num_lines(const char *str, int width)
 {
     int last_space, count;
     int curline = 1;
@@ -278,10 +269,7 @@ int width;
 given width */
 
 char *
-curses_break_str(str, width, line_num)
-const char *str;
-int width;
-int line_num;
+curses_break_str(const char *str, int width, int line_num)
 {
     int last_space, count;
     char *retstr;
@@ -342,10 +330,7 @@ int line_num;
 /* Return the remaining portion of a string after hacking-off line_num lines */
 
 char *
-curses_str_remainder(str, width, line_num)
-const char *str;
-int width;
-int line_num;
+curses_str_remainder(const char *str, int width, int line_num)
 {
     int last_space, count;
     char *retstr;
@@ -406,8 +391,7 @@ int line_num;
 /* Determine if the given NetHack winid is a menu window */
 
 boolean
-curses_is_menu(wid)
-winid wid;
+curses_is_menu(winid wid)
 {
     if ((wid > 19) && !(wid % 2)) { /* Even number */
         return TRUE;
@@ -420,8 +404,7 @@ winid wid;
 /* Determine if the given NetHack winid is a text window */
 
 boolean
-curses_is_text(wid)
-winid wid;
+curses_is_text(winid wid)
 {
     if ((wid > 19) && (wid % 2)) { /* Odd number */
         return TRUE;
@@ -435,8 +418,7 @@ winid wid;
 cursesgraphics option is enabled */
 
 int
-curses_convert_glyph(ch)
-int ch;
+curses_convert_glyph(int ch)
 {
     if (SYMHANDLING(H_DEC)) {
         switch (ch) {
@@ -585,10 +567,7 @@ int ch;
 /* Move text cursor to specified coordinates in the given NetHack window */
 
 void
-curses_move_cursor(wid, x, y)
-winid wid;
-int x;
-int y;
+curses_move_cursor(winid wid, int x, int y)
 {
     int sx, sy, ex, ey;
     int xadj = 0;
@@ -632,7 +611,7 @@ int y;
 /* Perform actions that should be done every turn before nhgetch() */
 
 void
-curses_prehousekeeping()
+curses_prehousekeeping(void)
 {
 #ifndef PDCURSES
     WINDOW *win = curses_get_nhwin(MAP_WIN);
@@ -655,7 +634,7 @@ curses_prehousekeeping()
 /* Perform actions that should be done every turn after nhgetch() */
 
 void
-curses_posthousekeeping()
+curses_posthousekeeping(void)
 {
     curs_set(0);
     curses_decrement_highlight();
@@ -664,9 +643,7 @@ curses_posthousekeeping()
 
 
 void
-curses_view_file(filename, must_exist)
-const char *filename;
-boolean must_exist;
+curses_view_file(const char *filename, boolean must_exist)
 {
     winid wid;
     anything *identifier;
@@ -699,8 +676,7 @@ boolean must_exist;
 
 
 void
-curses_rtrim(str)
-char *str;
+curses_rtrim(char *str)
 {
     char *s;
 
@@ -715,8 +691,7 @@ char *str;
 in int form. */
 
 int
-curses_get_count(first_digit)
-int first_digit;
+curses_get_count(int first_digit)
 {
     long current_count = first_digit;
     int current_char;
@@ -747,8 +722,7 @@ int first_digit;
 understands, and return that format mask. */
 
 int
-curses_convert_attr(attr)
-int attr;
+curses_convert_attr(int attr)
 {
     int curses_attr;
 
@@ -786,8 +760,7 @@ int attr;
 Currently this is limited to arrow keys, but this may be expanded. */
 
 int
-curses_convert_keys(key)
-int key;
+curses_convert_keys(int key)
 {
     int ret = key;
 
@@ -891,10 +864,7 @@ event, or the first non-mouse key event in the case of mouse
 movement. */
 
 int
-curses_get_mouse(mousex, mousey, mod)
-int *mousex;
-int *mousey;
-int *mod;
+curses_get_mouse(int *mousex, int *mousey, int *mod)
 {
     int key = '\033';
 #ifdef NCURSES_MOUSE_VERSION
@@ -925,7 +895,7 @@ int *mod;
 
 
 static int
-parse_escape_sequence()
+parse_escape_sequence(void)
 {
 #ifndef PDCURSES
     int ret;
@@ -964,8 +934,8 @@ functions, which causes a compiler error if TTY_GRAPHICS is not
 defined.  Adding stub functions to avoid this. */
 
 #if defined(STATUS_COLORS) && !defined(TTY_GRAPHICS)
-extern void term_start_color(color) int color; {}
-extern void term_start_attr(attr) int attr; {}
-extern void term_end_color() {}
+extern void term_start_color(int color) {}
+extern void term_start_attr(int attr) {}
+extern void term_end_color(void) {}
 extern void term_end_attr(int attr) {}
 #endif  /* STATUS_COLORS && !TTY_GRAPGICS */
