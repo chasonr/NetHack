@@ -412,6 +412,8 @@ sdl2_status_redraw(struct SDL2Window *win)
                         break;
                     }
                 }
+                fg = sdl2_status_fg(color);
+                bg = sdl2_status_bg(color);
                 rect = sdl2_window_renderStrBG(win, str, 0, y, fg, bg);
                 y += rect.h;
             }
