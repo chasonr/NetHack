@@ -16,11 +16,11 @@ typedef struct nhpm {
     struct nhpm *next_mesg;    /* Pointer to next message */
 } nhprev_mesg;
 
-static void FDECL(scroll_window, (winid wid));
+static void scroll_window(winid wid);
 
-static void FDECL(mesg_add_line, (int glyph, const char *mline));
+static void mesg_add_line(int glyph, const char *mline);
 
-static nhprev_mesg *FDECL(get_msg_line, (BOOLEAN_P reverse, int mindex));
+static nhprev_mesg *get_msg_line(boolean reverse, int mindex);
 
 static int turn_lines = 1;
 static int mx = 0;
@@ -35,10 +35,7 @@ static int num_messages = 0;
 /* Write a string to the message window.  Attributes set by calling function. */
 
 void
-curses_message_win_puts(message, glyph, recursed)
-const char *message;
-int glyph;
-boolean recursed;
+curses_message_win_puts(const char *message, int glyph, boolean recursed)
 {
     int height, width, linespace;
     char *tmpstr;
@@ -157,7 +154,7 @@ boolean recursed;
 
 
 int
-curses_more()
+curses_more(void)
 {
     int height, width, ret;
     WINDOW *win = curses_get_nhwin(MESSAGE_WIN);
@@ -183,7 +180,7 @@ curses_more()
 /* Clear the message window if one line; otherwise unhighlight old messages */
 
 void
-curses_clear_unhighlight_message_window()
+curses_clear_unhighlight_message_window(void)
 {
     int mh, mw, count;
     boolean border = curses_window_has_border(MESSAGE_WIN);
@@ -224,7 +221,7 @@ curses_clear_unhighlight_message_window()
 recent messages. */
 
 void
-curses_last_messages()
+curses_last_messages(void)
 {
     boolean border = curses_window_has_border(MESSAGE_WIN);
 
@@ -243,7 +240,7 @@ curses_last_messages()
 /* Initialize list for message history */
 
 void
-curses_init_mesg_history()
+curses_init_mesg_history(void)
 {
     max_messages = iflags.msg_history;
 
@@ -260,7 +257,7 @@ curses_init_mesg_history()
 /* Display previous message window messages in reverse chron order */
 
 void
-curses_prev_mesg()
+curses_prev_mesg(void)
 {
     int count;
     winid wid;
@@ -294,8 +291,7 @@ curses_prev_mesg()
 window, depending on the user's settings */
 
 void
-curses_count_window(count_text)
-const char *count_text;
+curses_count_window(const char *count_text)
 {
     int startx, starty, winx, winy;
     int messageh, messagew;
@@ -354,8 +350,7 @@ const char *count_text;
 /* Scroll lines upward in given window, or clear window if only one line. */
 
 static void
-scroll_window(wid)
-winid wid;
+scroll_window(winid wid)
 {
     int wh, ww, s_top, s_bottom;
     boolean border = curses_window_has_border(wid);
@@ -393,9 +388,7 @@ winid wid;
 /* Add given line to message history */
 
 static void
-mesg_add_line(glyph, mline)
-int glyph;
-const char *mline;
+mesg_add_line(int glyph, const char *mline)
 {
     nhprev_mesg *tmp_mesg = NULL;
     nhprev_mesg *current_mesg = malloc(sizeof(nhprev_mesg));
@@ -429,9 +422,7 @@ const char *mline;
 /* Returns specified line from message history, or NULL if out of bounds */
 
 static nhprev_mesg *
-get_msg_line(reverse, mindex)
-boolean reverse;
-int mindex;
+get_msg_line(boolean reverse, int mindex)
 {
     int count;
     nhprev_mesg *current_mesg;

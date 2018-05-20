@@ -3,15 +3,15 @@
 
 /* Global declarations */
 
-void NDECL(curses_create_main_windows);
+void curses_create_main_windows(void);
 
-void NDECL(curses_init_nhcolors);
+void curses_init_nhcolors(void);
 
-void NDECL(curses_choose_character);
+void curses_choose_character(void);
 
-void NDECL(curses_init_options);
+void curses_init_options(void);
 
-void NDECL(curses_display_splash_window);
+void curses_display_splash_window(void);
 
 
 #endif  /* CURSINIT_H */

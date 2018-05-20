@@ -89,12 +89,12 @@
 #define SPORKHACK_SPLASH_H \
 "        |_|                                                  "
 
-static int FDECL(curses_character_dialog, (const char** choices, const char *prompt));
+static int curses_character_dialog(const char** choices, const char *prompt);
 
 /* Create the "main" nonvolitile windows used by nethack */
 
 void
-curses_create_main_windows()
+curses_create_main_windows(void)
 {
     int message_x = 0;
     int message_y = 0;
@@ -473,7 +473,7 @@ curses_create_main_windows()
 /* Initialize curses colors to colors used by NetHack */
 
 void
-curses_init_nhcolors()
+curses_init_nhcolors(void)
 {
 #ifdef TEXTCOLOR
     if (has_colors()) {
@@ -527,7 +527,7 @@ curses_init_nhcolors()
 Borrowed from the Gnome window port. */
 
 void
-curses_choose_character()
+curses_choose_character(void)
 {
     int n, i, sel, count_off, pick4u;
     int count = 0;
@@ -873,9 +873,7 @@ curses_choose_character()
 /* Prompt user for character race, role, alignment, or gender */
 
 static int
-curses_character_dialog(choices, prompt)
-const char** choices;
-const char *prompt;
+curses_character_dialog(const char** choices, const char *prompt)
 {
     int count, count2, ret, curletter;
     char used_letters[52];
@@ -929,7 +927,7 @@ const char *prompt;
 /* Initialize and display options appropriately */
 
 void
-curses_init_options()
+curses_init_options(void)
 {
     set_wc_option_mod_status(WC_ALIGN_MESSAGE|WC_ALIGN_STATUS|WC_COLOR|
                              WC_HILITE_PET|WC_POPUP_DIALOG, SET_IN_GAME);
@@ -997,7 +995,7 @@ curses_init_options()
 /* Display an ASCII splash screen if the splash_screen option is set */
 
 void
-curses_display_splash_window()
+curses_display_splash_window(void)
 {
     int x_start = 1;
     int y_start = 6;
