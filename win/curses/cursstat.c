@@ -130,7 +130,7 @@ curses_update_stats(boolean redraw)
     }
 
     if (horiz) {
-        if (term_cols >= 80) {
+        if (curses_term_cols >= 80) {
             labels = NORMAL_LABELS;
         } else {
             labels = COMPACT_LABELS;

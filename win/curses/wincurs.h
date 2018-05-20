@@ -3,13 +3,14 @@
 
 /* Global declarations for curses interface */
 
-int term_rows, term_cols; /* size of underlying terminal */
+extern int curses_term_rows, curses_term_cols; /* size of underlying terminal */
 
-WINDOW *base_term;    /* underlying terminal window */
+extern WINDOW *curses_base_term;    /* underlying terminal window */
 
-WINDOW *mapwin, *statuswin, *messagewin;    /* Main windows */
+/* Main windows */
+extern WINDOW *curses_mapwin, *curses_statuswin, *curses_messagewin;
 
-boolean counting;   /* Count window is active */
+extern boolean curses_counting;   /* Count window is active */
 
 
 #define TEXTCOLOR   /* Allow color */
