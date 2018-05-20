@@ -110,6 +110,12 @@ struct window_procs curses_procs = {
     genl_can_suspend_no,
 };
 
+int curses_term_rows, curses_term_cols; /* size of underlying terminal */
+
+WINDOW *curses_base_term;    /* underlying terminal window */
+
+boolean curses_counting;   /* Count window is active */
+
 /*
 init_nhwindows(int* argcp, char** argv)
                 -- Initialize the windows used by NetHack.  This can also
@@ -139,9 +145,9 @@ curses_init_nhwindows(int* argcp, char** argv)
     PDC_set_resize_limits(15, 255, 40, 255);
 #endif
 #ifdef XCURSES
-    base_term = Xinitscr(*argcp, argv);
+    curses_base_term = Xinitscr(*argcp, argv);
 #else
-    base_term = initscr();
+    curses_base_term = initscr();
 #endif
 #ifdef TEXTCOLOR
     if (has_colors()) {
@@ -193,10 +199,10 @@ curses_init_nhwindows(int* argcp, char** argv)
     (void)wgetch(stdscr);
     timeout(-1);
 #endif  /* PDCURSES */
-    getmaxyx(base_term, term_rows, term_cols);
-    counting = FALSE;
+    getmaxyx(curses_base_term, curses_term_rows, curses_term_cols);
+    curses_counting = FALSE;
     curses_init_options();
-    if ((term_rows < 15) || (term_cols < 40)) {
+    if ((curses_term_rows < 15) || (curses_term_cols < 40)) {
         panic("Terminal too small.  Must be minumum 40 width and 15 height");
     }
 
@@ -234,20 +240,20 @@ curses_get_nh_event(void)
 #ifdef PDCURSES
     if (is_termresized()) {
         resize_term(0, 0);
-        getmaxyx(base_term, term_rows, term_cols);
+        getmaxyx(curses_base_term, curses_term_rows, curses_term_cols);
         curses_create_main_windows();
         curses_last_messages();
         doredraw();
     }
 #endif
 #ifdef NCURSES_VERSION  /* Is there a better way to detect ncurses? */
-    if (is_term_resized(term_rows, term_cols)) {
+    if (is_term_resized(curses_term_rows, curses_term_cols)) {
         if (!isendwin()) {
             endwin();
         }
 
         refresh();
-        getmaxyx(base_term, term_rows, term_cols);
+        getmaxyx(curses_base_term, curses_term_rows, curses_term_cols);
         curses_create_main_windows();
         curses_last_messages();
         doredraw();

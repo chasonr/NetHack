@@ -300,11 +300,11 @@ curses_count_window(const char *count_text)
     if ((count_text == NULL) && (countwin != NULL)) {
         delwin(countwin);
         countwin = NULL;
-        counting = FALSE;
+        curses_counting = FALSE;
         return;
     }
 
-    counting = TRUE;
+    curses_counting = TRUE;
 
     if (iflags.wc_popup_dialog) { /* Display count in popup window */
         startx = 1;

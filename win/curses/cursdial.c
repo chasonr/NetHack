@@ -85,7 +85,7 @@ curses_line_input_dialog(const char *prompt, char *answer, int buffer)
     int prompt_height = 1;
     int height = prompt_height;
 
-    maxwidth = term_cols - 2;
+    maxwidth = curses_term_cols - 2;
 
     if (iflags.window_inited) {
         curses_get_window_size(MAP_WIN, &map_height, &map_width);
@@ -158,8 +158,8 @@ curses_character_input_dialog(const char *prompt, const char *choices,
     if (invent || (moves > 1)) {
         curses_get_window_size(MAP_WIN, &map_height, &map_width);
     } else {
-        map_height = term_rows;
-        map_width = term_cols;
+        map_height = curses_term_rows;
+        map_width = curses_term_cols;
     }
 
     maxwidth = map_width - 2;
@@ -803,8 +803,8 @@ menu_win_size(nhmenu *menu)
 
     maxwidth = 38;  /* Reasonable minimum usable width */
 
-    if ((term_cols / 2) > maxwidth) {
-        maxwidth = (term_cols / 2); /* Half the screen */
+    if ((curses_term_cols / 2) > maxwidth) {
+        maxwidth = (curses_term_cols / 2); /* Half the screen */
     }
 
     maxheight = menu_max_height();
@@ -837,7 +837,7 @@ menu_win_size(nhmenu *menu)
     /* Try not to wrap headers/normal text lines if possible.  We can
     go wider than half the screen for this purpose if need be */
 
-    if ((maxheaderwidth > maxwidth) && (maxheaderwidth < (term_cols - 2))) {
+    if ((maxheaderwidth > maxwidth) && (maxheaderwidth < (curses_term_cols - 2))) {
         maxwidth = maxheaderwidth;
     }
 
@@ -1325,5 +1325,5 @@ menu_clear_selections(nhmenu *menu)
 static int
 menu_max_height(void)
 {
-    return term_rows - 2;
+    return curses_term_rows - 2;
 }
