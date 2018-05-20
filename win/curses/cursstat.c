@@ -28,22 +28,22 @@ extern const struct text_color_option *text_colors;
 extern const struct percent_color_option *hp_colors;
 extern const struct percent_color_option *pw_colors;
 
-extern struct color_option FDECL(text_color_of, (const char *text,
-        const struct text_color_option *color_options));
+extern struct color_option text_color_of(const char *text,
+        const struct text_color_option *color_options);
 
-struct color_option FDECL(percentage_color_of, (int value, int max,
-                                        const struct percent_color_option *color_options));
+struct color_option percentage_color_of(int value, int max,
+                                        const struct percent_color_option *color_options);
 
-static boolean FDECL(stat_colored, (const char *id));
+static boolean stat_colored(const char *id);
 #endif
 
-static void NDECL(init_stats);
+static void init_stats(void);
 
-static void FDECL(set_labels, (int label_width));
+static void set_labels(int label_width);
 
-static void FDECL(set_stat_color, (nhstat *stat));
+static void set_stat_color(nhstat *stat);
 
-static void FDECL(color_stat, (nhstat stat, int onoff));
+static void color_stat(nhstat stat, int onoff);
 
 static nhstat prevname;
 static nhstat prevdepth;
@@ -87,8 +87,7 @@ write to the status window, so we know somwthing has changed.  We
 override the write and update what needs to be updated ourselves. */
 
 void
-curses_update_stats(redraw)
-boolean redraw;
+curses_update_stats(boolean redraw)
 {
     char buf[BUFSZ];
     int count, enc, orient, sx_start, hp, hpmax, labels, swidth,
@@ -1152,7 +1151,7 @@ boolean redraw;
 if needed to unhighlight a stat */
 
 void
-curses_decrement_highlight()
+curses_decrement_highlight(void)
 {
     boolean unhighlight = FALSE;
 
@@ -1330,7 +1329,7 @@ curses_decrement_highlight()
 /* Initialize the stats with beginning values. */
 
 static void
-init_stats()
+init_stats(void)
 {
     char buf[BUFSZ];
     int count;
@@ -1709,8 +1708,7 @@ we want to compress this info; otherwise we know we have a width of at
 least 26 characters. */
 
 static void
-set_labels(label_width)
-int label_width;
+set_labels(int label_width)
 {
     char buf[BUFSZ];
 
@@ -2054,8 +2052,7 @@ int label_width;
 is NO_COLOR unless the statuscolors patch is in use. */
 
 static void
-set_stat_color(stat)
-nhstat *stat;
+set_stat_color(nhstat *stat)
 {
 #ifdef STATUS_COLORS
     struct color_option stat_color;
@@ -2088,9 +2085,7 @@ nhstat *stat;
  changed stat. */
 
 static void
-color_stat(stat, onoff)
-nhstat stat;
-int onoff;
+color_stat(nhstat stat, int onoff)
 {
     WINDOW *win = curses_get_nhwin(STATUS_WIN);
 #ifdef STATUS_COLORS
@@ -2190,8 +2185,7 @@ int onoff;
 
 #ifdef STATUS_COLORS
 static boolean
-stat_colored(id)
-const char *id;
+stat_colored(const char *id)
 {
     struct text_color_option *cur_option =
         (struct text_color_option *)text_colors;

@@ -39,19 +39,16 @@ static nethack_char map[ROWNO][COLNO];  /* Map window contents */
 
 static nethack_wid *nhwids = NULL;  /* NetHack wid array */
 
-static boolean FDECL(is_main_window, (winid wid));
+static boolean is_main_window(winid wid);
 
-static void FDECL(write_char, (WINDOW *win, int x, int y, nethack_char ch));
+static void write_char(WINDOW *win, int x, int y, nethack_char ch);
 
-static void NDECL(clear_map);
+static void clear_map(void);
 
 /* Create a window with the specified size and orientation */
 
 WINDOW *
-curses_create_window(width, height, orientation)
-int width;
-int height;
-orient orientation;
+curses_create_window(int width, int height, orient orientation)
 {
     int mapx, mapy, maph, mapw = 0;
     int startx = 0;
@@ -152,8 +149,7 @@ orient orientation;
 /* Erase and delete curses window, and refresh standard windows */
 
 void
-curses_destroy_win(win)
-WINDOW *win;
+curses_destroy_win(WINDOW *win)
 {
     werase(win);
     wrefresh(win);
@@ -165,7 +161,7 @@ WINDOW *win;
 /* Refresh nethack windows if they exist, or base window if not */
 
 void
-curses_refresh_nethack_windows()
+curses_refresh_nethack_windows(void)
 {
     WINDOW *status_window, *message_window, *map_window;
 
@@ -192,8 +188,7 @@ curses_refresh_nethack_windows()
 /* Return curses window pointer for given NetHack winid */
 
 WINDOW *
-curses_get_nhwin(wid)
-winid wid;
+curses_get_nhwin(winid wid)
 {
     if (!is_main_window(wid)) {
         panic("curses_get_nhwin: wid out of range. Not a main window.");
@@ -206,14 +201,8 @@ winid wid;
 /* Add curses window pointer and window info to list for given NetHack winid */
 
 void
-curses_add_nhwin( wid, height, width, y, x, orientation, border)
-winid wid;
-int height;
-int width;
-int y;
-int x;
-orient orientation;
-boolean border;
+curses_add_nhwin(winid wid, int height, int width, int y, int x,
+                 orient orientation, boolean border)
 {
     WINDOW *win;
     int real_width = width;
@@ -271,8 +260,7 @@ boolean border;
 /* Add wid to list of known window IDs */
 
 void
-curses_add_wid(wid)
-winid wid;
+curses_add_wid(winid wid)
 {
     nethack_wid *new_wid;
     nethack_wid *widptr = nhwids;
@@ -298,8 +286,7 @@ winid wid;
 /* refresh a curses window via given nethack winid */
 
 void
-curses_refresh_nhwin(wid)
-winid wid;
+curses_refresh_nhwin(winid wid)
 {
     wrefresh(curses_get_nhwin(wid));
 }
@@ -308,8 +295,7 @@ winid wid;
 /* Delete curses window via given NetHack winid and remove entry from list */
 
 void
-curses_del_nhwin(wid)
-winid wid;
+curses_del_nhwin(winid wid)
 {
     if (curses_is_menu(wid) || curses_is_text(wid)) {
         curses_del_menu(wid);
@@ -327,8 +313,7 @@ winid wid;
 /* Delete wid from list of known window IDs */
 
 void
-curses_del_wid(wid)
-winid wid;
+curses_del_wid(winid wid)
 {
     nethack_wid *tmpwid;
     nethack_wid *widptr = nhwids;
@@ -360,13 +345,7 @@ winid wid;
 /* Print a single character in the given window at the given coordinates */
 
 void
-curses_putch(wid, x, y, ch, color, attr)
-winid wid;
-int x;
-int y;
-int ch;
-int color;
-int attr;
+curses_putch(winid wid, int x, int y, int ch, int color, int attr)
 {
     int sx, sy, ex, ey;
     boolean border = curses_window_has_border(wid);
@@ -409,10 +388,7 @@ int attr;
 /* Get x, y coordinates of curses window on the physical terminal window */
 
 void
-curses_get_window_xy(wid, x, y)
-winid wid;
-int *x;
-int *y;
+curses_get_window_xy(winid wid, int *x, int *y)
 {
     if (!is_main_window(wid)) {
         panic("curses_get_window_xy: wid out of range. Not a main window.");
@@ -426,10 +402,7 @@ int *y;
 /* Get usable width and height curses window on the physical terminal window */
 
 void
-curses_get_window_size(wid, height, width)
-winid wid;
-int *height;
-int *width;
+curses_get_window_size(winid wid, int *height, int *width)
 {
     *height = nhwins[wid].height;
     *width = nhwins[wid].width;
@@ -439,8 +412,7 @@ int *width;
 /* Determine if given window has a visible border */
 
 boolean
-curses_window_has_border(wid)
-winid wid;
+curses_window_has_border(winid wid)
 {
     return nhwins[wid].border;
 }
@@ -449,8 +421,7 @@ winid wid;
 /* Determine if window for given winid exists */
 
 boolean
-curses_window_exists(wid)
-winid wid;
+curses_window_exists(winid wid)
 {
     if (nhwins[wid].nhwin == wid) {
         return TRUE;
@@ -463,8 +434,7 @@ winid wid;
 /* Return the orientation of the specified window */
 
 int
-curses_get_window_orientation(wid)
-winid wid;
+curses_get_window_orientation(winid wid)
 {
     if (!is_main_window(wid)) {
         panic("curses_get_window_orientation: wid out of range. Not a main window.");
@@ -478,10 +448,7 @@ winid wid;
 and text attributes */
 
 void
-curses_puts(wid, attr, text)
-winid wid;
-int attr;
-const char *text;
+curses_puts(winid wid, int attr, const char *text)
 {
     anything *identifier;
     WINDOW *win = NULL;
@@ -518,8 +485,7 @@ const char *text;
 /* Clear the contents of a window via the given NetHack winid */
 
 void
-curses_clear_nhwin(wid)
-winid wid;
+curses_clear_nhwin(winid wid)
 {
     WINDOW *win = curses_get_nhwin(wid);
     boolean border = curses_window_has_border(wid);
@@ -540,8 +506,7 @@ winid wid;
 /* Return true if given wid is a main NetHack window */
 
 static boolean
-is_main_window(wid)
-winid wid;
+is_main_window(winid wid)
 {
     if ((wid == MESSAGE_WIN) || (wid == MAP_WIN) ||
             (wid == STATUS_WIN)) {
@@ -556,11 +521,7 @@ winid wid;
 coordinates without a refresh.  Currently only used for the map. */
 
 static void
-write_char(win, x, y, nch)
-WINDOW *win;
-int x;
-int y;
-nethack_char nch;
+write_char(WINDOW *win, int x, int y, nethack_char nch)
 {
     curses_toggle_color_attr(win, nch.color, nch.attr, ON);
 #ifdef PDCURSES
@@ -586,11 +547,7 @@ nethack_char nch;
 boundaries */
 
 void
-curses_draw_map(sx, sy, ex, ey)
-int sx;
-int sy;
-int ex;
-int ey;
+curses_draw_map(int sx, int sy, int ex, int ey)
 {
     int curx, cury;
     int bspace = 0;
@@ -672,7 +629,7 @@ int ey;
 /* Init map array to blanks */
 
 static void
-clear_map()
+clear_map(void)
 {
     int x, y;
 
@@ -690,13 +647,7 @@ clear_map()
 based on the location of the player. */
 
 boolean
-curses_map_borders(sx, sy, ex, ey, ux, uy)
-int *sx;
-int *sy;
-int *ex;
-int *ey;
-int ux;
-int uy;
+curses_map_borders(int *sx, int *sy, int *ex, int *ey, int ux, int uy)
 {
     static int width = 0;
     static int height = 0;

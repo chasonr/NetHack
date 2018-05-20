@@ -10,39 +10,41 @@
 
 /* Public functions for curses NetHack interface */
 
-static void FDECL(curses_init_nhwindows, (int* argcp, char** argv));
-static void NDECL(curses_player_selection);
-static void NDECL(curses_askname);
-static void NDECL(curses_get_nh_event);
-static void FDECL(curses_suspend_nhwindows, (const char *str));
-static void NDECL(curses_resume_nhwindows);
-static winid FDECL(curses_create_nhwindow, (int type));
-static void FDECL(curses_clear_nhwindow, (winid wid));
-static void FDECL(curses_display_nhwindow, (winid wid, BOOLEAN_P block));
-static void FDECL(curses_destroy_nhwindow, (winid wid));
-static void FDECL(curses_curs, (winid wid, int x, int y));
-static void FDECL(curses_putstr, (winid wid, int attr, const char *text));
-static void FDECL(curses_putmixed, (winid wid, int attr, const char *text));
-static void FDECL(curses_display_file, (const char *filename,BOOLEAN_P must_exist));
-static void NDECL(curses_update_inventory);
-static void NDECL(curses_mark_synch);
-static void NDECL(curses_wait_synch);
-static void FDECL(curses_cliparound, (int x, int y));
-static void FDECL(curses_print_glyph, (winid wid, XCHAR_P x, XCHAR_P y, int glyph, int bkglyph));
-static void FDECL(curses_raw_print, (const char *str));
-static void FDECL(curses_raw_print_bold, (const char *str));
-static int NDECL(curses_nhgetch);
-static int FDECL(curses_nh_poskey, (int *x, int *y, int *mod));
-static void NDECL(curses_nhbell);
-static int NDECL(curses_doprev_message);
-static char FDECL(curses_yn_function, (const char *question, const char *choices, CHAR_P def));
-static void FDECL(curses_getlin, (const char *question, char *input));
-static int NDECL(curses_get_ext_cmd);
-static void FDECL(curses_number_pad, (int state));
-static void NDECL(curses_delay_output);
-static void NDECL(curses_start_screen);
-static void NDECL(curses_end_screen);
-static void FDECL(curses_preference_update, (const char *pref));
+static void curses_init_nhwindows(int* argcp, char** argv);
+static void curses_player_selection(void);
+static void curses_askname(void);
+static void curses_get_nh_event(void);
+static void curses_suspend_nhwindows(const char *str);
+static void curses_resume_nhwindows(void);
+static winid curses_create_nhwindow(int type);
+static void curses_clear_nhwindow(winid wid);
+static void curses_display_nhwindow(winid wid, BOOLEAN_P block);
+static void curses_destroy_nhwindow(winid wid);
+static void curses_curs(winid wid, int x, int y);
+static void curses_putstr(winid wid, int attr, const char *text);
+static void curses_putmixed(winid wid, int attr, const char *text);
+static void curses_display_file(const char *filename, BOOLEAN_P must_exist);
+static void curses_update_inventory(void);
+static void curses_mark_synch(void);
+static void curses_wait_synch(void);
+static void curses_cliparound(int x, int y);
+static void curses_print_glyph(winid wid, XCHAR_P x, XCHAR_P y, int glyph,
+                               int bkglyph);
+static void curses_raw_print(const char *str);
+static void curses_raw_print_bold(const char *str);
+static int curses_nhgetch(void);
+static int curses_nh_poskey(int *x, int *y, int *mod);
+static void curses_nhbell(void);
+static int curses_doprev_message(void);
+static char curses_yn_function(const char *question, const char *choices,
+                               CHAR_P def);
+static void curses_getlin(const char *question, char *input);
+static int curses_get_ext_cmd(void);
+static void curses_number_pad(int state);
+static void curses_delay_output(void);
+static void curses_start_screen(void);
+static void curses_end_screen(void);
+static void curses_preference_update(const char *pref);
 
 /* Interface definition, for windows.c */
 struct window_procs curses_procs = {
@@ -123,9 +125,7 @@ init_nhwindows(int* argcp, char** argv)
                 ** windows?  Or at least all but WIN_INFO?      -dean
 */
 static void
-curses_init_nhwindows(argcp, argv)
-int* argcp;
-char** argv;
+curses_init_nhwindows(int* argcp, char** argv)
 {
 #ifdef PDCURSES
     char window_title[BUFSZ];
@@ -211,7 +211,7 @@ char** argv;
    the process. You need to fill in pl_character[0].
 */
 static void
-curses_player_selection()
+curses_player_selection(void)
 {
     curses_choose_character();
 }
@@ -219,7 +219,7 @@ curses_player_selection()
 
 /* Ask the user for a player name. */
 static void
-curses_askname()
+curses_askname(void)
 {
     curses_line_input_dialog("Who are you?", plname, PL_NSIZ);
 }
@@ -229,7 +229,7 @@ curses_askname()
    A noop for the tty and X window-ports.
 */
 static void
-curses_get_nh_event()
+curses_get_nh_event(void)
 {
 #ifdef PDCURSES
     if (is_termresized()) {
@@ -259,8 +259,7 @@ curses_get_nh_event()
    except the "window" used for raw_print().  str is printed if possible.
 */
 void
-curses_exit_nhwindows(str)
-const char *str;
+curses_exit_nhwindows(const char *str)
 {
     endwin();
     iflags.window_inited = 0;
@@ -271,15 +270,14 @@ const char *str;
 
 /* Prepare the window to be suspended. */
 static void
-curses_suspend_nhwindows(str)
-const char *str;
+curses_suspend_nhwindows(const char *str)
 {
 }
 
 
 /* Restore the windows after being suspended. */
 static void
-curses_resume_nhwindows()
+curses_resume_nhwindows(void)
 {
     curses_refresh_nethack_windows();
 }
@@ -292,8 +290,7 @@ curses_resume_nhwindows()
         NHW_TEXT        (help/text, full screen paged window)
 */
 static winid
-curses_create_nhwindow(type)
-int type;
+curses_create_nhwindow(int type)
 {
     winid wid = curses_get_wid(type);
 
@@ -308,8 +305,7 @@ int type;
 
 /* Clear the given window, when asked to. */
 static void
-curses_clear_nhwindow(wid)
-winid wid;
+curses_clear_nhwindow(winid wid)
 {
     if (wid != NHW_MESSAGE) {
         curses_clear_nhwin(wid);
@@ -326,9 +322,7 @@ winid wid;
                    --more--, if necessary, in the tty window-port.
 */
 static void
-curses_display_nhwindow(wid, block)
-winid wid;
-boolean block;
+curses_display_nhwindow(winid wid, BOOLEAN_P block)
 {
     menu_item *selected = NULL;
 
@@ -348,8 +342,7 @@ boolean block;
  * already been dismissed.
 */
 static void
-curses_destroy_nhwindow(wid)
-winid wid;
+curses_destroy_nhwindow(winid wid)
 {
     curses_del_nhwin(wid);
 }
@@ -360,10 +353,7 @@ winid wid;
  the size of window.
 */
 static void
-curses_curs(wid, x, y)
-winid wid;
-int x;
-int y;
+curses_curs(winid wid, int x, int y)
 {
     curses_move_cursor(wid, x, y);
 }
@@ -392,10 +382,7 @@ Attributes
                    by calling more() or displaying both on the same line.
 */
 static void
-curses_putstr(wid, attr, text)
-winid wid;
-int attr;
-const char *text;
+curses_putstr(winid wid, int attr, const char *text)
 {
     int curses_attr = curses_convert_attr(attr);
 
@@ -405,10 +392,7 @@ const char *text;
 
 /* As curses_putstr, but the text may contain a glyph escape */
 static void
-curses_putmixed(wid, attr, text)
-winid wid;
-int attr;
-const char *text;
+curses_putmixed(winid wid, int attr, const char *text)
 {
     if (wid != MESSAGE_WIN) {
         genl_putmixed(wid, attr, text);
@@ -440,9 +424,7 @@ const char *text;
                    iff complain is TRUE.
 */
 static void
-curses_display_file(filename, must_exist)
-const char *filename;
-boolean must_exist;
+curses_display_file(const char *filename, BOOLEAN_P must_exist)
 {
     curses_view_file(filename, must_exist);
 }
@@ -453,8 +435,7 @@ boolean must_exist;
    be used for menus.
 */
 void
-curses_start_menu(wid)
-winid wid;
+curses_start_menu(winid wid)
 {
     curses_create_nhmenu(wid);
 }
@@ -491,15 +472,9 @@ add_menu(winid wid, int glyph, const anything identifier,
                    menu is displayed, set preselected to TRUE.
 */
 void
-curses_add_menu(wid, glyph, identifier, accelerator, group_accel, attr, str, presel)
-winid wid;
-int glyph;
-const anything *identifier;
-char accelerator;
-char group_accel;
-int attr;
-const char *str;
-boolean presel;
+curses_add_menu(winid wid, int glyph, const anything *identifier,
+                CHAR_P accelerator, CHAR_P group_accel, int attr,
+                const char *str, BOOLEAN_P presel)
 {
     int curses_attr = curses_convert_attr(attr);
 
@@ -517,9 +492,7 @@ end_menu(window, prompt)
                 ** it ever did).  That should be select_menu's job.  -dean
 */
 void
-curses_end_menu(wid, prompt)
-winid wid;
-const char *prompt;
+curses_end_menu(winid wid, const char *prompt)
 {
     curses_finalize_nhmenu(wid, prompt);
 }
@@ -550,10 +523,7 @@ int select_menu(winid window, int how, menu_item **selected)
                    create_nhwindow() time.
 */
 int
-curses_select_menu(wid, how, selected)
-winid wid;
-int how;
-MENU_ITEM_P **selected;
+curses_select_menu(winid wid, int how, MENU_ITEM_P **selected)
 {
     return curses_display_nhmenu(wid, how, selected);
 }
@@ -564,7 +534,7 @@ MENU_ITEM_P **selected;
 	window up, otherwise empty.
 */
 static void
-curses_update_inventory()
+curses_update_inventory(void)
 {
 }
 
@@ -574,7 +544,7 @@ mark_synch()    -- Don't go beyond this point in I/O on any channel until
                    for the moment
 */
 static void
-curses_mark_synch()
+curses_mark_synch(void)
 {
 }
 
@@ -585,7 +555,7 @@ wait_synch()    -- Wait until all pending output is complete (*flush*() for
                    display is OK when return from wait_synch().
 */
 static void
-curses_wait_synch()
+curses_wait_synch(void)
 {
 }
 
@@ -595,9 +565,7 @@ cliparound(x, y)-- Make sure that the user is more-or-less centered on the
                 -- This function is only defined if CLIPPING is defined.
 */
 static void
-curses_cliparound(x, y)
-int x;
-int y;
+curses_cliparound(int x, int y)
 {
     int sx, sy, ex, ey;
     boolean redraw = curses_map_borders(&sx, &sy, &ex, &ey, x, y);
@@ -615,17 +583,12 @@ print_glyph(window, x, y, glyph)
                    a 1-1 map between glyphs and distinct things on the map).
 */
 static void
-curses_print_glyph(wid, x, y, glyph, bkglyph)
-winid wid;
-xchar x;
-xchar y;
-int glyph;
-int bkglyph;
+curses_print_glyph(winid wid, XCHAR_P x, XCHAR_P y, int glyph, int bkglyph)
 {
     int ch;
     int color;
     unsigned int special;
-    int attr = -1;
+    int attr = A_NORMAL;
 
     /* map glyph to character and color */
     mapglyph(glyph, &ch, &color, &special, x, y);
@@ -650,8 +613,7 @@ raw_print(str)  -- Print directly to a screen, or otherwise guarantee that
                    updating status for micros (i.e, "saving").
 */
 static void
-curses_raw_print(str)
-const char *str;
+curses_raw_print(const char *str)
 {
     puts(str);
 }
@@ -661,8 +623,7 @@ raw_print_bold(str)
             -- Like raw_print(), but prints in bold/standout (if possible).
 */
 static void
-curses_raw_print_bold(str)
-const char *str;
+curses_raw_print_bold(const char *str)
 {
     curses_raw_print(str);
 }
@@ -674,7 +635,7 @@ int nhgetch()   -- Returns a single character input from the user.
                    Returned character _must_ be non-zero.
 */
 static int
-curses_nhgetch()
+curses_nhgetch(void)
 {
     int ch;
 
@@ -701,10 +662,7 @@ int nh_poskey(int *x, int *y, int *mod)
                    routine always returns a non-zero character.
 */
 static int
-curses_nh_poskey(x, y, mod)
-int *x;
-int *y;
-int *mod;
+curses_nh_poskey(int *x, int *y, int *mod)
 {
     int key = curses_nhgetch();
 
@@ -723,7 +681,7 @@ nhbell()        -- Beep at user.  [This will exist at least until sounds are
                    redone, since sounds aren't attributable to windows anyway.]
 */
 static void
-curses_nhbell()
+curses_nhbell(void)
 {
     beep();
 }
@@ -734,7 +692,7 @@ doprev_message()
                 -- On the tty-port this scrolls WIN_MESSAGE back one line.
 */
 static int
-curses_doprev_message()
+curses_doprev_message(void)
 {
     curses_prev_mesg();
     return 0;
@@ -760,10 +718,7 @@ char yn_function(const char *ques, const char *choices, char default)
                    ports might use a popup.
 */
 static char
-curses_yn_function(question, choices, def)
-const char *question;
-const char *choices;
-char def;
+curses_yn_function(const char *question, const char *choices, CHAR_P def)
 {
     return (char)curses_character_input_dialog(question, choices, def);
 }
@@ -779,9 +734,7 @@ getlin(const char *ques, char *input)
 	       ports might use a popup.
 */
 static void
-curses_getlin(question, input)
-const char *question;
-char *input;
+curses_getlin(const char *question, char *input)
 {
     curses_line_input_dialog(question, input, BUFSZ);
 }
@@ -793,7 +746,7 @@ int get_ext_cmd(void)
 	       selection, -1 otherwise.
 */
 static int
-curses_get_ext_cmd()
+curses_get_ext_cmd(void)
 {
     return curses_ext_cmd();
 }
@@ -804,8 +757,7 @@ number_pad(state)
 	    -- Initialize the number pad to the given state.
 */
 static void
-curses_number_pad(state)
-int state;
+curses_number_pad(int state)
 {
 }
 
@@ -815,7 +767,7 @@ delay_output()  -- Causes a visible delay of 50ms in the output.
 	       by a nap(50ms), but allows asynchronous operation.
 */
 static void
-curses_delay_output()
+curses_delay_output(void)
 {
     napms(50);
 }
@@ -828,7 +780,7 @@ start_screen()  -- Only used on Unix tty ports, but must be declared for
 	       just declare an empty function.
 */
 static void
-curses_start_screen()
+curses_start_screen(void)
 {
 }
 
@@ -837,7 +789,7 @@ end_screen()    -- Only used on Unix tty ports, but must be declared for
 	       completeness.  The complement of start_screen().
 */
 static void
-curses_end_screen()
+curses_end_screen(void)
 {
 }
 
@@ -852,8 +804,7 @@ preference_update(preference)
 		   corresponding bit in the wincap mask.
 */
 static void
-curses_preference_update(pref)
-const char *pref;
+curses_preference_update(const char *pref)
 {
     if ((strcmp(pref, "align_status") == 0) ||
             (strcmp(pref, "align_message") == 0)) {

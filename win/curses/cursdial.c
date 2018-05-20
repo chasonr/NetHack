@@ -47,28 +47,28 @@ typedef enum menu_op_type {
     INVERT
 } menu_op;
 
-static nhmenu *FDECL(get_menu, (winid wid));
+static nhmenu *get_menu(winid wid);
 
-static char FDECL(menu_get_accel, (BOOLEAN_P first));
+static char menu_get_accel(boolean first);
 
-static void FDECL(menu_determine_pages, (nhmenu *menu));
+static void menu_determine_pages(nhmenu *menu);
 
-static boolean FDECL(menu_is_multipage, (nhmenu *menu, int width, int height));
+static boolean menu_is_multipage(nhmenu *menu, int width, int height);
 
-static void FDECL(menu_win_size, (nhmenu *menu));
+static void menu_win_size(nhmenu *menu);
 
-static void FDECL(menu_display_page, (nhmenu *menu, WINDOW *win, int page_num));
+static void menu_display_page(nhmenu *menu, WINDOW *win, int page_num);
 
-static int FDECL(menu_get_selections, (WINDOW *win, nhmenu *menu, int how));
+static int menu_get_selections(WINDOW *win, nhmenu *menu, int how);
 
-static void FDECL(menu_select_deselect, (WINDOW *win, nhmenu_item *item, menu_op operation));
+static void menu_select_deselect(WINDOW *win, nhmenu_item *item, menu_op operation);
 
-static int FDECL(menu_operation, (WINDOW *win, nhmenu *menu, menu_op operation,
-                          int page_num));
+static int menu_operation(WINDOW *win, nhmenu *menu, menu_op operation,
+                          int page_num);
 
-static void FDECL(menu_clear_selections, (nhmenu *menu));
+static void menu_clear_selections(nhmenu *menu);
 
-static int NDECL(menu_max_height);
+static int menu_max_height(void);
 
 static nhmenu *nhmenus = NULL;  /* NetHack menu array */
 
@@ -76,10 +76,7 @@ static nhmenu *nhmenus = NULL;  /* NetHack menu array */
 /* Get a line of text from the player, such as asking for a character name or a wish */
 
 void
-curses_line_input_dialog(prompt, answer, buffer)
-const char *prompt;
-char *answer;
-int buffer;
+curses_line_input_dialog(const char *prompt, char *answer, int buffer)
 {
     int map_height, map_width, maxwidth, remaining_buf, winx, winy, count;
     WINDOW *askwin, *bwin;
@@ -145,10 +142,8 @@ int buffer;
 /* Get a single character response from the player, such as a y/n prompt */
 
 int
-curses_character_input_dialog(prompt, choices, def)
-const char *prompt;
-const char *choices;
-char def;
+curses_character_input_dialog(const char *prompt, const char *choices,
+                              char def)
 {
     WINDOW *askwin = NULL;
     int answer, count, maxwidth, map_height, map_width;
@@ -301,7 +296,7 @@ char def;
 /* Return an extended command from the user */
 
 int
-curses_ext_cmd()
+curses_ext_cmd(void)
 {
     int count, letter, prompt_width, startx, starty, winx, winy;
     int messageh, messagew;
@@ -404,8 +399,7 @@ curses_ext_cmd()
 /* Initialize a menu from given NetHack winid */
 
 void
-curses_create_nhmenu(wid)
-winid wid;
+curses_create_nhmenu(winid wid)
 {
     nhmenu *new_menu = NULL;
     nhmenu *menuptr = nhmenus;
@@ -459,15 +453,9 @@ winid wid;
 /* Add a menu item to the given menu window */
 
 void
-curses_add_nhmenu_item(wid, identifier, accelerator, group_accel, attr, str,
-        presel)
-winid wid;
-const anything *identifier;
-char accelerator;
-char group_accel;
-int attr;
-const char *str;
-boolean presel;
+curses_add_nhmenu_item(winid wid, const anything *identifier,
+                       char accelerator, char group_accel, int attr,
+                       const char *str, boolean presel)
 {
     char *new_str;
     nhmenu_item *new_item, *current_items, *menu_item_ptr;
@@ -518,9 +506,7 @@ boolean presel;
  finalized in memory */
 
 void
-curses_finalize_nhmenu(wid, prompt)
-winid wid;
-const char *prompt;
+curses_finalize_nhmenu(winid wid, const char *prompt)
 {
     int count = 0;
     nhmenu *current_menu = get_menu(wid);
@@ -544,10 +530,7 @@ const char *prompt;
 /* Display a nethack menu, and return a selection, if applicable */
 
 int
-curses_display_nhmenu(wid, how, selected_)
-winid wid;
-int how;
-MENU_ITEM_P **selected_;
+curses_display_nhmenu(winid wid, int how, MENU_ITEM_P **selected_)
 {
     nhmenu *current_menu = get_menu(wid);
     nhmenu_item *menu_item_ptr;
@@ -622,8 +605,7 @@ MENU_ITEM_P **selected_;
 
 
 boolean
-curses_menu_exists(wid)
-winid wid;
+curses_menu_exists(winid wid)
 {
     if (get_menu(wid) != NULL) {
         return TRUE;
@@ -635,8 +617,7 @@ winid wid;
 /* Delete the menu associated with the given NetHack winid from memory */
 
 void
-curses_del_menu(wid)
-winid wid;
+curses_del_menu(winid wid)
 {
     nhmenu_item *tmp_menu_item;
     nhmenu_item *menu_item_ptr;
@@ -681,8 +662,7 @@ winid wid;
 /* return a pointer to the menu associated with the given NetHack winid */
 
 static nhmenu *
-get_menu(wid)
-winid wid;
+get_menu(winid wid)
 {
     nhmenu *menuptr = nhmenus;
 
@@ -698,8 +678,7 @@ winid wid;
 
 
 static char
-menu_get_accel(first)
-boolean first;
+menu_get_accel(boolean first)
 {
     char ret;
     static char next_letter = 'a';
@@ -726,10 +705,7 @@ boolean first;
 /* Determine if menu will require multiple pages to display */
 
 static boolean
-menu_is_multipage(menu, width, height)
-nhmenu *menu;
-int width;
-int height;
+menu_is_multipage(nhmenu *menu, int width, int height)
 {
     int num_lines;
     int curline = 0;
@@ -767,8 +743,7 @@ int height;
 /* Determine which entries go on which page, and total number of pages */
 
 static void
-menu_determine_pages(menu)
-nhmenu *menu;
+menu_determine_pages(nhmenu *menu)
 {
     int tmpline, num_lines;
     int curline = 0;
@@ -819,8 +794,7 @@ nhmenu *menu;
 /* Determine dimensions of menu window based on term size and entries */
 
 static void
-menu_win_size(menu)
-nhmenu *menu;
+menu_win_size(nhmenu *menu)
 {
     int width, height, maxwidth, maxheight, curentrywidth, lastline;
     int maxentrywidth = strlen(menu->prompt);
@@ -897,10 +871,7 @@ nhmenu *menu;
 /* Displays menu selections in the given window */
 
 static void
-menu_display_page(menu, win, page_num)
-nhmenu *menu;
-WINDOW *win;
-int page_num;
+menu_display_page(nhmenu *menu, WINDOW *win, int page_num)
 {
     nhmenu_item *menu_item_ptr;
     int count, curletter, entry_cols, start_col, num_lines, footer_x;
@@ -1030,10 +1001,7 @@ int page_num;
 
 
 static int
-menu_get_selections(win, menu, how)
-WINDOW *win;
-nhmenu *menu;
-int how;
+menu_get_selections(WINDOW *win, nhmenu *menu, int how)
 {
     int curletter;
     int count = -1;
@@ -1255,10 +1223,7 @@ int how;
 /* Select, deselect, or toggle selected for the given menu entry */
 
 static void
-menu_select_deselect(win, item, operation)
-WINDOW *win;
-nhmenu_item *item;
-menu_op operation;
+menu_select_deselect(WINDOW *win, nhmenu_item *item, menu_op operation)
 {
     int curletter = item->accelerator;
 
@@ -1288,11 +1253,7 @@ on the given menu page.  If menu_page is 0, then perform opetation on
 all pages in menu.  Returns last page displayed.  */
 
 static int
-menu_operation(win, menu, operation, page_num)
-WINDOW *win;
-nhmenu *menu;
-menu_op operation;
-int page_num;
+menu_operation(WINDOW *win, nhmenu *menu, menu_op operation, int page_num)
 {
     int first_page, last_page, current_page;
     nhmenu_item *menu_item_ptr = menu->entries;
@@ -1348,8 +1309,7 @@ int page_num;
 /* Set all menu items to unselected in menu */
 
 static void
-menu_clear_selections(menu)
-nhmenu *menu;
+menu_clear_selections(nhmenu *menu)
 {
     nhmenu_item *menu_item_ptr = menu->entries;
 
@@ -1363,7 +1323,7 @@ nhmenu *menu;
 /* Get the maximum height for a menu */
 
 static int
-menu_max_height()
+menu_max_height(void)
 {
     return term_rows - 2;
 }

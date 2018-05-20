@@ -10,25 +10,25 @@
 
 /* Global declarations */
 
-void FDECL(curses_line_input_dialog, (const char *prompt, char *answer, int buffer));
+void curses_line_input_dialog(const char *prompt, char *answer, int buffer);
 
-int FDECL(curses_character_input_dialog, (const char *prompt, const char *choices, CHAR_P def));
+int curses_character_input_dialog(const char *prompt, const char *choices, char def);
 
-int FDECL(curses_ext_cmd, (void));
+int curses_ext_cmd(void);
 
-void FDECL(curses_create_nhmenu, (winid wid));
+void curses_create_nhmenu(winid wid);
 
-void FDECL(curses_add_nhmenu_item, (winid wid, const ANY_P *identifier,
- CHAR_P accelerator, CHAR_P group_accel, int attr, const char *str,
- BOOLEAN_P presel));
+void curses_add_nhmenu_item(winid wid, const anything *identifier,
+ char accelerator, char group_accel, int attr, const char *str,
+ boolean presel);
 
-void FDECL(curses_finalize_nhmenu, (winid wid, const char *prompt));
+void curses_finalize_nhmenu(winid wid, const char *prompt);
 
-int FDECL(curses_display_nhmenu, (winid wid, int how, MENU_ITEM_P **_selected));
+int curses_display_nhmenu(winid wid, int how, MENU_ITEM_P **_selected);
 
-boolean FDECL(curses_menu_exists, (winid wid));
+boolean curses_menu_exists(winid wid);
 
-void FDECL(curses_del_menu, (winid wid));
+void curses_del_menu(winid wid);
 
 
 

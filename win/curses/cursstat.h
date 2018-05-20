@@ -4,9 +4,9 @@
 
 /* Global declarations */
 
-void FDECL(curses_update_stats, (BOOLEAN_P redraw));
+void curses_update_stats(boolean redraw);
 
-void NDECL(curses_decrement_highlight);
+void curses_decrement_highlight(void);
 
 
 #endif  /* CURSSTAT_H */
