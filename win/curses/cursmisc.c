@@ -637,7 +637,6 @@ void
 curses_posthousekeeping(void)
 {
     curs_set(0);
-    curses_decrement_highlight();
     curses_clear_unhighlight_message_window();
 }
 
