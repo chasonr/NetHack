@@ -67,7 +67,7 @@ curses_read_char(void)
     }
 #endif
 
-    if (counting && !isdigit(ch)) { /* Dismiss count window if necissary */
+    if (curses_counting && !isdigit(ch)) { /* Dismiss count window if necissary */
         curses_count_window(NULL);
         curses_refresh_nethack_windows();
     }
@@ -84,7 +84,7 @@ curses_toggle_color_attr(WINDOW *win, int color, int attr, int onoff)
     int curses_color;
 
     /* Map color disabled */
-    if ((!iflags.wc_color) && (win == mapwin)) {
+    if ((!iflags.wc_color) && (win == curses_mapwin)) {
         return;
     }
 
@@ -92,7 +92,7 @@ curses_toggle_color_attr(WINDOW *win, int color, int attr, int onoff)
     /* GUI color disabled */
     if (
         (!iflags.wc2_guicolor) &&
-        (win != mapwin)) {
+        (win != curses_mapwin)) {
         return;
     }
 #endif
@@ -874,7 +874,7 @@ curses_get_mouse(int *mousex, int *mousey, int *mod)
         /* When the user clicks left mouse button */
         if(event.bstate & BUTTON1_CLICKED) {
             /* See if coords are in map window & convert coords */
-            if (wmouse_trafo(mapwin, &event.y, &event.x, TRUE)) {
+            if (wmouse_trafo(curses_mapwin, &event.y, &event.x, TRUE)) {
                 key = 0;    /* Flag mouse click */
                 *mousex = event.x;
                 *mousey = event.y;

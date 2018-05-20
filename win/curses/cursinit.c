@@ -112,7 +112,7 @@ curses_create_main_windows(void)
     int message_orientation = 0;
     int status_orientation = 0;
     int border_space = 0;
-    int hspace = term_cols - 80;
+    int hspace = curses_term_cols - 80;
     boolean borders = FALSE;
 
 #if 0 /*RLC unused*/
@@ -126,7 +126,7 @@ curses_create_main_windows(void)
         break;
     }
     case 3: { /* Auto */
-        if ((term_cols > 81) && (term_rows > 25)) {
+        if ((curses_term_cols > 81) && (curses_term_rows > 25)) {
             borders = TRUE;
         }
         break;
@@ -143,7 +143,7 @@ curses_create_main_windows(void)
         hspace -= border_space;
     }
 
-    if ((term_cols - border_space) < COLNO) {
+    if ((curses_term_cols - border_space) < COLNO) {
         min_message_height++;
     }
 
@@ -156,7 +156,7 @@ curses_create_main_windows(void)
         status_orientation = iflags.wc_align_status;
     } else { /* left or right alignment */
         /* Max space for player name and title horizontally */
-        if ((hspace >= 26) && (term_rows >= 24)) {
+        if ((hspace >= 26) && (curses_term_rows >= 24)) {
             status_orientation = iflags.wc_align_status;
             hspace -= (26 + border_space);
         } else {
@@ -185,236 +185,236 @@ curses_create_main_windows(void)
             (message_orientation == ALIGN_TOP)) {
         status_x = 0;
         status_y = 0;
-        status_width = (term_cols - border_space);
+        status_width = (curses_term_cols - border_space);
         status_height = 2;
         message_x = 0;
         message_y = status_y + (status_height + border_space);
-        message_width = (term_cols - border_space);
-        message_height = term_rows - (status_height + ROWNO + (border_space * 3));
+        message_width = (curses_term_cols - border_space);
+        message_height = curses_term_rows - (status_height + ROWNO + (border_space * 3));
         if (message_height < min_message_height) {
             message_height = min_message_height;
         }
         map_x = 0;
         map_y = message_y + (message_height + border_space);
-        map_width = (term_cols - border_space);
-        map_height = term_rows - (status_height + message_height + (border_space * 3));
+        map_width = (curses_term_cols - border_space);
+        map_height = curses_term_rows - (status_height + message_height + (border_space * 3));
     } else if ((status_orientation == ALIGN_TOP) &&
                (message_orientation == ALIGN_RIGHT)) {
         status_x = 0;
         status_y = 0;
         status_height = 2;
-        message_height = (term_rows - border_space);
-        message_width = term_cols - (COLNO + (border_space * 2));
-        status_width = term_cols - (message_width + (border_space * 2));
+        message_height = (curses_term_rows - border_space);
+        message_width = curses_term_cols - (COLNO + (border_space * 2));
+        status_width = curses_term_cols - (message_width + (border_space * 2));
         message_x = status_x + (status_width + border_space);
         message_y = 0;
         map_x = 0;
         map_y = status_y + (status_height + border_space);
         map_width = status_width;
-        map_height = term_rows - (status_height + (border_space * 2));
+        map_height = curses_term_rows - (status_height + (border_space * 2));
     } else if ((status_orientation == ALIGN_TOP) &&
                (message_orientation == ALIGN_BOTTOM)) {
         status_x = 0;
         status_y = 0;
-        status_width = (term_cols - border_space);
+        status_width = (curses_term_cols - border_space);
         status_height = 2;
         map_x = 0;
         map_y = status_y + (status_height + border_space);
-        map_width = (term_cols - border_space);
-        message_height = term_rows - (status_height + ROWNO + (border_space * 3));
+        map_width = (curses_term_cols - border_space);
+        message_height = curses_term_rows - (status_height + ROWNO + (border_space * 3));
         if (message_height < min_message_height) {
             message_height = min_message_height;
         }
-        map_height = term_rows - (status_height + message_height + (border_space * 3));
+        map_height = curses_term_rows - (status_height + message_height + (border_space * 3));
         message_x = 0;
         message_y = map_y + (map_height + border_space);
-        message_width = (term_cols - border_space);
+        message_width = (curses_term_cols - border_space);
     } else if ((status_orientation == ALIGN_TOP) &&
                (message_orientation == ALIGN_LEFT)) {
         message_x = 0;
         message_y = 0;
-        message_height = (term_rows - border_space);
-        message_width = term_cols - (COLNO + (border_space * 2));
+        message_height = (curses_term_rows - border_space);
+        message_width = curses_term_cols - (COLNO + (border_space * 2));
         status_x = message_x + (message_width + border_space);
         status_y = 0;
         status_height = 2;
-        status_width = term_cols - (message_width + (border_space * 2));
+        status_width = curses_term_cols - (message_width + (border_space * 2));
         map_x = status_x;
         map_y = status_y + (status_height + border_space);
-        map_height = term_rows - (status_height + (border_space * 2));
+        map_height = curses_term_rows - (status_height + (border_space * 2));
         map_width = status_width;
     }
     if ((status_orientation == ALIGN_RIGHT) &&
             (message_orientation == ALIGN_TOP)) {
         status_width = 26;
-        status_height = (term_rows - border_space);
-        status_x = term_cols - (status_width + border_space);
+        status_height = (curses_term_rows - border_space);
+        status_x = curses_term_cols - (status_width + border_space);
         status_y = 0;
         message_x = 0;
         message_y = 0;
-        message_width = term_cols - (status_width + (border_space * 2));
-        message_height = term_rows - (ROWNO + (border_space * 2));
+        message_width = curses_term_cols - (status_width + (border_space * 2));
+        message_height = curses_term_rows - (ROWNO + (border_space * 2));
         if (message_height < min_message_height) {
             message_height = min_message_height;
         }
         map_x = 0;
         map_y = message_y + (message_height + border_space);
-        map_width = term_cols - (status_width + (border_space * 2));
-        map_height = term_rows - (message_height + (border_space * 2));
+        map_width = curses_term_cols - (status_width + (border_space * 2));
+        map_height = curses_term_rows - (message_height + (border_space * 2));
     } else if ((status_orientation == ALIGN_RIGHT) &&
                (message_orientation == ALIGN_RIGHT)) {
         map_x = 0;
         map_y = 0;
-        map_height = (term_rows - border_space);
+        map_height = (curses_term_rows - border_space);
         status_width = 26;
-        message_width = term_cols - (COLNO + status_width + (border_space * 3));
-        map_width = term_cols - (status_width + message_width + (border_space * 3));
+        message_width = curses_term_cols - (COLNO + status_width + (border_space * 3));
+        map_width = curses_term_cols - (status_width + message_width + (border_space * 3));
         message_x = map_x + (map_width + border_space);
         message_y = 0;
-        message_height = (term_rows - border_space);
+        message_height = (curses_term_rows - border_space);
         status_x = message_x + (message_width + border_space);
         status_y = 0;
-        status_height = (term_rows - border_space);
+        status_height = (curses_term_rows - border_space);
     } else if ((status_orientation == ALIGN_RIGHT) &&
                (message_orientation == ALIGN_BOTTOM)) {
         map_x = 0;
         map_y = 0;
         status_width = 26;
-        map_width = term_cols - (status_width + (border_space * 2));
-        message_height = term_rows - (ROWNO + (border_space * 2));
+        map_width = curses_term_cols - (status_width + (border_space * 2));
+        message_height = curses_term_rows - (ROWNO + (border_space * 2));
         if (message_height < min_message_height) {
             message_height = min_message_height;
         }
-        map_height = term_rows - (message_height + (border_space * 2));
+        map_height = curses_term_rows - (message_height + (border_space * 2));
         message_x = 0;
         message_y = map_y + (map_height + border_space);
         message_width = map_width;
         status_x = map_x + (map_width + border_space);
         status_y = 0;
-        status_height = (term_rows - border_space);
+        status_height = (curses_term_rows - border_space);
     } else if ((status_orientation == ALIGN_RIGHT) &&
                (message_orientation == ALIGN_LEFT)) {
         status_x = 0;
         status_y = 0;
-        status_height = (term_rows - border_space);
+        status_height = (curses_term_rows - border_space);
         status_width = 26;
-        message_width = term_cols - (status_width + COLNO + (border_space * 3));
+        message_width = curses_term_cols - (status_width + COLNO + (border_space * 3));
         map_x = status_x + (status_width + border_space);
         map_y = 0;
-        map_height = (term_rows - border_space);
-        map_width = term_cols - (status_width + message_width + (border_space * 3));
+        map_height = (curses_term_rows - border_space);
+        map_width = curses_term_cols - (status_width + message_width + (border_space * 3));
         message_x = map_x + (map_width + border_space);
         message_y = 0;
-        message_height = (term_rows - border_space);
+        message_height = (curses_term_rows - border_space);
     }
     if ((status_orientation == ALIGN_BOTTOM) &&
             (message_orientation == ALIGN_TOP)) {
         message_x = 0;
         message_y = 0;
-        message_width = (term_cols - border_space);
+        message_width = (curses_term_cols - border_space);
         status_height = 2;
-        message_height = term_rows - (status_height + ROWNO + (border_space * 3));
+        message_height = curses_term_rows - (status_height + ROWNO + (border_space * 3));
         if (message_height < min_message_height) {
             message_height = min_message_height;
         }
         map_x = 0;
         map_y = message_y + (message_height + border_space);
-        map_width = (term_cols - border_space);
-        map_height = term_rows - (status_height + message_height + (border_space * 3));
+        map_width = (curses_term_cols - border_space);
+        map_height = curses_term_rows - (status_height + message_height + (border_space * 3));
         status_x = 0;
         status_y = map_y + (map_height + border_space);
-        status_width = (term_cols - border_space);
+        status_width = (curses_term_cols - border_space);
     } else if ((status_orientation == ALIGN_BOTTOM) &&
                (message_orientation == ALIGN_RIGHT)) {
         map_x = 0;
         map_y = 0;
         status_height = 2;
-        map_height = term_rows - (status_height + (border_space * 2));
-        message_width = term_cols - (COLNO + (border_space * 2));
-        map_width = term_cols - (message_width + (border_space * 2));
+        map_height = curses_term_rows - (status_height + (border_space * 2));
+        message_width = curses_term_cols - (COLNO + (border_space * 2));
+        map_width = curses_term_cols - (message_width + (border_space * 2));
         status_x = 0;
         status_y = map_y + (map_height + border_space);
         status_width = map_width;
         message_x = map_x + (map_width + border_space);
         message_y = 0;
-        message_height = (term_rows - border_space);
+        message_height = (curses_term_rows - border_space);
     } else if ((status_orientation == ALIGN_BOTTOM) &&
                (message_orientation == ALIGN_BOTTOM)) {
         map_x = 0;
         map_y = 0;
         message_x = 0;
         status_x = 0;
-        message_width = (term_cols - border_space);
+        message_width = (curses_term_cols - border_space);
         status_height = 2;
-        message_height = term_rows - (status_height + ROWNO + (border_space * 3));
+        message_height = curses_term_rows - (status_height + ROWNO + (border_space * 3));
         if (message_height < min_message_height) {
             message_height = min_message_height;
         }
-        map_width = (term_cols - border_space);
-        map_height = term_rows - (status_height + message_height + (border_space * 3));
+        map_width = (curses_term_cols - border_space);
+        map_height = curses_term_rows - (status_height + message_height + (border_space * 3));
         message_y = map_y + (map_height + border_space);
         status_y = message_y + (message_height + border_space);
-        status_width = (term_cols - border_space);
+        status_width = (curses_term_cols - border_space);
     } else if ((status_orientation == ALIGN_BOTTOM) &&
                (message_orientation == ALIGN_LEFT)) {
         message_x = 0;
         message_y = 0;
-        message_height = (term_rows - border_space);
-        message_width = term_cols - (COLNO + (border_space * 2));
+        message_height = (curses_term_rows - border_space);
+        message_width = curses_term_cols - (COLNO + (border_space * 2));
         status_height = 2;
         map_x = message_x + (message_width + border_space);
         map_y = 0;
-        map_height = term_rows - (status_height + (border_space * 2));
-        map_width = term_cols - (message_width + (border_space * 2));
+        map_height = curses_term_rows - (status_height + (border_space * 2));
+        map_width = curses_term_cols - (message_width + (border_space * 2));
         status_x = map_x;
         status_y = map_y + (map_height + border_space);
-        status_width = term_cols - (message_width + (border_space * 2));
+        status_width = curses_term_cols - (message_width + (border_space * 2));
     }
     if ((status_orientation == ALIGN_LEFT) &&
             (message_orientation == ALIGN_TOP)) {
         status_x = 0;
         status_y = 0;
-        status_height = (term_rows - border_space);
+        status_height = (curses_term_rows - border_space);
         status_width = 26;
         message_x = status_x + (status_width + border_space);
         message_y = 0;
-        message_height = term_rows - (ROWNO + (border_space * 2));
+        message_height = curses_term_rows - (ROWNO + (border_space * 2));
         if (message_height < min_message_height) {
             message_height = min_message_height;
         }
-        message_width = term_cols - (status_width + (border_space * 2));
+        message_width = curses_term_cols - (status_width + (border_space * 2));
         map_x = message_x;
         map_y = message_y + (message_height + border_space);
-        map_height = term_rows - (message_height + (border_space * 2));
-        map_width = term_cols - (status_width + (border_space * 2));
+        map_height = curses_term_rows - (message_height + (border_space * 2));
+        map_width = curses_term_cols - (status_width + (border_space * 2));
     } else if ((status_orientation == ALIGN_LEFT) &&
                (message_orientation == ALIGN_RIGHT)) {
         message_x = 0;
         message_y = 0;
-        message_height = (term_rows - border_space);
+        message_height = (curses_term_rows - border_space);
         status_width = 26;
-        message_width = term_cols - (status_width + COLNO + (border_space * 3));
+        message_width = curses_term_cols - (status_width + COLNO + (border_space * 3));
         map_x = message_x + (message_width + border_space);
         map_y = 0;
-        map_height = (term_rows - border_space);
-        map_width = term_cols - (status_width + message_width + (border_space * 3));
+        map_height = (curses_term_rows - border_space);
+        map_width = curses_term_cols - (status_width + message_width + (border_space * 3));
         status_x = map_x + (map_width + border_space);
         status_y = 0;
-        status_height = (term_rows - border_space);
+        status_height = (curses_term_rows - border_space);
     } else if ((status_orientation == ALIGN_LEFT) &&
                (message_orientation == ALIGN_BOTTOM)) {
         status_x = 0;
         status_y = 0;
-        status_height = (term_rows - border_space);
+        status_height = (curses_term_rows - border_space);
         status_width = 26;
         map_x = status_x + (status_width + border_space);
         map_y = 0;
-        message_height = term_rows - (ROWNO + (border_space * 2));
+        message_height = curses_term_rows - (ROWNO + (border_space * 2));
         if (message_height < min_message_height) {
             message_height = min_message_height;
         }
-        map_height = term_rows - (message_height + (border_space * 2));
-        map_width = term_cols - (status_width + (border_space * 2));
+        map_height = curses_term_rows - (message_height + (border_space * 2));
+        map_width = curses_term_cols - (status_width + (border_space * 2));
         message_x = status_x + (status_width + border_space);
         message_y = map_y + (map_height + border_space);
         message_width = map_width;
@@ -422,16 +422,16 @@ curses_create_main_windows(void)
                (message_orientation == ALIGN_LEFT)) {
         status_x = 0;
         status_y = 0;
-        status_height = (term_rows - border_space);
+        status_height = (curses_term_rows - border_space);
         status_width = 26;
         message_x = status_x + (status_width + border_space);
         message_y = 0;
         message_height = status_height;
-        message_width = term_cols - (COLNO + status_width + (border_space * 3));
+        message_width = curses_term_cols - (COLNO + status_width + (border_space * 3));
         map_x = message_x + (message_width + border_space);
         map_y = 0;
         map_height = message_height;
-        map_width = term_cols - (status_width + message_width + (border_space * 3));
+        map_width = curses_term_cols - (status_width + message_width + (border_space * 3));
     }
 
     if (map_width > COLNO) {
@@ -956,7 +956,7 @@ curses_init_options(void)
     }
 
     resize_term(iflags.wc2_term_rows, iflags.wc2_term_cols);
-    getmaxyx(base_term, term_rows, term_cols);
+    getmaxyx(curses_base_term, curses_term_rows, curses_term_cols);
 
     /* This is needed for an odd bug with PDCurses-SDL */
     switch_graphics(ASCII_GRAPHICS);
@@ -969,7 +969,7 @@ curses_init_options(void)
     }
 #else
     resize_term(32, 110);
-    getmaxyx(base_term, term_rows, term_cols);
+    getmaxyx(curses_base_term, curses_term_rows, curses_term_cols);
 #endif
 #endif  /* PDCURSES */
 #if 0 /*RLC unused*/
@@ -1001,7 +1001,7 @@ curses_display_splash_window(void)
     int y_start = 6;
     int which_variant = NETHACK_CURSES;  /* Default to NetHack */
 
-    if ((term_cols < 70) || (term_rows < 20)) {
+    if ((curses_term_cols < 70) || (curses_term_rows < 20)) {
         iflags.wc_splash_screen = FALSE;    /* No room for s.s. */
     }
 

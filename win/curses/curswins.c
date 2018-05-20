@@ -6,6 +6,9 @@
 
 /* Window handling for curses interface */
 
+/* Main windows */
+WINDOW *curses_mapwin, *curses_statuswin, *curses_messagewin;
+
 /* Private declarations */
 
 typedef struct nhw {
@@ -67,8 +70,8 @@ curses_create_window(int width, int height, orient orientation)
             map_border = TRUE;
             mapx = 0;
             mapy = 0;
-            maph = term_rows;
-            mapw = term_cols;
+            maph = curses_term_rows;
+            mapw = curses_term_cols;
         }
     }
 
@@ -79,12 +82,12 @@ curses_create_window(int width, int height, orient orientation)
     width += 2;    /* leave room for bounding box */
     height += 2;
 
-    if ((width > term_cols) || (height > term_rows))
+    if ((width > curses_term_cols) || (height > curses_term_rows))
         panic("curses_create_window: Terminal too small for dialog window");
     switch (orientation) {
     case CENTER: {
-        startx = (term_cols / 2) - (width / 2);
-        starty = (term_rows / 2) - (height / 2);
+        startx = (curses_term_cols / 2) - (width / 2);
+        starty = (curses_term_rows / 2) - (height / 2);
         break;
     }
     case UP: {
@@ -108,18 +111,18 @@ curses_create_window(int width, int height, orient orientation)
         break;
     }
     case LEFT: {
-        if (map_border && (width < term_cols))
+        if (map_border && (width < curses_term_cols))
             startx = 1;
         else
             startx = 0;
-        starty = term_rows - height;
+        starty = curses_term_rows - height;
         break;
     }
     case RIGHT: {
         if (invent || (moves > 1)) {
             startx = (mapw + mapx + (mapb_offset * 2)) - width;
         } else {
-            startx = term_cols - width;
+            startx = curses_term_cols - width;
         }
 
         starty = 0;
@@ -229,15 +232,15 @@ curses_add_nhwin(winid wid, int height, int width, int y, int x,
 
     switch (wid) {
     case MESSAGE_WIN: {
-        messagewin = win;
+        curses_messagewin = win;
         break;
     }
     case STATUS_WIN: {
-        statuswin = win;
+        curses_statuswin = win;
         break;
     }
     case MAP_WIN: {
-        mapwin = win;
+        curses_mapwin = win;
 
         if ((width < COLNO) || (height < ROWNO)) {
             map_clipped = TRUE;
@@ -378,10 +381,10 @@ curses_putch(winid wid, int x, int y, int ch, int color, int attr)
             y++;
         }
 
-        write_char(mapwin, x - sx, y - sy, nch);
+        write_char(curses_mapwin, x - sx, y - sy, nch);
     }
 
-    wrefresh(mapwin);
+    wrefresh(curses_mapwin);
 }
 
 
@@ -580,17 +583,17 @@ curses_draw_map(int sx, int sy, int ex, int ey)
         sbex = (ex * ((float)(ex - sx + 1) / COLNO));
 
         for (count = 0; count < sbsx; count++) {
-            write_char(mapwin, count + bspace,
+            write_char(curses_mapwin, count + bspace,
                        ey - sy + 1 + bspace, hsb_back);
         }
 
         for (count = sbsx; count <= sbex; count++) {
-            write_char(mapwin, count + bspace,
+            write_char(curses_mapwin, count + bspace,
                        ey - sy + 1 + bspace, hsb_bar);
         }
 
         for (count = sbex + 1; count <= (ex - sx); count++) {
-            write_char(mapwin, count + bspace,
+            write_char(curses_mapwin, count + bspace,
                        ey - sy + 1 + bspace, hsb_back);
         }
     }
@@ -601,17 +604,17 @@ curses_draw_map(int sx, int sy, int ex, int ey)
         sbey = (ey * ((float)(ey - sy + 1) / ROWNO));
 
         for (count = 0; count < sbsy; count++) {
-            write_char(mapwin, ex - sx + 1 + bspace, count + bspace,
+            write_char(curses_mapwin, ex - sx + 1 + bspace, count + bspace,
                        vsb_back);
         }
 
         for (count = sbsy; count <= sbey; count++) {
-            write_char(mapwin, ex - sx + 1 + bspace, count + bspace,
+            write_char(curses_mapwin, ex - sx + 1 + bspace, count + bspace,
                        vsb_bar);
         }
 
         for (count = sbey + 1; count <= (ey - sy); count++) {
-            write_char(mapwin, ex - sx + 1 + bspace, count + bspace,
+            write_char(curses_mapwin, ex - sx + 1 + bspace, count + bspace,
                        vsb_back);
         }
     }
@@ -619,7 +622,7 @@ curses_draw_map(int sx, int sy, int ex, int ey)
 
     for (curx = sx; curx <= ex; curx++) {
         for (cury = sy; cury <= ey; cury++) {
-            write_char(mapwin, curx - sx + bspace, cury - sy + bspace,
+            write_char(curses_mapwin, curx - sx + bspace, cury - sy + bspace,
                        map[cury][curx]);
         }
     }
