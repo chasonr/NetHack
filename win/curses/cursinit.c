@@ -115,28 +115,9 @@ curses_create_main_windows(void)
     int hspace = curses_term_cols - 80;
     boolean borders = FALSE;
 
-#if 0 /*RLC unused*/
-    switch (iflags.wc2_windowborders) {
-    case 1: { /* On */
+    if ((curses_term_cols > 81) && (curses_term_rows > 25)) {
         borders = TRUE;
-        break;
     }
-    case 2: { /* Off */
-        borders = FALSE;
-        break;
-    }
-    case 3: { /* Auto */
-        if ((curses_term_cols > 81) && (curses_term_rows > 25)) {
-            borders = TRUE;
-        }
-        break;
-    }
-    default: {
-        borders = FALSE;
-    }
-    }
-#endif
-
 
     if (borders) {
         border_space = 2;
