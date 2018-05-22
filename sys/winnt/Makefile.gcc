@@ -437,7 +437,7 @@ ifeq "$(WANT_WIN_SDL2)" "Y"
     GUIOBJ += $(O)sdl2font_windows.o $(O)sdl2getlin.o $(O)sdl2map.o \
     $(O)sdl2menu.o $(O)sdl2message.o $(O)sdl2plsel.o $(O)sdl2posbar.o \
     $(O)sdl2status.o $(O)sdl2text.o $(O)sdl2unicode.o $(O)sdl2window.o \
-	$(O)tileset.o $(O)bmptiles.o $(O)giftiles.o
+	$(O)tileset.o $(O)bmptiles.o $(O)giftiles.o  $(O)pngtiles.o
 endif
 ifeq "$(WANT_WIN_CURSES)" "Y"
     GUIOBJ += $(O)cursdial.o $(O)cursinit.o $(O)cursmain.o $(O)cursmesg.o \
