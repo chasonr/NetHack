@@ -98,15 +98,15 @@ curses_toggle_color_attr(WINDOW *win, int color, int attr, int onoff)
 #endif
 
     if (color == 0) { /* make black fg visible */
-#ifdef USE_DARKGRAY
-        if (can_change_color() && (COLORS > 16)) {
-            color = CURSES_DARK_GRAY - 1;
-        } else { /* Use bold for a bright black */
-            wattron(win, A_BOLD);
+        if (iflags.wc2_darkgray) {
+            if (can_change_color() && (COLORS > 16)) {
+                color = CURSES_DARK_GRAY - 1;
+            } else { /* Use bold for a bright black */
+                wattron(win, A_BOLD);
+            }
+        } else {
+            color = CLR_BLUE;
         }
-#else
-        color = CLR_BLUE;
-#endif  /* USE_DARKGRAY */
     }
     curses_color = color + 1;
     if (COLORS < 16) {
@@ -129,16 +129,16 @@ curses_toggle_color_attr(WINDOW *win, int color, int attr, int onoff)
             if ((color > 7) && (COLORS < 16)) {
                 wattroff(win, A_BOLD);
             }
-#ifdef USE_DARKGRAY
-            if ((color == 0) && (!can_change_color() ||
-                                 (COLORS <= 16))) {
-                wattroff(win, A_BOLD);
+            if (iflags.wc2_darkgray) {
+                if ((color == 0) && (!can_change_color() ||
+                                     (COLORS <= 16))) {
+                    wattroff(win, A_BOLD);
+                }
+            } else {
+                if (iflags.use_inverse) {
+                    wattroff(win, A_REVERSE);
+                }
             }
-#else
-            if (iflags.use_inverse) {
-                wattroff(win, A_REVERSE);
-            }
-#endif  /* DARKGRAY */
             wattroff(win, COLOR_PAIR(curses_color));
         }
 
