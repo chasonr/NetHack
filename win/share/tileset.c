@@ -217,12 +217,3 @@ const struct TileSetImage *image;
         memset(blank_tile.indexes, 0, tile_size);
     }
 }
-
-boolean
-read_png_tiles(filename, image)
-const char *filename;
-struct TileSetImage *image;
-{
-    /* stub */
-    return FALSE;
-}
