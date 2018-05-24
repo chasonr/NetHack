@@ -11,9 +11,13 @@
 
 int GUILaunched;
 struct window_procs mswin_procs = { "guistubs" };
+#ifdef SDL2_GRAPHICS
 struct window_procs sdl2_procs = { "guistubs" };
+#endif
 #ifdef QT_GRAPHICS
 struct window_procs Qt_procs = { "guistubs" };
+#endif
+#ifdef CURSES_GRAPHICS
 struct window_procs curses_procs = { "guistubs" };
 int qt_tilewidth, qt_tileheight, qt_fontsize, qt_compact_mode;
 #endif
