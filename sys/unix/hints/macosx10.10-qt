@@ -54,7 +54,7 @@ GAMEGRP  = games
 #WANT_SOURCE_INSTALL=1
 
 CC=clang
-CXX=clang++
+CXX=clang++ -std=gnu++11
 
 # At the moment this is just for debugging, but in the future it could be
 # useful for other things.  Requires SYSCF and an ANSI compiler.
