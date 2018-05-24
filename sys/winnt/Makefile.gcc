@@ -1133,7 +1133,7 @@ spotless: clean
 	$(subst /,\,if exist $(U)recover.exe    del $(U)recover.exe)
 	$(subst /,\,if exist $(DAT)/dlb.lst      del $(DAT)/dlb.lst)
 	$(subst /,\,if exist nhdat.         del nhdat.)
-	$(call del, $(QT4)/*.moc)
+	$(subst /,\,if exist $(QT4)/*.moc del $(QT4)/*.moc)
 	$(subst /,\,if exist $(DAT)/bogusmon del $(DAT)/bogusmon)
 	$(subst /,\,if exist $(DAT)/engrave del $(DAT)/engrave)
 	$(subst /,\,if exist $(DAT)/epitaph del $(DAT)/epitaph)
