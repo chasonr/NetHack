@@ -87,6 +87,8 @@ boolean true_color;
         ok = read_gif_tiles(filename, image);
     } else if (memcmp(header, png_sig, sizeof(png_sig)) == 0) {
         ok = read_png_tiles(filename, image);
+    } else if (memcmp(header, "/* XPM */", 9) == 0) {
+        ok = read_xpm_tiles(filename, image);
     } else {
         ok = FALSE;
     }

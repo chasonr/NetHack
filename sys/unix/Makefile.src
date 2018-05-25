@@ -228,10 +228,11 @@ WINSDL2SRC = ../win/sdl2/sdl2font_mac.c ../win/sdl2/sdl2font_pango.c \
 	../win/sdl2/sdl2posbar.c ../win/sdl2/sdl2status.c \
 	../win/sdl2/sdl2text.c ../win/sdl2/sdl2unicode.c ../win/sdl2/sdl2window.c \
 	../win/share/bmptiles.c ../win/share/giftiles.c ../win/share/pngtiles.c \
+	../win/share/xpmtiles.c \
 	../win/share/tileset.c
 WINSDL2OBJ = sdl2getlin.o sdl2map.o sdl2menu.o sdl2message.o sdl2plsel.o \
 	sdl2posbar.o sdl2status.o sdl2text.o sdl2unicode.o sdl2window.o \
-	$(SDL2FONT) tile.o tileset.o bmptiles.o giftiles.o pngtiles.o
+	$(SDL2FONT) tile.o tileset.o bmptiles.o giftiles.o pngtiles.o xpmtiles.o
 #
 # Files for a Curses port
 #
@@ -933,6 +934,8 @@ giftiles.o: ../win/share/giftiles.c $(HACK_H)
 	$(CC) $(CFLAGS) -c ../win/share/giftiles.c
 pngtiles.o: ../win/share/pngtiles.c $(HACK_H)
 	$(CC) $(CFLAGS) -c ../win/share/pngtiles.c
+xpmtiles.o: ../win/share/xpmtiles.c $(HACK_H)
+	$(CC) $(CFLAGS) -c ../win/share/xpmtiles.c
 cursdial.o: ../win/curses/cursdial.c
 	$(CC) $(CFLAGS) -c ../win/curses/cursdial.c
 cursinit.o: ../win/curses/cursinit.c
