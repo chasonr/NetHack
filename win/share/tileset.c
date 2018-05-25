@@ -5,6 +5,7 @@
 #include "hack.h"
 #include "tileset.h"
 
+static void FDECL(define_palette, (struct TileSetImage *));
 static void FDECL(get_tile_map, (const char *));
 static void FDECL(split_tiles, (const struct TileSetImage *));
 
@@ -95,6 +96,9 @@ boolean true_color;
     if (!ok)
         goto error;
 
+    /* Provide a palette, if possible */
+    define_palette(image);
+
     /* Reject if the interface cannot handle direct color and the image does
        not use a palette */
     if (!true_color && image->indexes == NULL)
@@ -118,6 +122,47 @@ error:
         fclose(fp);
     free_tile_image(image);
     return FALSE;
+}
+
+static void
+define_palette(image)
+struct TileSetImage *image;
+{
+    unsigned x, y, ncolors, color;
+    size_t i;
+
+    if (image->indexes != NULL) return; /* already has a palette */
+
+    image->indexes = (unsigned char *) alloc(image->width * image->height);
+
+    ncolors = 0;
+    i = 0;
+    for (y = 0; y < image->height; ++y) {
+        for (x = 0; x < image->width; ++x) {
+            struct Pixel p1, p2;
+
+            /* Find the color in the palette as it exists */
+            p1 = image->pixels[i];
+            for (color = 0; color < ncolors; ++color) {
+                p2 = image->palette[color];
+                if (p1.r == p2.r && p1.g == p2.g
+                &&  p1.b == p2.b && p1.a == p2.a) {
+                    break;
+                }
+            }
+            if (color >= 256) {
+                /* More than 256 unique colors */
+                free(image->indexes);
+                image->indexes = NULL;
+                return;
+            }
+            if (color >= ncolors) {
+                /* New color */
+                image->palette[ncolors++] = p1;
+            }
+            image->indexes[i++] = color;
+        }
+    }
 }
 
 const struct Pixel *
