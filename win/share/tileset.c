@@ -67,6 +67,10 @@ boolean true_color;
     image->tile_width = 0;
     image->tile_height = 0;
 
+    if (filename == NULL || filename[0] == '\0') {
+        filename = "nhtiles.bmp";
+    }
+
     /* Identify the image type */
     fp = fopen(filename, "rb");
     if (!fp)
