@@ -321,7 +321,7 @@ unsigned long color;
     case 24:
         /* Pixel may cross a window boundary */
         for (i = 0; i < 3; ++i) {
-            addr = vesa_SetWindow(vesa_read_win, offset + i);
+            addr = vesa_SetWindow(vesa_write_win, offset + i);
             _farpokeb(_dos_ds, addr, (unsigned char) (color >> (i * 8)));
         }
         break;
