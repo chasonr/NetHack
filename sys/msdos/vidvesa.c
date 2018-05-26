@@ -120,6 +120,7 @@ static unsigned short vesa_y_center; /* Y centering offset */
 static unsigned short vesa_scan_line; /* Bytes per scan line */
 static int vesa_read_win;  /* Select the read window */
 static int vesa_write_win; /* Select the write window */
+static unsigned long vesa_win_func;
 static unsigned long vesa_win_pos[2]; /* Window position */
 static unsigned long vesa_win_addr[2]; /* Window physical address */
 static unsigned long vesa_win_size; /* Window size */
@@ -245,7 +246,13 @@ unsigned long offset;
         regs.h.bl = window;
         regs.x.dx = offset / vesa_win_gran;
         pos = regs.x.dx * vesa_win_gran;
-        (void) __dpmi_int(VIDEO_BIOS, &regs);
+        if (vesa_win_func != 0) {
+            regs.x.cs = vesa_win_func >> 16;
+            regs.x.ip = vesa_win_func & 0xFFFF;
+            (void) __dpmi_simulate_real_mode_procedure_retf(&regs);
+        } else {
+            (void) __dpmi_int(VIDEO_BIOS, &regs);
+        }
         vesa_win_pos[window] = pos;
     }
 
@@ -989,6 +996,7 @@ vesa_detect()
             break;
         }
     }
+    vesa_win_func = mode_info.WinFuncPtr;
     vesa_win_addr[0] = mode_info.WinASegment * 16L;
     vesa_win_addr[1] = mode_info.WinBSegment * 16L;
     vesa_win_pos[0] = 0xFFFFFFFF; /* position unknown */
