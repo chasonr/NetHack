@@ -102,7 +102,7 @@ USE_DLB = Y
 # zlib128br2.zip (or later) packages from DJGPP.
 # If your DOS supports long file names (FreeDOS does, "real" MS-DOS doesn't),
 # then you'll need to rename djgpp\include\pnglibco.h to pnglibconf.h.
-WANT_PNG = Y
+#WANT_PNG = Y
 
 # djgpp includes ls.exe and touch.exe in fil41b.zip from the v2gnu 
 # folder so be sure to include that when downloading djgpp. Doing
