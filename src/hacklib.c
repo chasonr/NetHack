@@ -234,6 +234,39 @@ char c;
     return s;
 }
 
+/* Convert a Unicode code point to UTF-8 */
+void
+char_to_utf8(utf8, wchr)
+char utf8[5];
+uint32 wchr;
+{
+    /* Filter invalid code points */
+    if (wchr > 0x10FFFF || (0xD800 <= wchr && wchr <= 0xDFFF)) {
+        wchr = 0xFFFD;
+    }
+
+    /* Convert */
+    if (wchr < 0x80) {
+        utf8[0] = (char) wchr;
+        utf8[1] = '\0';
+    } else if (wchr < 0x800) {
+        utf8[0] = (char) (0xC0 |  (wchr >>  6));
+        utf8[1] = (char) (0x80 | ( wchr        & 0x3F));
+        utf8[2] = '\0';
+    } else if (wchr < 0x10000) {
+        utf8[0] = (char) (0xE0 |  (wchr >> 12));
+        utf8[1] = (char) (0x80 | ((wchr >>  6) & 0x3F));
+        utf8[2] = (char) (0x80 |  (wchr        & 0x3F));
+        utf8[3] = '\0';
+    } else {
+        utf8[0] = (char) (0xF0 |  (wchr >> 18));
+        utf8[1] = (char) (0x80 | ((wchr >> 12) & 0x3F));
+        utf8[2] = (char) (0x80 | ((wchr >>  6) & 0x3F));
+        utf8[3] = (char) (0x80 | ( wchr        & 0x3F));
+        utf8[4] = '\0';
+    }
+}
+
 /* truncating string copy */
 void
 copynchars(dst, src, n)

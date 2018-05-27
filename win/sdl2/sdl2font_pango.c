@@ -21,7 +21,6 @@ static void FT_Bitmap_free(FT_Bitmap *bitmap);
 static SDL_Rect sdl2_font_textSizeStr_UTF8(SDL2Font *font, const char *text);
 static SDL_Surface *sdl2_font_renderStrBG_UTF8(SDL2Font *font,
         const char *text, SDL_Color foreground, SDL_Color background);
-static void ch_to_utf8(char utf8[5], Uint32 ch);
 static char * iso8859_1_to_utf8(const char *inpstr);
 
 static FT_Bitmap *
@@ -143,7 +142,7 @@ sdl2_font_renderCharBG(SDL2Font *font, Uint32 ch, SDL_Color foreground,
     char utf8[5];
     SDL_Surface *surface;
 
-    ch_to_utf8(utf8, ch);
+    char_to_utf8(utf8, ch);
     surface = sdl2_font_renderStrBG_UTF8(font, utf8, foreground, background);
     return surface;
 }
@@ -237,7 +236,7 @@ sdl2_font_textSizeChar(SDL2Font *font, Uint32 ch)
     char utf8[5];
     SDL_Rect rect;
 
-    ch_to_utf8(utf8, ch);
+    char_to_utf8(utf8, ch);
     rect = sdl2_font_textSizeStr_UTF8(font, utf8);
     return rect;
 }
@@ -279,37 +278,6 @@ getMetrics(const SDL2Font *font)
 
     g_object_unref(pfont);
     return metrics;
-}
-
-/* Convert code point to UTF-8 */
-static void
-ch_to_utf8(char utf8[5], Uint32 ch)
-{
-    /* Filter invalid code points */
-    if (ch > 0x10FFFF || (0xD800 <= ch && ch <= 0xDFFF)) {
-        ch = 0xFFFD;
-    }
-
-    /* Convert */
-    if (ch < 0x80) {
-        utf8[0] = (char) ch;
-        utf8[1] = '\0';
-    } else if (ch < 0x800) {
-        utf8[0] = (char) (0xC0 | (ch >> 6));
-        utf8[1] = (char) (0x80 | (ch & 0x3F));
-        utf8[2] = '\0';
-    } else if (ch < 0x10000) {
-        utf8[0] = (char) (0xE0 | (ch >> 12));
-        utf8[1] = (char) (0x80 | ((ch >> 6) & 0x3F));
-        utf8[2] = (char) (0x80 | (ch & 0x3F));
-        utf8[3] = '\0';
-    } else {
-        utf8[0] = (char) (0xF0 |  (ch >> 18));
-        utf8[1] = (char) (0x80 | ((ch >> 12) & 0x3F));
-        utf8[2] = (char) (0x80 | ((ch >>  6) & 0x3F));
-        utf8[3] = (char) (0x80 | (ch & 0x3F));
-        utf8[4] = '\0';
-    }
 }
 
 /* Convert ISO 8859-1 string to UTF-8 */

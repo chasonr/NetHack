@@ -7,6 +7,7 @@
 #define GLOBAL_H
 
 #include <stdio.h>
+#include "integer.h"
 
 /* #define BETA  */ /* development or beta testing [MRS] */
 
@@ -75,7 +76,7 @@ typedef xchar boolean; /* 0 or 1 */
 /*
  * type nhsym: loadable symbols go into this type
  */
-typedef uchar nhsym;
+typedef uint32 nhsym;
 
 #ifndef STRNCMPI
 #ifndef __SASC_60 /* SAS/C already shifts to stricmp */

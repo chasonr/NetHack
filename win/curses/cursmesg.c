@@ -132,7 +132,7 @@ curses_message_win_puts(const char *message, int glyph, boolean recursed)
             ch = curses_convert_glyph(ch);
             curses_toggle_color_attr(win, color, NONE, ON);
 #ifndef NO_WIDE_CURSES
-            if (SYMHANDLING(H_IBM)) {
+            if (SYMHANDLING(H_IBM) || SYMHANDLING(H_UNICODE)) {
                 wchar_t wch[2];
                 wch[0] = ch;
                 wch[1] = 0;

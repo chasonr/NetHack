@@ -4,6 +4,13 @@
 
 // qt4str.cpp -- some string functions
 
+extern "C" {
+#include "hack.h"
+}
+#undef min
+#undef max
+#undef index
+#undef rindex
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include "qt4str.h"
@@ -77,7 +84,27 @@ int cp437(int ch)
         0x2261, 0x00B1, 0x2265, 0x2264, 0x2320, 0x2321, 0x00F7, 0x2248,
         0x00B0, 0x2219, 0x00B7, 0x221A, 0x207F, 0x00B2, 0x25A0, 0x00A0,
     };
-    return cp437table[(unsigned char)ch];
+    static const unsigned short dectable[] = {
+        0x25C6, 0x2592, 0x2409, 0x240C, 0x240D, 0x240A, 0x00B0, 0x00B1,
+        0x2424, 0x240B, 0x2518, 0x2510, 0x250C, 0x2514, 0x253C, 0x23BA,
+        0x23BB, 0x2500, 0x23BC, 0x23BD, 0x251C, 0x2524, 0x2534, 0x252C,
+        0x2502, 0x2264, 0x2265, 0x03C0, 0x2260, 0x00A3, 0x00B7
+    };
+
+    if (SYMHANDLING(H_IBM)) {
+        return cp437table[(unsigned char)ch];
+    } else if (SYMHANDLING(H_DEC)) {
+        ch &= 0xFF;
+        if (0xE0 <= ch && ch <= 0xFE) {
+            return dectable[ch - 0xE0];
+        } else {
+            return ch;
+        }
+    } else if (SYMHANDLING(H_UNICODE)) {
+        return ch;
+    } else {
+        return (unsigned char)ch;
+    }
 }
 
 } // namespace nethack_qt4

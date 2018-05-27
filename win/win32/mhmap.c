@@ -704,8 +704,25 @@ onPaint(HWND hWnd)
                         }
 #endif
 
-                        DrawText(hDC, NH_A2W(&ch, &wch, 1), 1, &glyph_rect,
-                                 DT_CENTER | DT_VCENTER | DT_NOPREFIX);
+                        if (SYMHANDLING(H_UNICODE)) {
+                            WCHAR wch[2];
+                            unsigned size;
+                            if (mgch < 0x10000) {
+                                wch[0] = (WCHAR) mgch;
+                                size = 1;
+                            } else {
+                                wch[0] = (WCHAR) (0xD7C0 + (mgch >> 10));
+                                wch[1] = (WCHAR) (0xDC00 + (mgch & 0x3FF));
+                                size = 2;
+                            }
+                            /* Prefer TextOutW to DrawTextW, because it can
+                               print Unicode even on Windows 95 */
+                            TextOutW(hDC, glyph_rect.left, glyph_rect.top,
+                                    wch, size);
+                        } else {
+                            DrawText(hDC, NH_A2W(&ch, &wch, 1), 1, &glyph_rect,
+                                     DT_CENTER | DT_VCENTER | DT_NOPREFIX);
+                        }
                         SetTextColor(hDC, OldFg);
                     }
             SelectObject(hDC, oldFont);
