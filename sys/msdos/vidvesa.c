@@ -1339,7 +1339,7 @@ unsigned x, y;
         const unsigned char *fp;
 
         offset = y * fnt_width + x1;
-        fp = get_font_glyph(vesa_font, ch, FALSE);
+        fp = get_font_glyph(vesa_font, ch, SYMHANDLING(H_UNICODE));
         fnt = fp[offset];
     } else {
         const unsigned char __far *fp;

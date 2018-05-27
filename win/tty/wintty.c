@@ -3132,7 +3132,12 @@ int in_ch;
     register char ch = (char) in_ch;
 
 #if defined(ASCIIGRAPH) && !defined(NO_TERMS)
-    if (SYMHANDLING(H_IBM) || iflags.eight_bit_tty) {
+    if (SYMHANDLING(H_UNICODE)) {
+        char utf8[5];
+
+        char_to_utf8(utf8, in_ch);
+        (void) fputs(utf8, stdout);
+    } else if (SYMHANDLING(H_IBM) || iflags.eight_bit_tty) {
         /* IBM-compatible displays don't need other stuff */
         (void) putchar(ch);
     } else if (ch & 0x80) {

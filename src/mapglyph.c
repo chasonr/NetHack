@@ -48,10 +48,10 @@ static int explcolors[] = {
 
 #if defined(USE_TILES) && defined(MSDOS)
 #define HAS_ROGUE_IBM_GRAPHICS \
-    (currentgraphics == ROGUESET && SYMHANDLING(H_IBM) && !iflags.grmode)
+    (currentgraphics == ROGUESET && (SYMHANDLING(H_IBM) || SYMHANDLING(H_UNICODE)) && !iflags.grmode)
 #else
 #define HAS_ROGUE_IBM_GRAPHICS \
-    (currentgraphics == ROGUESET && SYMHANDLING(H_IBM))
+    (currentgraphics == ROGUESET && (SYMHANDLING(H_IBM) || SYMHANDLING(H_UNICODE)))
 #endif
 
 #define is_objpile(x,y) (!Hallucination && level.objects[(x)][(y)] \
@@ -293,7 +293,12 @@ const char *str;
                         else
                             break;
                     so = mapglyph(gv, &ch, &oc, &os, 0, 0);
-                    *put++ = showsyms[so];
+                    if (SYMHANDLING(H_UNICODE)) {
+                        char_to_utf8(put, showsyms[so]);
+                        put += strlen(put);
+                    } else {
+                        *put++ = showsyms[so];
+                    }
                     /* 'cp' is ready for the next loop iteration and '*cp'
                        should not be copied at the end of this iteration */
                     continue;

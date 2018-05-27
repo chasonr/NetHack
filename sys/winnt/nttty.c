@@ -589,10 +589,14 @@ int in_ch;
         console.attr |= (inverse) ? BACKGROUND_INTENSITY : FOREGROUND_INTENSITY;
     WriteConsoleOutputAttribute(hConOut, &console.attr, 1, console.cursor, &acount);
 
-    if (has_unicode)
+    if (SYMHANDLING(H_UNICODE)) {
+        WCHAR wch = (WCHAR) in_ch;
+        WriteConsoleOutputCharacterW(hConOut, &wch, 1, cursor, &ccount);
+    } else if (has_unicode) {
         WriteConsoleOutputCharacterW(hConOut, &cp437[ch], 1, console.cursor, &ccount);
-    else
+    } else {
         WriteConsoleOutputCharacterA(hConOut, &ch, 1, console.cursor, &ccount);
+    }
 }
 
 void

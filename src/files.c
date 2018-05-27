@@ -193,7 +193,7 @@ STATIC_DCL char *FDECL(make_lockname, (const char *, char *));
 #endif
 STATIC_DCL void FDECL(set_configfile_name, (const char *));
 STATIC_DCL FILE *FDECL(fopen_config_file, (const char *, int));
-STATIC_DCL int FDECL(get_uchars, (char *, uchar *, BOOLEAN_P,
+STATIC_DCL int FDECL(get_uchars, (char *, nhsym *, BOOLEAN_P,
                                   int, const char *));
 boolean FDECL(proc_wizkit_line, (char *));
 boolean FDECL(parse_config_line, (char *));
@@ -2063,12 +2063,12 @@ int src;
 STATIC_OVL int
 get_uchars(bufp, list, modlist, size, name)
 char *bufp;       /* current pointer */
-uchar *list;      /* return list */
+nhsym *list;      /* return list */
 boolean modlist;  /* TRUE: list is being modified in place */
 int size;         /* return list size */
 const char *name; /* name of option for error message */
 {
-    unsigned int num = 0;
+    nhsym num = 0;
     int count = 0;
     boolean havenum = FALSE;
 
@@ -2254,7 +2254,7 @@ char *origbuf;
     int n;
 #endif
     char *bufp, buf[4 * BUFSZ];
-    uchar translate[MAXPCHARS];
+    nhsym translate[MAXPCHARS];
     int len;
     boolean retval = TRUE;
     int src = iflags.parse_config_file_src;

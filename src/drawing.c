@@ -546,6 +546,7 @@ const char *known_handling[] = {
     "UNKNOWN", /* H_UNK */
     "IBM",     /* H_IBM */
     "DEC",     /* H_DEC */
+    "Unicode", /* H_UNICODE */
     (const char *) 0,
 };
 

@@ -531,7 +531,7 @@ write_char(WINDOW *win, int x, int y, nethack_char nch)
     mvwaddrawch(win, y, x, nch.ch);
 #else
 #ifndef NO_WIDE_CURSES
-    if (SYMHANDLING(H_IBM)) {
+    if (SYMHANDLING(H_IBM) || SYMHANDLING(H_UNICODE)) {
         wchar_t wch[2];
         wch[0] = nch.ch;
         wch[1] = 0;

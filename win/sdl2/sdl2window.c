@@ -1331,10 +1331,8 @@ sdl2_chr_convert(Uint32 ch)
         } else {
             return ch;
         }
-#if 0 /* RLC */
     } else if (SYMHANDLING(H_UNICODE)) {
         return ch;
-#endif
     } else {
         return (unsigned char)ch;
     }
