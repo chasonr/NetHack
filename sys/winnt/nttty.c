@@ -591,7 +591,7 @@ int in_ch;
 
     if (SYMHANDLING(H_UNICODE)) {
         WCHAR wch = (WCHAR) in_ch;
-        WriteConsoleOutputCharacterW(hConOut, &wch, 1, cursor, &ccount);
+        WriteConsoleOutputCharacterW(hConOut, &wch, 1, console.cursor, &ccount);
     } else if (has_unicode) {
         WriteConsoleOutputCharacterW(hConOut, &cp437[ch], 1, console.cursor, &ccount);
     } else {
