@@ -135,6 +135,13 @@ static unsigned char vesa_blue_pos;
 static unsigned char vesa_blue_size;
 static unsigned long vesa_palette[256];
 
+/*
+ * For optimization of tile drawing. If we draw more than a few tiles without
+ * drawing any text, we stop updating the map until more text is drawn, then
+ * redraw the entire map.
+ */
+static boolean redraw_scheduled = FALSE;
+
 struct OldModeInfo {
     unsigned mode;
 
@@ -564,7 +571,7 @@ unsigned special; /* special feature: corpse, invis, detected, pet, ridden -
     map[ry][col].attr = attr;
     if (iflags.traditional_view) {
         vesa_WriteChar((unsigned char) ch, col, row, attr, FALSE);
-    } else {
+    } else if (!redraw_scheduled) {
         if ((col >= clipx) && (col <= clipxmax)) {
             packcell = get_tile(glyph2tile[glyphnum]);
             if (!iflags.over_view && map[ry][col].special)
@@ -622,6 +629,12 @@ int x, y;
     }
 }
 
+void
+vesa_schedule_redraw()
+{
+    redraw_scheduled = TRUE;
+}
+
 static void
 vesa_redrawmap()
 {
@@ -670,6 +683,8 @@ vesa_redrawmap()
             }
         }
     }
+
+    redraw_scheduled = FALSE;
 }
 #endif /* USE_TILES && CLIPPING */
 
@@ -1498,6 +1513,10 @@ vesa_DrawCursor()
     boolean halfwidth =
         (isrogue || iflags.over_view || iflags.traditional_view || !inmap);
     int curtyp;
+
+    if (redraw_scheduled && inmap) {
+        vesa_redrawmap();
+    }
 
     if (!cursor_type && inmap)
         return; /* CURSOR_INVIS - nothing to do */
