@@ -3182,6 +3182,32 @@ boolean tinitial, tfrom_file;
         return retval;
     }
 #endif /* VIDEOSHADES */
+#if defined(MSDOS) || defined(SDL2_GRAPHICS)
+    fullname = "video_width";
+    if (match_optname(opts, fullname, 7, TRUE)) {
+        if (duplicate)
+            complain_about_duplicate(opts, 1);
+        if (negated) {
+            bad_negation(fullname, FALSE);
+            return;
+        }
+        op = string_for_opt(opts, negated);
+        iflags.wc_video_width = strtol(op, NULL, 10);
+        return;
+    }
+    fullname = "video_height";
+    if (match_optname(opts, fullname, 7, TRUE)) {
+        if (duplicate)
+            complain_about_duplicate(opts, 1);
+        if (negated) {
+            bad_negation(fullname, FALSE);
+            return;
+        }
+        op = string_for_opt(opts, negated);
+        iflags.wc_video_height = strtol(op, NULL, 10);
+        return;
+    }
+#endif /* MSDOS || SDL2_GRAPHICS */
 #ifdef MSDOS
 #ifdef NO_TERMS
     /* video:string -- must be after longer tests */
