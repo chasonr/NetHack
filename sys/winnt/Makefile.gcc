@@ -457,10 +457,6 @@ ifeq "$(WANT_WIN_CURSES)" "Y"
     GUIOBJ += $(O)cursdial.o $(O)cursinit.o $(O)cursmain.o $(O)cursmesg.o \
 	$(O)cursmisc.o $(O)cursstat.o $(O)curswins.o
 endif
-ifeq "$(WANT_WIN_CURSES)" "Y"
-    GUIOBJ += $(O)cursdial.o $(O)cursinit.o $(O)cursmain.o $(O)cursmesg.o \
-	$(O)cursmisc.o $(O)cursstat.o $(O)curswins.o
-endif
 
 GUIHDR = $(MSWIN)/mhaskyn.h $(MSWIN)/mhdlg.h $(MSWIN)/mhfont.h \
 	$(MSWIN)/mhinput.h $(MSWIN)/mhmain.h $(MSWIN)/mhmap.h \

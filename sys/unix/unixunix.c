@@ -114,11 +114,6 @@ getlock()
         if (!isatty(0))
             error("You must play from a terminal.");
 #endif
-#ifdef CURSES_GRAPHICS
-    if (!strcmp(windowprocs.name, "curses"))
-        if (!isatty(0))
-            error("You must play from a terminal.");
-#endif
 
     /* we ignore QUIT and INT at this point */
     if (!lock_file(HLOCK, LOCKPREFIX, 10)) {
