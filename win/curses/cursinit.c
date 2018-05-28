@@ -492,6 +492,7 @@ curses_init_nhcolors(void)
                 init_color(COLOR_WHITE + 8, 1000, 1000, 1000);
                 if (COLORS > 16) {
                     init_color(CURSES_DARK_GRAY, 300, 300, 300);
+                    init_pair(CURSES_DARK_GRAY, CURSES_DARK_GRAY, -1);
                 }
             } else {
                 /* Set flag to use bold for bright colors */
