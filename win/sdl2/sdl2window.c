@@ -143,6 +143,9 @@ static void sdl2_window_printGlyph(struct SDL2Window *win, xchar x, xchar y,
         int glyph, int bkglyph);
 static void sdl2_window_redraw(struct SDL2Window *win);
 
+static SDL_Color color_from_string(const char *color, const char *dcolor,
+        int alpha);
+
 static void
 sdl2_init_nhwindows(int *argc, char **argv)
 {
@@ -1838,50 +1841,120 @@ next_video_mode(void)
 /* Underline is implemented as bold on a gray background */
 /* Blink is not implemented */
 SDL_Color
-sdl2_text_fg(int attr)
+sdl2_text_fg(const char *fgcolor, const char *bgcolor, int attr)
 {
-    static const SDL_Color black = {   0,   0,   0, 255 };
-    static const SDL_Color gray  = { 128, 128, 128, 255 };
-    static const SDL_Color bgray = { 176, 176, 176, 255 };
-    static const SDL_Color white = { 255, 255, 255, 255 };
+    SDL_Color color;
+    int r, g, b;
 
     switch (attr) {
     default:
     case ATR_NONE:
-        return bgray;
+        color = color_from_string(fgcolor, "#B0B0B0", 255);
+        break;
 
     case ATR_BOLD:
     case ATR_ULINE:
-        return white;
+        color = color_from_string(fgcolor, "#B0B0B0", 255);
+        r = color.r + 48;
+        g = color.g + 48;
+        b = color.b + 48;
+        color.r = r < 255 ? r : 255;
+        color.g = g < 255 ? g : 255;
+        color.b = b < 255 ? b : 255;
+        break;
 
     case ATR_DIM:
-        return gray;
+        color = color_from_string(fgcolor, "#B0B0B0", 255);
+        color.r = color.r * 2 / 3;
+        color.g = color.g * 2 / 3;
+        color.b = color.b * 2 / 3;
+        break;
 
     case ATR_INVERSE:
-        return black;
+        color = color_from_string(bgcolor, "#000000", 255);
+        break;
     }
+
+    /* Foreground color is always opaque */
+    color.a = 255;
+    return color;
 }
 
 SDL_Color
-sdl2_text_bg(int attr)
+sdl2_text_bg(const char *fgcolor, const char *bgcolor, int attr, int alpha)
 {
-    static const SDL_Color clear = {   0,   0,   0,   0 };
-    static const SDL_Color gray  = { 128, 128, 128, 255 };
-    static const SDL_Color white = { 255, 255, 255, 255 };
+    SDL_Color color;
+    int r, g, b;
 
     switch (attr) {
     default:
     case ATR_NONE:
     case ATR_BOLD:
     case ATR_DIM:
-        return clear;
+        color = color_from_string(bgcolor, "#000000", alpha);
+        break;
 
     case ATR_ULINE:
-        return gray;
+        color = color_from_string(bgcolor, "#000000", 255);
+        r = color.r + 48;
+        g = color.g + 48;
+        b = color.b + 48;
+        color.r = r < 255 ? r : 255;
+        color.g = g < 255 ? g : 255;
+        color.b = b < 255 ? b : 255;
+        break;
 
     case ATR_INVERSE:
-        return white;
+        color = color_from_string(fgcolor, "#B0B0B0", 255);
+        break;
     }
+    return color;
+}
+
+static SDL_Color
+color_from_string(const char *color, const char *dcolor, int alpha)
+{
+    SDL_Color rgb;
+
+    rgb.r = 176;
+    rgb.g = 176;
+    rgb.b = 176;
+    rgb.a = alpha < 255 ? alpha : 255;
+    if (color == NULL) {
+        goto def_color;
+    }
+    if (color[0] == '#' && strlen(color) >= 7) {
+        int r, g, b;
+        int count = sscanf(color + 1, "%2x%2x%2x%2x", &r, &g, &b, &alpha);
+        if (count < 3) {
+            goto def_color;
+        }
+        rgb.r = r < 255 ? r : 255;
+        rgb.g = g < 255 ? g : 255;
+        rgb.b = b < 255 ? b : 255;
+        if (count >= 4) {
+            rgb.a = alpha < 255 ? alpha : 255;
+        }
+    } else {
+        unsigned i;
+        for (i = 0; i < CLR_MAX; ++i) {
+            if (strcmp(color, c_obj_colors[i]) == 0) {
+                rgb = sdl2_colors[i];
+                break;
+            }
+        }
+        if (i >= CLR_MAX) {
+            goto def_color;
+        }
+    }
+
+    return rgb;
+
+def_color:
+    if (dcolor == NULL) {
+        return rgb;
+    }
+    return color_from_string(dcolor, NULL, alpha);
 }
 
 struct window_procs sdl2_procs = {

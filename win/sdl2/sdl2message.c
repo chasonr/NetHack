@@ -98,12 +98,15 @@ sdl2_message_redraw(struct SDL2Window *win)
     int width  = win->m_xmax - win->m_xmin + 1;
     int height = win->m_ymax - win->m_ymin + 1;
 
-    const SDL_Color background = {   0,   0,   0, 255 };
+    SDL_Color background;
     int num_lines;  /* Number of visible lines */
     int i;
     SDL_Rect rect;
     size_t p;
 
+    background = sdl2_text_bg(iflags.wc_foregrnd_message,
+                              iflags.wc_backgrnd_message,
+                              ATR_NONE, 255);
     num_lines = (height + win->m_line_height - 1) / win->m_line_height;
     p = data->m_lines.tail;
     if (data->m_lines.head > data->m_lines.tail) {
@@ -130,15 +133,32 @@ sdl2_message_redraw(struct SDL2Window *win)
         y = height - win->m_line_height*(i+1);
         if (data->m_lines.lines[p].mixed) {
             rect = sdl2_window_render_mixed(win, data->m_lines.lines[p].text,
-                    x, y, sdl2_text_fg(attr), sdl2_text_bg(attr));
+                    x, y,
+                    sdl2_text_fg(iflags.wc_foregrnd_message,
+                                 iflags.wc_backgrnd_message,
+                                 attr),
+                    sdl2_text_bg(iflags.wc_foregrnd_message,
+                                 iflags.wc_backgrnd_message,
+                                 attr, 255));
         } else {
             rect = sdl2_window_renderStrBG(win, data->m_lines.lines[p].text,
-                    x, y, sdl2_text_fg(attr), sdl2_text_bg(attr));
+                    x, y,
+                    sdl2_text_fg(iflags.wc_foregrnd_message,
+                                 iflags.wc_backgrnd_message,
+                                 attr),
+                    sdl2_text_bg(iflags.wc_foregrnd_message,
+                                 iflags.wc_backgrnd_message,
+                                 attr, 255));
         }
         x += rect.w;
         if (i == 0 && data->m_more) {
             rect = sdl2_window_renderStrBG(win, "--More--", x, y,
-                sdl2_text_fg(ATR_INVERSE), sdl2_text_bg(ATR_INVERSE));
+                sdl2_text_fg(iflags.wc_foregrnd_message,
+                             iflags.wc_backgrnd_message,
+                             ATR_INVERSE),
+                sdl2_text_bg(iflags.wc_foregrnd_message,
+                             iflags.wc_backgrnd_message,
+                             ATR_INVERSE, 255));
             x += rect.w;
         }
         rect.x = x;

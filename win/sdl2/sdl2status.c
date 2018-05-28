@@ -155,14 +155,17 @@ sdl2_status_redraw(struct SDL2Window *win)
         boolean mixed;
     };
     struct StatusPrivate *data = (struct StatusPrivate *) win->data;
-    static const SDL_Color black = { 0, 0, 0, 255 };
+    SDL_Color background;
     SDL_Rect rect;
 
-    rect.x = win->m_xmin;
-    rect.y = win->m_ymin;
+    rect.x = 0;
+    rect.y = 0;
     rect.w = win->m_xmax - win->m_xmin - 1;
     rect.h = win->m_ymax - win->m_ymin - 1;
-    sdl2_window_fill(win, &rect, sdl2_text_bg(ATR_NONE));
+    background = sdl2_text_bg(iflags.wc_foregrnd_status,
+                              iflags.wc_backgrnd_status,
+                              ATR_NONE, 255);
+    sdl2_window_fill(win, &rect, background);
 
     if (iflags.wc_align_status == ALIGN_LEFT ||
         iflags.wc_align_status == ALIGN_RIGHT) {
@@ -536,7 +539,7 @@ sdl2_status_redraw(struct SDL2Window *win)
         rect.y = y;
         rect.w = win->m_xmax - x + 1;
         rect.h = h;
-        sdl2_window_fill(win, &rect, black);
+        sdl2_window_fill(win, &rect, background);
 
         /* Second line: */
         num_items = 0;
@@ -753,73 +756,38 @@ sdl2_status_redraw(struct SDL2Window *win)
         rect.y = y;
         rect.w = win->m_xmax - x + 1;
         rect.h = h;
-        sdl2_window_fill(win, &rect, black);
+        sdl2_window_fill(win, &rect, background);
     }
 }
 
 static SDL_Color
 sdl2_status_fg(int color)
 {
-    SDL_Color fg;
+    const char *fgcolor = iflags.wc_foregrnd_status;
+    const char *bgcolor = iflags.wc_backgrnd_status;
+    int attr = color >> 8;
+    color &= 0xFF;
 
-    switch (color >> 8) {
-    default:
-    case ATR_NONE:
-        fg = sdl2_colors[color & 0xFF];
-        break;
-
-    case ATR_BOLD:
-    case ATR_ULINE:
-        fg = sdl2_colors[(color & 0xFF) | 0x8];
-        break;
-
-    case ATR_DIM:
-        fg = sdl2_colors[color & 0xFF];
-        fg.r /= 2;
-        fg.g /= 2;
-        fg.b /= 2;
-        break;
-
-    case ATR_INVERSE:
-        fg.r = 0;
-        fg.g = 0;
-        fg.b = 0;
-        fg.a = 255;
-        break;
+    if (color != NO_COLOR) {
+        fgcolor = c_obj_colors[color];
     }
 
-    return fg;
+    return sdl2_text_fg(fgcolor, bgcolor, attr);
 }
 
 static SDL_Color
 sdl2_status_bg(int color)
 {
-    SDL_Color bg;
+    const char *fgcolor = iflags.wc_foregrnd_status;
+    const char *bgcolor = iflags.wc_backgrnd_status;
+    int attr = color >> 8;
+    color &= 0xFF;
 
-    switch (color >> 8) {
-    default:
-    case ATR_NONE:
-    case ATR_BOLD:
-    case ATR_DIM:
-        bg.r = 0;
-        bg.g = 0;
-        bg.b = 0;
-        bg.a = 255;
-        break;
-
-    case ATR_ULINE:
-        bg.r = 176;
-        bg.g = 176;
-        bg.b = 176;
-        bg.a = 255;
-        break;
-
-    case ATR_INVERSE:
-        bg = sdl2_colors[color & 0xFF];
-        break;
+    if (color != NO_COLOR) {
+        bgcolor = c_obj_colors[color];
     }
 
-    return bg;
+    return sdl2_text_bg(fgcolor, bgcolor, attr, 255);
 }
 
 /*ARGSUSED*/

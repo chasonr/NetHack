@@ -73,7 +73,9 @@ extern void sdl2_set_message(const char *message);
 extern Uint32 sdl2_chr_convert(Uint32 ch);
 
 extern const SDL_Color sdl2_colors[16];
-extern SDL_Color sdl2_text_fg(int attr);
-extern SDL_Color sdl2_text_bg(int attr);
+extern SDL_Color sdl2_text_fg(const char *fgcolor, const char *bgcolor,
+        int attr);
+extern SDL_Color sdl2_text_bg(const char *fgcolor, const char *bgcolor,
+        int attr, int alpha);
 
 #endif

@@ -83,8 +83,7 @@ sdl2_text_destroy(struct SDL2Window *win)
 static void
 sdl2_text_redraw(struct SDL2Window *win)
 {
-    static const SDL_Color white = { 255, 255, 255, 255 };
-    static const SDL_Color black = {   0,   0,   0, 160 };
+    SDL_Color foreground, background;
     struct TextPrivate *data = (struct TextPrivate *) win->data;
     int width  = win->m_xmax - win->m_xmin + 1;
     int height = win->m_ymax - win->m_ymin + 1;
@@ -92,14 +91,20 @@ sdl2_text_redraw(struct SDL2Window *win)
     int y;
     unsigned i;
 
+    foreground = sdl2_text_fg(iflags.wc_foregrnd_text,
+                              iflags.wc_backgrnd_text,
+                              ATR_NONE);
+    background = sdl2_text_bg(iflags.wc_foregrnd_text,
+                              iflags.wc_backgrnd_text,
+                              ATR_NONE, 160);
     rect.x = 0;
     rect.y = 0;
     rect.w = width;
     rect.h = height;
-    sdl2_window_fill(win, &rect, black);
+    sdl2_window_fill(win, &rect, background);
 
     /* Border around window, one pixel wide */
-    sdl2_window_draw_box(win, 0, 0, width - 1, height - 1, white);
+    sdl2_window_draw_box(win, 0, 0, width - 1, height - 1, foreground);
 
     y = margin;
     for (i = 0; i < data->m_page_size; ++i) {
@@ -110,7 +115,13 @@ sdl2_text_redraw(struct SDL2Window *win)
         j = i + data->m_first_line;
         if (j >= data->m_num_lines) { break; }
         attr = data->m_contents[j].attributes;
-        sdl2_window_renderStrBG(win, data->m_contents[j].text, margin, y, sdl2_text_fg(attr), sdl2_text_bg(attr));
+        sdl2_window_renderStrBG(win, data->m_contents[j].text, margin, y,
+                                sdl2_text_fg(iflags.wc_foregrnd_text,
+                                             iflags.wc_backgrnd_text,
+                                             attr),
+                                sdl2_text_bg(iflags.wc_foregrnd_text,
+                                             iflags.wc_backgrnd_text,
+                                             attr, 0));
         y += win->m_line_height;
     }
     if (data->m_page_size < data->m_num_lines) {
@@ -121,7 +132,8 @@ sdl2_text_redraw(struct SDL2Window *win)
         snprintf(page, SIZE(page), "Page %u of %u",
                 (unsigned) (data->m_first_line / data->m_page_size + 1),
                 (unsigned) ((data->m_num_lines + data->m_page_size - 1) / data->m_page_size));
-        sdl2_window_renderStrBG(win, page, margin, y, sdl2_text_fg(ATR_NONE), sdl2_text_bg(ATR_NONE));
+        sdl2_window_renderStrBG(win, page, margin, y,
+                                foreground, background);
     }
 }
 
