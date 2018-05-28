@@ -784,7 +784,7 @@ sdl2_status_bg(int color)
     color &= 0xFF;
 
     if (color != NO_COLOR) {
-        bgcolor = c_obj_colors[color];
+        fgcolor = c_obj_colors[color];
     }
 
     return sdl2_text_bg(fgcolor, bgcolor, attr, 255);
