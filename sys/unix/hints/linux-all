@@ -1,0 +1,110 @@
+#
+# NetHack 3.6  linux $NHDT-Date: 1432512814 2015/05/25 00:13:34 $  $NHDT-Branch: master $:$NHDT-Revision: 1.12 $
+# Copyright (c) Kenneth Lorber, Kensington, Maryland, 2007.
+# NetHack may be freely redistributed.  See license for details. 
+#
+#-PRE
+# Linux hints file
+# This hints file provides a single-user tty build for Linux, specifically
+# for Ubuntu dapper.
+
+WANT_TTY=Y
+WANT_X11=Y
+WANT_QT=Y
+WANT_SDL2=Y
+WANT_CURSES=Y
+
+WANT_PNG=Y
+#NO_WIDE_CURSES=Y
+
+#PREFIX=/usr
+PREFIX=$(wildcard ~)/nh/install
+HACKDIR=$(PREFIX)/games/lib/$(GAME)dir
+SHELLDIR = $(PREFIX)/games
+INSTDIR=$(HACKDIR)
+VARDIR = $(HACKDIR)
+
+POSTINSTALL=cp -n sys/unix/sysconf $(INSTDIR)/sysconf; $(CHOWN) $(GAMEUID) $(INSTDIR)/sysconf; $(CHGRP) $(GAMEGRP) $(INSTDIR)/sysconf; chmod $(VARFILEPERM) $(INSTDIR)/sysconf;
+
+CFLAGS=-g -Og -I../include -DNOTPARMDECL -DDLB -Wall -DGCC_WARN
+CFLAGS+=-DCOMPRESS=\"/bin/gzip\" -DCOMPRESS_EXTENSION=\".gz\"
+CFLAGS+=-DSYSCF -DSYSCF_FILE=\"$(HACKDIR)/sysconf\" -DSECURE
+CFLAGS+=-DTIMED_DELAY
+CFLAGS+=-DHACKDIR=\"$(HACKDIR)\"
+CFLAGS+=-DDUMPLOG
+CFLAGS+=-DCONFIG_ERROR_SECURE=FALSE
+
+LINK=$(CC)
+# Only needed for GLIBC stack trace:
+LFLAGS=-rdynamic
+
+CHOWN=true
+CHGRP=true
+
+VARDIRPERM = 0755
+VARFILEPERM = 0600
+GAMEPERM = 0755
+
+WINSRC =
+WINOBJ0 =
+WINLIB =
+
+ifeq ($(WANT_TTY),Y)
+    WINSRC += $(WINTTYSRC)
+    WINOBJ0 += $(WINTTYOBJ)
+    WINLIB += $(WINTTYLIB)
+
+    WINTTYLIB = -lcurses
+else
+    CFLAGS += -DNOTTYGRAPHICS
+endif
+
+ifeq ($(WANT_X11),Y)
+    CFLAGS += -DX11_GRAPHICS -DUSE_XPM= -DHAVE_XPM
+    WINSRC += $(WINX11SRC)
+    WINOBJ0 += $(WINX11OBJ)
+    WINLIB += $(WINX11LIB) -lXpm
+    POSTINSTALL += bdftopcf win/X11/nh10.bdf > $(INSTDIR)/nh10.pcf; (cd $(INSTDIR); mkfontdir);
+endif
+
+ifeq ($(WANT_QT),Y)
+    CFLAGS += -DQT_GRAPHICS
+    CFLAGS += $(shell pkg-config Qt5Gui Qt5Widgets Qt5Multimedia --cflags) -fPIC
+    LINK = g++
+    CXX = g++ -std=gnu++11
+    MOC = moc-qt5
+    WINSRC += $(WINQT4SRC)
+    WINOBJ0 += $(WINQT4OBJ)
+    WINLIB += $(WINQT5LIB)
+endif
+
+ifeq ($(WANT_SDL2),Y)
+    CFLAGS += -DSDL2_GRAPHICS -DPOSITIONBAR
+    CFLAGS += $(shell pkg-config sdl2 pangoft2 --cflags)
+    WINSRC += $(WINSDL2SRC)
+    WINOBJ0 += $(WINSDL2OBJ)
+    WINLIB += $(shell pkg-config sdl2 pangoft2 --libs)
+    SDL2FONT = sdl2font_pango.o
+endif
+
+ifeq ($(WANT_CURSES),Y)
+    CFLAGS += -DCURSES_GRAPHICS
+    WINSRC += $(WINCURSESSRC)
+    WINOBJ0 += $(WINCURSESOBJ)
+    WINLIB += $(WINCURSESLIB)
+    ifeq ($(NO_WIDE_CURSES),Y)
+        WINTTYLIB = -lncurses
+        CFLAGS += -DNO_WIDE_CURSES
+    else
+        WINTTYLIB = -lncursesw
+        CFLAGS += -D_XOPEN_SOURCE_EXTENDED
+    endif
+endif
+
+ifeq ($(WANT_PNG),Y)
+    CFLAGS += -DHAVE_PNG $(shell pkg-config --cflags libpng)
+    WINLIB += $(shell pkg-config --libs libpng)
+endif
+
+# Prevent duplicates in WINOBJ
+WINOBJ = $(sort $(WINOBJ0))
