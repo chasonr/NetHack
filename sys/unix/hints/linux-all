@@ -5,8 +5,7 @@
 #
 #-PRE
 # Linux hints file
-# This hints file provides a single-user tty build for Linux, specifically
-# for Ubuntu dapper.
+# This hints file provides the user's choice of user interfaces for Linux.
 
 WANT_TTY=Y
 WANT_X11=Y
@@ -55,6 +54,7 @@ ifeq ($(WANT_TTY),Y)
     WINLIB += $(WINTTYLIB)
 
     WINTTYLIB = -lcurses
+    DEFAULT_WINDOW_SYS ?= tty
 else
     CFLAGS += -DNOTTYGRAPHICS
 endif
@@ -65,6 +65,7 @@ ifeq ($(WANT_X11),Y)
     WINOBJ0 += $(WINX11OBJ)
     WINLIB += $(WINX11LIB) -lXpm
     POSTINSTALL += bdftopcf win/X11/nh10.bdf > $(INSTDIR)/nh10.pcf; (cd $(INSTDIR); mkfontdir);
+    DEFAULT_WINDOW_SYS ?= X11
 endif
 
 ifeq ($(WANT_QT),Y)
@@ -76,6 +77,7 @@ ifeq ($(WANT_QT),Y)
     WINSRC += $(WINQT4SRC)
     WINOBJ0 += $(WINQT4OBJ)
     WINLIB += $(WINQT5LIB)
+    DEFAULT_WINDOW_SYS ?= Qt
 endif
 
 ifeq ($(WANT_SDL2),Y)
@@ -85,6 +87,7 @@ ifeq ($(WANT_SDL2),Y)
     WINOBJ0 += $(WINSDL2OBJ)
     WINLIB += $(shell pkg-config sdl2 pangoft2 --libs)
     SDL2FONT = sdl2font_pango.o
+    DEFAULT_WINDOW_SYS ?= sdl2
 endif
 
 ifeq ($(WANT_CURSES),Y)
@@ -99,12 +102,15 @@ ifeq ($(WANT_CURSES),Y)
         WINTTYLIB = -lncursesw
         CFLAGS += -D_XOPEN_SOURCE_EXTENDED
     endif
+    DEFAULT_WINDOW_SYS ?= curses
 endif
 
 ifeq ($(WANT_PNG),Y)
     CFLAGS += -DHAVE_PNG $(shell pkg-config --cflags libpng)
     WINLIB += $(shell pkg-config --libs libpng)
 endif
+
+CFLAGS += -DDEFAULT_WINDOW_SYS=\"$(DEFAULT_WINDOW_SYS)\"
 
 # Prevent duplicates in WINOBJ
 WINOBJ = $(sort $(WINOBJ0))
