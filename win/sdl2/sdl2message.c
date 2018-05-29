@@ -33,6 +33,8 @@ struct MessagePrivate {
     unsigned width;
     boolean m_more;
     boolean m_combine;
+    boolean initialized;
+    size_t history;
 };
 
 static void sdl2_message_create(struct SDL2Window *win);
@@ -243,7 +245,7 @@ sdl2_message_put_string(struct SDL2Window *win, int attr, const char *str,
         }
     }
     /* Show --More-- if we need it */
-    if (do_more) {
+    if (do_more && data->initialized) {
         sdl2_message_more(win);
     }
     /* Add the line */
@@ -383,4 +385,38 @@ addLine(struct LineList *list, int attr, const char *str, boolean mixed)
     new_line->attributes = attr;
     new_line->mixed = mixed;
     return new_line;
+}
+
+char *
+sdl2_message_gethistory(struct SDL2Window *win, boolean init)
+{
+    struct MessagePrivate *data = (struct MessagePrivate *) win->data;
+    size_t index;
+
+    if (init) {
+        data->history = 0;
+    }
+
+    if (data->history >= data->m_contents.size) {
+        return NULL;
+    }
+
+    index = data->history + data->m_contents.head;
+    if (index >= data->m_contents.size) {
+        index -= data->m_contents.size;
+    }
+    ++data->history;
+    return data->m_contents.lines[index].text;
+}
+
+void
+sdl2_message_puthistory(struct SDL2Window *win, const char *str)
+{
+    struct MessagePrivate *data = (struct MessagePrivate *) win->data;
+
+    if (str == NULL) {
+        data->initialized = TRUE;
+    } else {
+        sdl2_message_put_string(win, A_NONE, str, TRUE);
+    }
 }

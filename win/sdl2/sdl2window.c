@@ -142,6 +142,7 @@ static int  sdl2_window_selectMenu(struct SDL2Window *win, int how, menu_item **
 static void sdl2_window_printGlyph(struct SDL2Window *win, xchar x, xchar y,
         int glyph, int bkglyph);
 static void sdl2_window_redraw(struct SDL2Window *win);
+static char *sdl2_getmsghistory(boolean);
 
 static SDL_Color color_from_string(const char *color, const char *dcolor,
         int alpha);
@@ -1436,6 +1437,24 @@ sdl2_window_redraw(struct SDL2Window *win)
     }
 }
 
+static char *
+sdl2_getmsghistory(boolean init)
+{
+    if (message_window == NULL) {
+        return NULL;
+    } else {
+        return sdl2_message_gethistory(message_window, init);
+    }
+}
+
+static char *
+sdl2_putmsghistory(const char *str)
+{
+    if (message_window != NULL) {
+        sdl2_message_puthistory(message_window, str);
+    }
+}
+
 /****************************************************************************/
 /*                            SDL-specific stuff                            */
 /****************************************************************************/
@@ -2029,8 +2048,8 @@ struct window_procs sdl2_procs = {
     sdl2_end_screen,
     genl_outrip,
     sdl2_preference_update,
-    genl_getmsghistory,
-    genl_putmsghistory,
+    sdl2_getmsghistory,
+    sdl2_putmsghistory,
     sdl2_status_init,
     sdl2_status_finish,
     sdl2_status_enablefield,

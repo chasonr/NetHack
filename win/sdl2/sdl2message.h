@@ -14,5 +14,7 @@ extern void sdl2_message_resize(struct SDL2Window *window,
 extern void sdl2_message_more(struct SDL2Window *window);
 extern void sdl2_message_new_turn(struct SDL2Window *window);
 extern void sdl2_message_previous(struct SDL2Window *window);
+extern char *sdl2_message_gethistory(struct SDL2Window *window, boolean init);
+extern void sdl2_message_puthistory(struct SDL2Window *window, const char *str);
 
 #endif
