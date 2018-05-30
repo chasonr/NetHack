@@ -142,7 +142,8 @@ static int  sdl2_window_selectMenu(struct SDL2Window *win, int how, menu_item **
 static void sdl2_window_printGlyph(struct SDL2Window *win, xchar x, xchar y,
         int glyph, int bkglyph);
 static void sdl2_window_redraw(struct SDL2Window *win);
-static char *sdl2_getmsghistory(boolean);
+static char *sdl2_getmsghistory(BOOLEAN_P);
+static void sdl2_putmsghistory(const char *str, BOOLEAN_P is_restoring);
 
 static SDL_Color color_from_string(const char *color, const char *dcolor,
         int alpha);
@@ -1440,7 +1441,7 @@ sdl2_window_redraw(struct SDL2Window *win)
 }
 
 static char *
-sdl2_getmsghistory(boolean init)
+sdl2_getmsghistory(BOOLEAN_P init)
 {
     if (message_window == NULL) {
         return NULL;
@@ -1449,10 +1450,12 @@ sdl2_getmsghistory(boolean init)
     }
 }
 
-static char *
-sdl2_putmsghistory(const char *str)
+static void
+sdl2_putmsghistory(const char *str, BOOLEAN_P is_restoring)
 {
-    if (message_window != NULL) {
+    if (is_restoring) {
+        pline("%s", str);
+    } else if (message_window != NULL) {
         sdl2_message_puthistory(message_window, str);
     }
 }
