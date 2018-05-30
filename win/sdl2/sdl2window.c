@@ -782,6 +782,8 @@ sdl2_status_update(int idx, genericptr_t ptr, int chg,
     } else {
         sdl2_status_do_update(status_window, idx, ptr, chg, percent, color,
             colormasks);
+        sdl2_map_update_cursor(map_window, idx, ptr, chg, percent, color,
+            colormasks);
     }
 }
 

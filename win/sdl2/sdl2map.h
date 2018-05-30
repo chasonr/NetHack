@@ -17,5 +17,8 @@ extern boolean sdl2_map_mouse(struct SDL2Window *window, int x_in, int y_in,
         int *x_out, int *y_out);
 extern int sdl2_map_xpos(struct SDL2Window *window);
 extern int sdl2_map_width(struct SDL2Window *window);
+extern void sdl2_map_update_cursor(struct SDL2Window *window,
+            int index, genericptr_t ptr, int chg, int percent, int color,
+            const unsigned long *colormasks);
 
 #endif

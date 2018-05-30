@@ -49,6 +49,8 @@ struct MapPrivate {
     SDL_Surface *m_map_image;
 
     enum ZoomMode m_zoom_mode;
+
+    int cursor_color;
 };
 
 static void sdl2_map_create(struct SDL2Window *win);
@@ -576,8 +578,7 @@ sdl2_map_draw(struct SDL2Window *win, int x, int y, boolean cursor)
 
     if (cursor && x == data->m_cursor_x && y == data->m_cursor_y) {
         SDL_Rect line;
-        /* TODO: This is the cursor. Make this the same color as hit points. */
-        SDL_Color rgb = { 255, 255, 255, 255 };
+        SDL_Color rgb = sdl2_colors[data->cursor_color];
         Uint32 color = SDL_MapRGBA(data->m_map_image->format,
                 rgb.r, rgb.g, rgb.b, rgb.a);
 
@@ -922,6 +923,19 @@ sdl2_map_mouse(struct SDL2Window *win, int x_in, int y_in,
     *x_out = x_in / data->m_tile_w;
     *y_out = y_in / data->m_tile_h;
     return (*x_out < COLNO && *y_out < ROWNO);
+}
+
+/*ARGSUSED*/
+void
+sdl2_map_update_cursor(struct SDL2Window *window,
+            int index, genericptr_t ptr, int chg, int percent, int color,
+            const unsigned long *colormasks)
+{
+    struct MapPrivate *data = (struct MapPrivate *) window->data;
+
+    if (index == BL_HP) {
+        data->cursor_color = color;
+    }
 }
 
 static SDL_Surface *
