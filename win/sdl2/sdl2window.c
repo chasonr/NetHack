@@ -1453,9 +1453,7 @@ sdl2_getmsghistory(BOOLEAN_P init)
 static void
 sdl2_putmsghistory(const char *str, BOOLEAN_P is_restoring)
 {
-    if (is_restoring) {
-        pline("%s", str);
-    } else if (message_window != NULL) {
+    if (is_restoring && message_window != NULL) {
         sdl2_message_puthistory(message_window, str);
     }
 }
