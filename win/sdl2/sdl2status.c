@@ -108,19 +108,19 @@ sdl2_status_redraw(struct SDL2Window *win)
         long bit;
     };
     static const struct CondData conditions[] = {
-        { " Stone",    BL_MASK_STONE    },
-        { " Slime",    BL_MASK_SLIME    },
-        { " Strngl",   BL_MASK_STRNGL   },
-        { " FoodPois", BL_MASK_FOODPOIS },
-        { " TermIll",  BL_MASK_TERMILL  },
-        { " Blind",    BL_MASK_BLIND    },
-        { " Deaf",     BL_MASK_DEAF     },
-        { " Stun",     BL_MASK_STUN     },
-        { " Conf",     BL_MASK_CONF     },
-        { " Hallu",    BL_MASK_HALLU    },
-        { " Lev",      BL_MASK_LEV      },
-        { " Fly",      BL_MASK_FLY      },
-        { " Ride",     BL_MASK_RIDE     },
+        { "Stone",    BL_MASK_STONE    },
+        { "Slime",    BL_MASK_SLIME    },
+        { "Strngl",   BL_MASK_STRNGL   },
+        { "FoodPois", BL_MASK_FOODPOIS },
+        { "TermIll",  BL_MASK_TERMILL  },
+        { "Blind",    BL_MASK_BLIND    },
+        { "Deaf",     BL_MASK_DEAF     },
+        { "Stun",     BL_MASK_STUN     },
+        { "Conf",     BL_MASK_CONF     },
+        { "Hallu",    BL_MASK_HALLU    },
+        { "Lev",      BL_MASK_LEV      },
+        { "Fly",      BL_MASK_FLY      },
+        { "Ride",     BL_MASK_RIDE     },
     };
 
     static const char *label_list[] = {
@@ -717,6 +717,10 @@ sdl2_status_redraw(struct SDL2Window *win)
 
         for (i = 0; i < SIZE(conditions); ++i) {
             if ((data->conditions & conditions[i].bit) != 0) {
+                items[num_items].str = " ";
+                items[num_items].color = NO_COLOR;
+                items[num_items].mixed = FALSE;
+                ++num_items;
                 items[num_items].str = conditions[i].name;
                 items[num_items].color = NO_COLOR;
                 items[num_items].mixed = FALSE;
