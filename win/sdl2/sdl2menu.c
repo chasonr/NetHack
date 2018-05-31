@@ -21,7 +21,7 @@ struct MenuEntry
     char *str;
     boolean mixed;
     boolean selected;
-    SDL_Color color;
+    int color;
     unsigned long count;
 };
 
@@ -173,11 +173,17 @@ sdl2_menu_redraw(struct SDL2Window *win)
 
     /* Display the text for this page */
     for (i = 0; i < data->m_page_size; ++i) {
+        const char *color;
         char **columns;
         size_t num_columns;
         int attr;
         size_t j = i + data->m_first_line;
         if (j >= data->m_menu_size) { break; }
+        if (data->m_menu[j].color < 0) {
+            color = iflags.wc_foregrnd_menu;
+        } else {
+            color = c_obj_colors[data->m_menu[j].color];
+        }
         columns = tabSplit(data->m_menu[j].str);
         num_columns = numColumns(columns);
         attr = data->m_menu[j].attr;
@@ -185,8 +191,10 @@ sdl2_menu_redraw(struct SDL2Window *win)
             /* Nonselectable line with no column dividers */
             /* Assume this is a section header */
             sdl2_window_renderStrBG(win, columns[0], 1, y + i*win->m_line_height,
-                    data->m_menu[j].color,
-                    sdl2_text_bg(iflags.wc_foregrnd_menu,
+                    sdl2_text_fg(color,
+                                 iflags.wc_backgrnd_menu,
+                                 attr),
+                    sdl2_text_bg(color,
                                  iflags.wc_backgrnd_menu,
                                  attr, 0));
         } else {
@@ -199,8 +207,10 @@ sdl2_menu_redraw(struct SDL2Window *win)
                         !data->m_menu[j].selected ? ' ' : data->m_menu[j].count == 0 ? '*' : '#',
                         ch);
                 sdl2_window_renderStrBG(win, tag, 1, y + i*win->m_line_height,
-                        data->m_menu[j].color,
-                        sdl2_text_bg(iflags.wc_foregrnd_menu,
+                        sdl2_text_fg(color,
+                                     iflags.wc_backgrnd_menu,
+                                     attr),
+                        sdl2_text_bg(color,
                                      iflags.wc_backgrnd_menu,
                                      attr, 0));
             } else {
@@ -211,8 +221,10 @@ sdl2_menu_redraw(struct SDL2Window *win)
             for (k = 0; k < num_columns; ++k) {
                 sdl2_window_renderStrBG(win, columns[k],
                         data->m_columns[k].x, y + i*win->m_line_height,
-                        data->m_menu[j].color,
-                        sdl2_text_bg(iflags.wc_foregrnd_menu,
+                        sdl2_text_fg(color,
+                                     iflags.wc_backgrnd_menu,
+                                     attr),
+                        sdl2_text_bg(color,
                                      iflags.wc_backgrnd_menu,
                                      attr, 0));
             }
@@ -261,16 +273,13 @@ sdl2_menu_addMenu(struct SDL2Window *win, int glyph,
     entry->str = dupstr(str);
     entry->selected = preselected;
     entry->mixed = FALSE;
-    /* TODO: implement menucolors here */
-    entry->color = sdl2_text_fg(iflags.wc_foregrnd_menu,
-                                iflags.wc_backgrnd_menu,
-                                attr);
+    entry->color = -1;
     entry->count = 0;
 
     if (attr == 0
     &&  get_menu_coloring(str, &mcolor, &mattr)) {
         entry->attr = mattr;
-        entry->color = sdl2_colors[mcolor];
+        entry->color = mcolor;
     }
 }
 
@@ -366,9 +375,7 @@ sdl2_menu_put_string(struct SDL2Window *win, int attr, const char *str,
     entry->attr = attr;
     entry->str = dupstr(str);
     entry->selected = FALSE;
-    entry->color = sdl2_text_fg(iflags.wc_foregrnd_menu,
-                                iflags.wc_backgrnd_menu,
-                                attr);
+    entry->color = -1;
     entry->count = 0;
     entry->mixed = mixed;
 }
