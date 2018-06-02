@@ -5236,11 +5236,20 @@ char *buf;
                 iflags.altkeyhandler[0] ? iflags.altkeyhandler : "default");
 #endif
 #ifdef BACKWARD_COMPAT
-    else if (!strcmp(optname, "boulder"))
-        Sprintf(buf, "%c",
-                iflags.bouldersym
-                    ? iflags.bouldersym
-                    : showsyms[(int) objects[BOULDER].oc_class + SYM_OFF_O]);
+    else if (!strcmp(optname, "boulder")) {
+        nhsym sym = iflags.bouldersym
+                  ? iflags.bouldersym
+                  : showsyms[(int) objects[BOULDER].oc_class + SYM_OFF_O];
+        if (SYMHANDLING(H_UNICODE) && sym > 0x7F) {
+            if (sym > 0xFFFF) {
+                Sprintf(buf, "\\U%08X", sym);
+            } else {
+                Sprintf(buf, "\\u%04X", sym);
+            }
+        } else {
+            Sprintf(buf, "%c", sym);
+        }
+    }
 #endif
     else if (!strcmp(optname, "catname"))
         Sprintf(buf, "%s", catname[0] ? catname : none);
