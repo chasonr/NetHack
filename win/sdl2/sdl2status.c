@@ -139,7 +139,7 @@ sdl2_status_redraw(struct SDL2Window *win)
         /* BL_ENEMAX    */ "",
         /* BL_XP        */ "Experience:",
         /* BL_AC        */ "Armor Class:",
-        /* BL_HD        */ "",
+        /* BL_HD        */ "Hit Dice:",
         /* BL_TIME      */ "Time:",
         /* BL_HUNGER    */ "",
         /* BL_HP        */ "Hit Points:",
