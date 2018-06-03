@@ -135,9 +135,20 @@ static unsigned long vesa_palette[256];
 static struct BitmapFont *vesa_font = NULL;
 static unsigned vesa_char_width = 8, vesa_char_height = 16;
 static unsigned vesa_oview_width, vesa_oview_height;
+
 #ifdef SIMULATE_CURSOR
 static unsigned long *undercursor;
 #endif
+
+/* Used to cache character writes for speed */
+struct VesaCharacter {
+    int pixx, pixy;
+    int colour;
+    int chr;
+    boolean transparent;
+};
+static struct VesaCharacter chr_cache[100];
+static unsigned chr_cache_size;
 
 /*
  * For optimization of tile drawing. If we draw more than a few tiles without
@@ -1305,17 +1316,50 @@ vesa_WriteCharXY(chr, pixx, pixy, colour, transparent)
 int chr, pixx, pixy, colour;
 boolean transparent;
 {
-    int i, j;
+    /* Flush if cache is full or if starting a new line */
+    if (chr_cache_size >= SIZE(chr_cache)
+        || (chr_cache_size != 0 && chr_cache[chr_cache_size-1].pixy != pixy)) {
+        vesa_flush_text();
+    }
+    /* Add to cache and write later */
+    chr_cache[chr_cache_size].pixx = pixx;
+    chr_cache[chr_cache_size].pixy = pixy;
+    chr_cache[chr_cache_size].chr = chr;
+    chr_cache[chr_cache_size].colour = colour;
+    chr_cache[chr_cache_size].transparent = transparent;
+    ++chr_cache_size;
+}
 
-    for (i = 0; i < vesa_char_height; ++i) {
-        for (j = 0; j < vesa_char_width; ++j) {
-            if (vesa_GetCharPixel(chr, j, i)) {
-                vesa_WritePixel(pixx + j, pixy + i, colour + FIRST_TEXT_COLOR);
-            } else if (!transparent) {
-                vesa_WritePixel(pixx + j, pixy + i, BACKGROUND_VESA_COLOR);
+void
+vesa_flush_text()
+{
+    int x, y, pixy;
+    unsigned i;
+
+    if (chr_cache_size == 0) return;
+
+    /* All cache entries have the same Y coordinate */
+    pixy = chr_cache[i].pixy;
+    /* First loop: draw one raster line of all cache entries */
+    for (y = 0; y < vesa_char_height; ++y) {
+        /* Second loop: draw one raster line of one character */
+        for (i = 0; i < chr_cache_size; ++i) {
+            int chr = chr_cache[i].chr;
+            int pixx = chr_cache[i].pixx;
+            int colour = chr_cache[i].colour;
+            boolean transparent = chr_cache[i].transparent;
+            /* Third loop: draw one pixel */
+            for (x = 0; x < vesa_char_width; ++x) {
+                if (vesa_GetCharPixel(chr, x, y)) {
+                    vesa_WritePixel(pixx + x, pixy + y, colour + FIRST_TEXT_COLOR);
+                } else if (!transparent) {
+                    vesa_WritePixel(pixx + x, pixy + y, BACKGROUND_VESA_COLOR);
+                }
             }
         }
     }
+
+    chr_cache_size = 0;
 }
 
 static boolean
@@ -1670,6 +1714,7 @@ positionbar()
                              PBAR_COLOR_HERO, TRUE);
     }
 #endif
+    vesa_flush_text();
 }
 
 #endif /*POSITIONBAR*/

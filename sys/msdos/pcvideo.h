@@ -313,6 +313,7 @@ E void FDECL(vesa_userpan, (enum vga_pan_direction));
 E void FDECL(vesa_overview, (BOOLEAN_P));
 E void FDECL(vesa_traditional, (BOOLEAN_P));
 E void NDECL(vesa_refresh);
+E void NDECL(vesa_flush_text);
 #endif /* SCREEN_VESA */
 #endif /* NO_TERMS   */
 
