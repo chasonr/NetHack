@@ -569,7 +569,7 @@ unsigned special; /* special feature: corpse, invis, detected, pet, ridden -
     attr = (g_attribute == 0) ? attrib_gr_normal : g_attribute;
     map[ry][col].attr = attr;
     if (iflags.traditional_view) {
-        vesa_WriteChar((unsigned char) ch, col, row, attr);
+        vesa_WriteChar(ch, col, row, attr);
     } else if (!redraw_scheduled) {
         if ((col >= clipx) && (col <= clipxmax)
         &&  (ry >= clipy) && (ry <= clipymax)) {
