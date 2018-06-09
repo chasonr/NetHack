@@ -32,7 +32,7 @@
 
 /*#define OVERLAY */ /* Manual overlay definition (MSC 6.0ax only) */
 
-#ifndef __GO32__
+#if !defined(__GO32__) && !defined(__WATCOMC__)
 #define MFLOPPY /* Support for floppy drives and ramdisks by dgk */
 #endif
 
@@ -136,6 +136,17 @@
 #endif
 #endif
 
+#if defined(__WATCOMC__)
+#ifdef strcmpi
+#undef strcmpi
+#endif
+#include <stdlib.h>
+#include <string.h> /* Provides prototypes of strncmpi(), etc.     */
+#ifndef M
+#define M(c) ((char) (0x80 | (c)))
+#endif
+#endif
+
 /*
  * On the VMS and unix, this option controls whether a delay is done by
  * the clock, or whether it is done by excess output.  On the PC, however,
@@ -188,6 +199,16 @@
 #include <pc.h> /* kbhit() */
 #define PC_LOCKING
 #define HOLD_LOCKFILE_OPEN
+#define SELF_RECOVER /* NetHack itself can recover games */
+#endif
+
+#ifdef __WATCOMC__
+/* lock() in io.h interferes with lock[] in decl.h */
+#define lock djlock
+#include <unistd.h> /* close(), etc. */
+#include <io.h>
+#undef lock
+#define PC_LOCKING
 #define SELF_RECOVER /* NetHack itself can recover games */
 #endif
 
@@ -348,6 +369,9 @@
 #endif
 #ifdef __SC__
 #define msleep(k) (void) usleep((long)((k) *1000))
+#endif
+#ifdef __WATCOMC__
+#define msleep(k) delay(k)
 #endif
 #endif
 

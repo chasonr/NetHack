@@ -825,12 +825,12 @@ vga_SwitchMode(unsigned int mode)
         } else {
             iflags.grmode = 0;
         }
-        regs.x.ax = mode;
-        (void) int86(VIDEO_BIOS, &regs, &regs);
+        regs.R16(ax) = mode;
+        (void) INT86(VIDEO_BIOS, &regs, &regs);
     } else {
         iflags.grmode = 0; /* force text mode for error msg */
-        regs.x.ax = MODETEXT;
-        (void) int86(VIDEO_BIOS, &regs, &regs);
+        regs.R16(ax) = MODETEXT;
+        (void) INT86(VIDEO_BIOS, &regs, &regs);
         g_attribute = attrib_text_normal;
         impossible("vga_SwitchMode: Bad video mode requested 0x%X", mode);
     }
@@ -869,7 +869,7 @@ vga_NoBorder(int bc)
 	regs.h.al = (char)0x01;
 	regs.h.bh = (char)bc;
 	regs.h.bl = 0;
-	(void) int86(VIDEO_BIOS, &regs, &regs);	
+	(void) INT86(VIDEO_BIOS, &regs, &regs);	
 }
 #endif
 
@@ -915,7 +915,7 @@ vga_detect()
 
     regs.h.al = 0;
     regs.h.ah = 0x1a;
-    (void) int86(VIDEO_BIOS, &regs, &regs);
+    (void) INT86(VIDEO_BIOS, &regs, &regs);
     /*
      * debug
      *
@@ -1091,11 +1091,11 @@ const struct Pixel *p;
         outportb(0x3c9, color.g >> 2);
         outportb(0x3c9, color.b >> 2);
     }
-    regs.x.bx = 0x0000;
+    regs.R16(bx) = 0x0000;
     for (i = 0; i < COLORDEPTH; ++i) {
-        regs.x.ax = 0x1000;
-        (void) int86(VIDEO_BIOS, &regs, &regs);
-        regs.x.bx += 0x0101;
+        regs.R16(ax) = 0x1000;
+        (void) INT86(VIDEO_BIOS, &regs, &regs);
+        regs.R16(bx) += 0x0101;
     }
 }
 

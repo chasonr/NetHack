@@ -8,7 +8,9 @@
 #include "hack.h"
 
 #ifdef SCREEN_VESA /* this file is for SCREEN_VESA only    */
+#ifdef __DJGPP__
 #include <dpmi.h>
+#endif
 
 #include "pcvideo.h"
 #include "tile.h"
@@ -185,6 +187,145 @@ static const struct OldModeInfo old_mode_table[] = {
     { 0x011B, 1280, 1024, 24, 6 },
 };
 
+/* Watcom does not provide DPMI support functions. Here we provide the needed
+   functions under the same names that DJGPP uses. */
+#ifdef __WATCOMC__
+#pragma pack(__push, 1)
+typedef union nh_dpmi_regs {
+    struct {
+        uint32_t edi;
+        uint32_t esi;
+        uint32_t ebp;
+        uint32_t res;
+        uint32_t ebx;
+        uint32_t edx;
+        uint32_t ecx;
+        uint32_t eax;
+    } d;
+    struct {
+        uint16_t di, di_hi;
+        uint16_t si, si_hi;
+        uint16_t bp, bp_hi;
+        uint16_t res, res_hi;
+        uint16_t bx, bx_hi;
+        uint16_t dx, dx_hi;
+        uint16_t cx, cx_hi;
+        uint16_t ax, ax_hi;
+        uint16_t flags;
+        uint16_t es;
+        uint16_t ds;
+        uint16_t fs;
+        uint16_t gs;
+        uint16_t ip;
+        uint16_t cs;
+        uint16_t sp;
+        uint16_t ss;
+    } x;
+    struct {
+        uint8_t edi[4];
+        uint8_t esi[4];
+        uint8_t ebp[4];
+        uint8_t res[4];
+        uint8_t bl, bh, ebx_b2, ebx_b3;
+        uint8_t dl, dh, edx_b2, edx_b3;
+        uint8_t cl, ch, ecx_b2, ecx_b3;
+        uint8_t al, ah, eax_b2, eax_b3;
+    } h;
+} __dpmi_regs;
+#pragma pack(__pop)
+
+static int
+__dpmi_int(int vector, __dpmi_regs *regs)
+{
+    unsigned char flags = 0;
+	int rc;
+
+    _asm {
+		push ebx
+		push edi
+        mov ax,ds
+        mov es,ax
+        mov eax,0300h
+        mov ebx,vector
+        and ebx,0FFh
+        xor ecx,ecx
+        mov edi,regs
+        int 31h
+        lahf
+        mov flags,ah
+		pop edi
+		pop ebx
+    }
+    if ((flags & 0x1) == 0) {
+        rc = -1;
+    } else {
+        rc = 0;
+    }
+	return rc;
+}
+
+static int
+__dpmi_allocate_dos_memory(int paragraphs, int *selector_max)
+{
+    unsigned char flags = 0;
+    int dos_seg = 0;
+    int dos_sel = 0;
+    int dos_max = 0;
+
+    _asm {
+        mov eax,0100h
+        mov ebx,paragraphs
+        int 31h
+        mov dos_seg,eax
+        mov dos_sel,edx
+        mov dos_max,ebx
+        lahf
+        mov flags,ah
+    }
+    if ((flags & 0x1) == 0) {
+        /* carry clear; return is OK */
+        *selector_max = dos_sel;
+    } else {
+        *selector_max = dos_max;
+        dos_seg = -1;
+    }
+	return dos_seg;
+}
+
+static int
+__dpmi_free_dos_memory(int selector)
+{
+    unsigned char flags = 0;
+	int rc;
+
+    _asm {
+        mov eax,0101h
+        mov edx,selector
+        int 31h
+        lahf
+        mov flags,ah
+    }
+    if ((flags & 0x1) == 0) {
+        rc = -1;
+    } else {
+        rc = 0;
+    }
+	return rc;
+}
+
+static void
+dosmemget(unsigned long offset, size_t length, void *buffer)
+{
+    memcpy(buffer, (void *)offset, length);
+}
+
+static void
+dosmemput(const  void *buffer, size_t length, unsigned long offset)
+{
+    memcpy((void *)offset, buffer, length);
+}
+#endif
+
 /* Retrieve the mode info block */
 static boolean
 vesa_GetModeInfo(mode, info)
@@ -268,6 +409,7 @@ unsigned long offset;
         regs.h.bl = window;
         regs.x.dx = offset / vesa_win_gran;
         pos = regs.x.dx * vesa_win_gran;
+#ifndef __WATCOMC__ /* DPMI function 0301 doesn't seem to work in Watcom */
         if (vesa_win_func != 0) {
             regs.x.cs = vesa_win_func >> 16;
             regs.x.ip = vesa_win_func & 0xFFFF;
@@ -275,6 +417,9 @@ unsigned long offset;
         } else {
             (void) __dpmi_int(VIDEO_BIOS, &regs);
         }
+#else
+		(void) __dpmi_int(VIDEO_BIOS, &regs);
+#endif
         vesa_win_pos[window] = pos;
     }
 
@@ -300,13 +445,13 @@ unsigned x, y;
     switch (vesa_pixel_size) {
     case 8:
         addr = vesa_SetWindow(vesa_read_win, offset);
-        color = _farpeekb(_dos_ds, addr);
+        color = READ_ABSOLUTE(addr);
         break;
 
     case 15:
     case 16:
         addr = vesa_SetWindow(vesa_read_win, offset);
-        color = _farpeekw(_dos_ds, addr);
+        color = READ_ABSOLUTE_WORD(addr);
         break;
 
     case 24:
@@ -314,13 +459,13 @@ unsigned x, y;
         color = 0;
         for (i = 0; i < 3; ++i) {
             addr = vesa_SetWindow(vesa_read_win, offset + i);
-            color |= (unsigned long) _farpeekb(_dos_ds, addr) << (i * 8);
+            color |= (unsigned long) READ_ABSOLUTE(addr) << (i * 8);
         }
         break;
 
     case 32:
         addr = vesa_SetWindow(vesa_read_win, offset);
-        color = _farpeekl(_dos_ds, addr);
+        color = READ_ABSOLUTE_DWORD(addr);
         break;
 
     default: /* Shouldn't happen */
@@ -342,26 +487,26 @@ unsigned long color;
     switch (vesa_pixel_size) {
     case 8:
         addr = vesa_SetWindow(vesa_write_win, offset);
-        _farpokeb(_dos_ds, addr, color);
+        WRITE_ABSOLUTE(addr, color);
         break;
 
     case 15:
     case 16:
         addr = vesa_SetWindow(vesa_write_win, offset);
-        _farpokew(_dos_ds, addr, color);
+        WRITE_ABSOLUTE_WORD(addr, color);
         break;
 
     case 24:
         /* Pixel may cross a window boundary */
         for (i = 0; i < 3; ++i) {
             addr = vesa_SetWindow(vesa_write_win, offset + i);
-            _farpokeb(_dos_ds, addr, (unsigned char) (color >> (i * 8)));
+            WRITE_ABSOLUTE(addr, (unsigned char) (color >> (i * 8)));
         }
         break;
 
     case 32:
         addr = vesa_SetWindow(vesa_write_win, offset);
-        _farpokel(_dos_ds, addr, color);
+        WRITE_ABSOLUTE_DWORD(addr, color);
         break;
     }
 }
@@ -1035,6 +1180,7 @@ unsigned mode;
 
     if (mode == MODETEXT) {
         iflags.grmode = 0;
+		memset(&regs, 0, sizeof(regs));
         regs.x.ax = mode;
         (void) __dpmi_int(VIDEO_BIOS, &regs);
 #ifdef SIMULATE_CURSOR
@@ -1043,6 +1189,7 @@ unsigned mode;
 #endif
     } else if (mode >= 0x100) {
         iflags.grmode = 1;
+		memset(&regs, 0, sizeof(regs));
         regs.x.ax = 0x4F02;
         regs.x.bx = mode & 0x81FF;
         (void) __dpmi_int(VIDEO_BIOS, &regs);
@@ -1051,6 +1198,7 @@ unsigned mode;
         vesa_win_pos[1] = 0xFFFFFFFF;
     } else {
         iflags.grmode = 0; /* force text mode for error msg */
+		memset(&regs, 0, sizeof(regs));
         regs.x.ax = MODETEXT;
         (void) __dpmi_int(VIDEO_BIOS, &regs);
         g_attribute = attrib_text_normal;
@@ -1125,6 +1273,7 @@ vesa_detect()
     dosmemput(&vbe_info, sizeof(vbe_info), vbe_info_seg * 16L);
 
     /* Request VESA BIOS information */
+	memset(&regs, 0, sizeof(regs));
     regs.x.ax = 0x4F00;
     regs.x.di = 0;
     regs.x.es = vbe_info_seg;
@@ -1257,7 +1406,7 @@ unsigned bits;
     memset(&mode_info, 0, sizeof(mode_info));
     selected_mode = 0xFFFF;
     while (1) {
-        unsigned mode = _farpeekw(_dos_ds, mode_addr);
+        unsigned mode = READ_ABSOLUTE_WORD(mode_addr);
         if (mode == 0xFFFF) break;
         mode_addr += 2;
 
@@ -1339,7 +1488,7 @@ vesa_flush_text()
     if (chr_cache_size == 0) return;
 
     /* All cache entries have the same Y coordinate */
-    pixy = chr_cache[i].pixy;
+    pixy = chr_cache[0].pixy;
     /* First loop: draw one raster line of all cache entries */
     for (y = 0; y < vesa_char_height; ++y) {
         /* Second loop: draw one raster line of one character */
@@ -1551,7 +1700,7 @@ const struct Pixel *palette;
         color =   ((unsigned long) r << 16)
                 | ((unsigned long) g <<  8)
                 | ((unsigned long) b <<  0);
-        _farpokel(_dos_ds, palette_ptr, color);
+        WRITE_ABSOLUTE_DWORD(palette_ptr, color);
         palette_ptr += 4;
         ++p;
     }
@@ -1566,7 +1715,7 @@ const struct Pixel *palette;
         color =   ((unsigned long) r << 16)
                 | ((unsigned long) g <<  8)
                 | ((unsigned long) b <<  0);
-        _farpokel(_dos_ds, palette_ptr, color);
+        WRITE_ABSOLUTE_DWORD(palette_ptr, color);
         palette_ptr += 4;
         ++p;
     }

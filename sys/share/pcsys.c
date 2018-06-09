@@ -15,7 +15,7 @@
 #if !defined(MSDOS) && !defined(WIN_CE) /* already done */
 #include <process.h>
 #endif
-#ifdef __GO32__
+#ifdef MSDOS
 #define P_WAIT 0
 #define P_NOWAIT 1
 #endif
@@ -79,7 +79,7 @@ dosh()
 {
     extern char orgdir[];
     char *comspec;
-#ifndef __GO32__
+#if !defined(__GO32__) && !defined(__WATCOMC__)
     int spawnstat;
 #endif
 #if defined(MSDOS) && defined(NO_TERMS)
@@ -98,7 +98,7 @@ dosh()
 #ifndef NOCWD_ASSUMPTIONS
         chdirx(orgdir, 0);
 #endif
-#ifdef __GO32__
+#if defined(__GO32__) || defined(__WATCOMC__)
         if (system(comspec) < 0) { /* wsu@eecs.umich.edu */
 #else
 #ifdef MOVERLAY

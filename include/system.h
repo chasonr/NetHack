@@ -169,7 +169,7 @@ E long FDECL(lseek, (int, long, int));
 E int FDECL(write, (int, const void *, unsigned));
 #endif
 #else
-#ifndef __MWERKS__ /* metrowerks defines write via universal headers */
+#if !defined(__MWERKS__) && !defined(__WATCOMC__) /* metrowerks defines write via universal headers */
 E int FDECL(write, (int, genericptr_t, unsigned));
 #endif
 #endif

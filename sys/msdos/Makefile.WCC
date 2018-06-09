@@ -1,0 +1,1085 @@
+##############################################################################
+#                             All build products                             #
+##############################################################################
+
+all : &
+..\binary\nethack.exe &
+..\binary\nhdat &
+..\binary\defaults.nh &
+..\binary\guideboo.txt &
+..\binary\keyhelp &
+..\binary\license &
+..\binary\logfile &
+..\binary\nethack.txt &
+..\binary\nhtiles.bmp &
+..\binary\paniclog &
+..\binary\record &
+..\binary\symbols &
+..\binary\sysconf &
+..\binary\ter-u16b.psf
+..\binary\ter-u20b.psf
+..\binary\ter-u28b.psf
+..\binary\ter-u16v.psf
+..\binary\ter-u24b.psf
+..\binary\ter-u32b.psf
+
+##############################################################################
+#                               Compiler setup                               #
+##############################################################################
+
+CC = wcc386
+#CFLAGS = -ox -wx -I..\include -DDLB -DSUPPRESS_GRAPHICS
+CFLAGS = -ox -wx -I..\include -DDLB -DUSE_TILES
+
+##############################################################################
+#                           The NetHack executable                           #
+##############################################################################
+
+NETHACK_OBJS = &
+o\allmain.obj  o\alloc.obj    o\apply.obj    o\artifact.obj o\attrib.obj   &
+o\ball.obj     o\bones.obj    o\botl.obj     o\cmd.obj      o\dbridge.obj  &
+o\decl.obj     o\detect.obj   o\dig.obj      o\display.obj  o\dlb.obj      &
+o\do.obj       o\dog.obj      o\dogmove.obj  o\dokick.obj   o\do_name.obj  &
+o\dothrow.obj  o\do_wear.obj  o\drawing.obj  o\dungeon.obj  o\eat.obj      &
+o\end.obj      o\engrave.obj  o\exper.obj    o\explode.obj  o\extralev.obj &
+o\files.obj    o\fountain.obj o\hack.obj     o\hacklib.obj  o\invent.obj   &
+o\light.obj    o\lock.obj     o\mail.obj     o\makemon.obj  o\mapglyph.obj &
+o\mcastu.obj   o\mhitm.obj    o\mhitu.obj    o\minion.obj   o\mklev.obj    &
+o\mkmap.obj    o\mkmaze.obj   o\mkobj.obj    o\mkroom.obj   o\mon.obj      &
+o\mondata.obj  o\monmove.obj  o\monst.obj    o\monstr.obj   o\mplayer.obj  &
+o\mthrowu.obj  o\muse.obj     o\music.obj    o\objects.obj  o\objnam.obj   &
+o\o_init.obj   o\options.obj  o\pager.obj    o\pickup.obj   o\pline.obj    &
+o\polyself.obj o\potion.obj   o\pray.obj     o\priest.obj   o\quest.obj    &
+o\questpgr.obj o\read.obj     o\rect.obj     o\region.obj   o\restore.obj  &
+o\rip.obj      o\rnd.obj      o\role.obj     o\rumors.obj   o\save.obj     &
+o\shk.obj      o\shknam.obj   o\sit.obj      o\sounds.obj   o\spell.obj    &
+o\sp_lev.obj   o\steal.obj    o\steed.obj    o\sys.obj      o\teleport.obj &
+o\tile.obj     o\timeout.obj  o\topten.obj   o\track.obj    o\trap.obj     &
+o\uhitm.obj    o\u_init.obj   o\vault.obj    o\version.obj  o\vision.obj   &
+o\weapon.obj   o\were.obj     o\wield.obj    o\windows.obj  o\wizard.obj   &
+o\worm.obj     o\worn.obj     o\write.obj    o\zap.obj      &
+o\msdos.obj    o\pckeys.obj   o\sound.obj    o\video.obj    o\vidtxt.obj   &
+o\vidvesa.obj  o\vidvga.obj   &
+o\pcmain.obj   o\pcsys.obj    o\pctty.obj    o\pcunix.obj   o\pmatchre.obj &
+o\random.obj   &
+o\getline.obj  o\termcap.obj  o\topl.obj     o\wintty.obj   &
+o\tileset.obj  o\bmptiles.obj o\giftiles.obj o\pngtiles.obj o\xpmtiles.obj &
+o\font.obj
+
+..\binary\nethack.exe : $(NETHACK_OBJS) ..\binary\license
+	@echo system dos4g >o\objs.txt
+	@echo option map >>o\objs.txt
+	@echo name ..\binary\nethack.exe >>o\objs.txt
+	@echo library clib3r.lib >>o\objs.txt
+	@for %a in ($(NETHACK_OBJS)) do @echo file %a >>o\objs.txt
+	wlink @o\objs.txt
+
+##############################################################################
+#                          nhdat and its components                          #
+##############################################################################
+
+# File list to pass to dlb
+NHDAT_FILES = &
+bogusmon &
+cmdhelp &
+data &
+dungeon &
+engrave &
+epitaph &
+help &
+hh &
+history &
+license &
+msdoshlp.txt &
+opthelp &
+options &
+oracles &
+quest.dat &
+rumors &
+tribute &
+wizhelp &
+Arc-fila.lev Arc-filb.lev Arc-goal.lev Arc-loca.lev Arc-strt.lev &
+Bar-fila.lev Bar-filb.lev Bar-goal.lev Bar-loca.lev Bar-strt.lev &
+Cav-fila.lev Cav-filb.lev Cav-goal.lev Cav-loca.lev Cav-strt.lev &
+Hea-fila.lev Hea-filb.lev Hea-goal.lev Hea-loca.lev Hea-strt.lev &
+Kni-fila.lev Kni-filb.lev Kni-goal.lev Kni-loca.lev Kni-strt.lev &
+Mon-fila.lev Mon-filb.lev Mon-goal.lev Mon-loca.lev Mon-strt.lev &
+Pri-fila.lev Pri-filb.lev Pri-goal.lev Pri-loca.lev Pri-strt.lev &
+Ran-fila.lev Ran-filb.lev Ran-goal.lev Ran-loca.lev Ran-strt.lev &
+Rog-fila.lev Rog-filb.lev Rog-goal.lev Rog-loca.lev Rog-strt.lev &
+Sam-fila.lev Sam-filb.lev Sam-goal.lev Sam-loca.lev Sam-strt.lev &
+Tou-fila.lev Tou-filb.lev Tou-goal.lev Tou-loca.lev Tou-strt.lev &
+Val-fila.lev Val-filb.lev Val-goal.lev Val-loca.lev Val-strt.lev &
+Wiz-fila.lev Wiz-filb.lev Wiz-goal.lev Wiz-loca.lev Wiz-strt.lev &
+air.lev &
+asmodeus.lev &
+astral.lev &
+baalz.lev &
+bigrm-1.lev &
+bigrm-2.lev &
+bigrm-3.lev &
+bigrm-4.lev &
+bigrm-5.lev &
+bigrm-6.lev &
+bigrm-7.lev &
+bigrm-8.lev &
+bigrm-9.lev &
+bigrm-10.lev &
+castle.lev &
+earth.lev &
+fakewiz1.lev &
+fakewiz2.lev &
+fire.lev &
+juiblex.lev &
+knox.lev &
+medusa-1.lev &
+medusa-2.lev &
+medusa-3.lev &
+medusa-4.lev &
+minefill.lev &
+minend-1.lev &
+minend-2.lev &
+minend-3.lev &
+minetn-1.lev &
+minetn-2.lev &
+minetn-3.lev &
+minetn-4.lev &
+minetn-5.lev &
+minetn-6.lev &
+minetn-7.lev &
+oracle.lev &
+orcus.lev &
+sanctum.lev &
+soko1-1.lev &
+soko1-2.lev &
+soko2-1.lev &
+soko2-2.lev &
+soko3-1.lev &
+soko3-2.lev &
+soko4-1.lev &
+soko4-2.lev &
+tower1.lev &
+tower2.lev &
+tower3.lev &
+valley.lev &
+water.lev &
+wizard1.lev &
+wizard2.lev &
+wizard3.lev &
+
+# These files are generated at build time, and should be deleted by wmake clean
+NHDAT_NEW_FILES = &
+..\dat\bogusmon &
+..\dat\data &
+..\dat\dungeon &
+..\dat\engrave &
+..\dat\epitaph &
+..\dat\options &
+..\dat\oracles &
+..\dat\quest.dat &
+..\dat\rumors &
+..\dat\msdoshlp.txt &
+
+# These files are copied to nhdat, and should NOT be deleted by wmake clean
+NHDAT_COPY_FILES = &
+..\dat\cmdhelp &
+..\dat\help &
+..\dat\hh &
+..\dat\history &
+..\dat\license &
+..\dat\opthelp &
+..\dat\tribute &
+..\dat\wizhelp &
+
+# These are tags created when each level description file is processed
+NHDAT_LEVEL_TAGS = &
+..\dat\Arch.tag &
+..\dat\Barb.tag &
+..\dat\Caveman.tag &
+..\dat\Healer.tag &
+..\dat\Knight.tag &
+..\dat\Monk.tag &
+..\dat\Priest.tag &
+..\dat\Ranger.tag &
+..\dat\Rogue.tag &
+..\dat\Samurai.tag &
+..\dat\Tourist.tag &
+..\dat\Valkyrie.tag &
+..\dat\Wizard.tag &
+..\dat\bigroom.tag &
+..\dat\castle.tag &
+..\dat\endgame.tag &
+..\dat\gehennom.tag &
+..\dat\knox.tag &
+..\dat\medusa.tag &
+..\dat\mines.tag &
+..\dat\oracle.tag &
+..\dat\sokoban.tag &
+..\dat\tower.tag &
+..\dat\yendor.tag &
+
+NHDAT_DEPS = $(NHDAT_COPY_FILES) $(NHDAT_NEW_FILES) $(NHDAT_LEVEL_TAGS)
+
+..\binary\nhdat : $(NHDAT_DEPS) o\dlb.exe ..\binary\license
+	@if exist o\nhdat.txt del o\nhdat.txt
+	@for %a in ($(NHDAT_FILES)) do @echo %a >>o\nhdat.txt
+	@cd ..\dat
+	..\src\o\dlb cvIf ..\src\o\nhdat.txt ..\binary\nhdat
+	@cd ..\src
+
+..\dat\msdoshlp.txt : ..\sys\msdos\msdoshlp.txt
+	copy ..\sys\msdos\msdoshlp.txt ..\dat
+
+##############################################################################
+#                          Copied and created files                          #
+##############################################################################
+
+..\binary\defaults.nh : ..\sys\share\NetHack.cnf ..\binary\license
+	copy ..\sys\share\NetHack.cnf ..\binary\defaults.nh
+
+..\binary\guideboo.txt : ..\doc\guideboo.txt ..\binary\license
+	copy ..\doc\guideboo.txt ..\binary
+
+..\binary\keyhelp : ..\dat\keyhelp ..\binary\license
+	copy ..\dat\keyhelp ..\binary
+
+..\binary\nethack.txt : ..\doc\nethack.txt ..\binary\license
+	copy ..\doc\nethack.txt ..\binary
+
+..\binary\symbols : ..\dat\symbols ..\binary\license
+	copy ..\dat\symbols ..\binary
+
+..\binary\sysconf : ..\sys\winnt\sysconf ..\binary\license
+	copy ..\sys\winnt\sysconf ..\binary
+
+..\binary\ter-u16b.psf : ..\win\share\ter-u16b.psf ..\binary\license
+	copy ..\win\share\ter-u16b.psf ..\binary
+
+..\binary\ter-u20b.psf : ..\win\share\ter-u20b.psf ..\binary\license
+	copy ..\win\share\ter-u20b.psf ..\binary
+
+..\binary\ter-u28b.psf : ..\win\share\ter-u28b.psf ..\binary\license
+	copy ..\win\share\ter-u28b.psf ..\binary
+
+..\binary\ter-u16v.psf : ..\win\share\ter-u16v.psf ..\binary\license
+	copy ..\win\share\ter-u16v.psf ..\binary
+
+..\binary\ter-u24b.psf : ..\win\share\ter-u24b.psf ..\binary\license
+	copy ..\win\share\ter-u24b.psf ..\binary
+
+..\binary\ter-u32b.psf : ..\win\share\ter-u32b.psf ..\binary\license
+	copy ..\win\share\ter-u32b.psf ..\binary
+
+..\binary\record : ..\binary\license
+	wtouch ..\binary\record
+
+..\binary\logfile : ..\binary\license
+	wtouch ..\binary\logfile
+
+..\binary\paniclog : ..\binary\license
+	wtouch ..\binary\paniclog
+
+##############################################################################
+#                       makedefs.exe and its products                        #
+##############################################################################
+
+MAKEDEFS_OBJS = o\makedefs.obj o\monst.obj o\objects.obj
+
+o\makedefs.exe : $(MAKEDEFS_OBJS)
+	@echo system dos4g >o\objs.txt
+	@echo name o\makedefs.exe >>o\objs.txt
+	@for %a in ($(MAKEDEFS_OBJS)) do @echo file %a >>o\objs.txt
+	wlink @o\objs.txt
+
+..\include\onames.h : o\makedefs.exe
+	o\makedefs.exe -o
+
+..\include\pm.h : o\makedefs.exe
+	o\makedefs.exe -p
+
+..\include\date.h : o\makedefs.exe
+	o\makedefs.exe -v
+
+..\dat\options : o\makedefs.exe
+	o\makedefs.exe -v
+
+..\dat\bogusmon : o\makedefs.exe ..\dat\bogusmon.txt
+	o\makedefs.exe -s
+
+..\dat\engrave : o\makedefs.exe ..\dat\engrave.txt
+	o\makedefs.exe -s
+
+..\dat\epitaph : o\makedefs.exe ..\dat\epitaph.txt
+	o\makedefs.exe -s
+
+..\dat\oracles : o\makedefs.exe ..\dat\oracles.txt
+	o\makedefs.exe -h
+
+..\dat\quest.dat : o\makedefs.exe ..\dat\quest.txt
+	o\makedefs.exe -q
+
+..\dat\rumors : o\makedefs.exe ..\dat\rumors.fal ..\dat\rumors.tru
+	o\makedefs.exe -r
+
+monstr.c : o\makedefs.exe
+	o\makedefs.exe -m
+
+..\dat\data : o\makedefs.exe ..\dat\data.bas
+	o\makedefs.exe -d
+
+..\dat\dungeon.pdf : o\makedefs.exe ..\dat\dungeon.def
+	o\makedefs.exe -e
+
+##############################################################################
+#                             The data librarian                             #
+##############################################################################
+
+DLB_OBJS = o\dlb_main.obj o\dlb.obj o\alloc.obj o\panic.obj
+
+o\dlb.exe : $(DLB_OBJS)
+	@echo system dos4g >o\objs.txt
+	@echo name o\dlb.exe >>o\objs.txt
+	@for %a in ($(DLB_OBJS)) do @echo file %a >>o\objs.txt
+	wlink @o\objs.txt
+
+##############################################################################
+#                    The dungeon compiler and its product                    #
+##############################################################################
+
+DGN_COMP_OBJS = &
+o\dgn_main.obj o\dgn_lex.obj o\dgn_yacc.obj o\alloc.obj o\panic.obj
+
+o\dgn_comp.exe : $(DGN_COMP_OBJS)
+	@echo system dos4g >o\objs.txt
+	@echo name o\dgn_comp.exe >>o\objs.txt
+	@for %a in ($(DGN_COMP_OBJS)) do @echo file %a >>o\objs.txt
+	wlink @o\objs.txt
+
+..\dat\dungeon : o\dgn_comp.exe ..\dat\dungeon.pdf
+	o\dgn_comp ..\dat\dungeon.pdf
+
+##############################################################################
+#                    The level compiler and its products                     #
+##############################################################################
+
+LEV_COMP_OBJS = &
+o\lev_main.obj o\lev_lex.obj o\lev_yacc.obj o\alloc.obj o\panic.obj &
+o\monst.obj o\objects.obj o\decl.obj o\drawing.obj o\stubvid.obj
+
+o\lev_comp.exe : $(LEV_COMP_OBJS)
+	@echo system dos4g >o\objs.txt
+	@echo name o\lev_comp.exe >>o\objs.txt
+	@for %a in ($(LEV_COMP_OBJS)) do @echo file %a >>o\objs.txt
+	wlink @o\objs.txt
+
+..\dat\Arch.tag : o\lev_comp.exe ..\dat\Arch.des
+	@cd ..\dat
+	..\src\o\lev_comp Arch.des
+	@wtouch Arch.tag
+	@cd ..\src
+
+..\dat\Barb.tag : o\lev_comp.exe ..\dat\Barb.des
+	@cd ..\dat
+	..\src\o\lev_comp Barb.des
+	@wtouch Barb.tag
+	@cd ..\src
+
+..\dat\Caveman.tag : o\lev_comp.exe ..\dat\Caveman.des
+	@cd ..\dat
+	..\src\o\lev_comp Caveman.des
+	@wtouch Caveman.tag
+	@cd ..\src
+
+..\dat\Healer.tag : o\lev_comp.exe ..\dat\Healer.des
+	@cd ..\dat
+	..\src\o\lev_comp Healer.des
+	@wtouch Healer.tag
+	@cd ..\src
+
+..\dat\Knight.tag : o\lev_comp.exe ..\dat\Knight.des
+	@cd ..\dat
+	..\src\o\lev_comp Knight.des
+	@wtouch Knight.tag
+	@cd ..\src
+
+..\dat\Monk.tag : o\lev_comp.exe ..\dat\Monk.des
+	@cd ..\dat
+	..\src\o\lev_comp Monk.des
+	@wtouch Monk.tag
+	@cd ..\src
+
+..\dat\Priest.tag : o\lev_comp.exe ..\dat\Priest.des
+	@cd ..\dat
+	..\src\o\lev_comp Priest.des
+	@wtouch Priest.tag
+	@cd ..\src
+
+..\dat\Ranger.tag : o\lev_comp.exe ..\dat\Ranger.des
+	@cd ..\dat
+	..\src\o\lev_comp Ranger.des
+	@wtouch Ranger.tag
+	@cd ..\src
+
+..\dat\Rogue.tag : o\lev_comp.exe ..\dat\Rogue.des
+	@cd ..\dat
+	..\src\o\lev_comp Rogue.des
+	@wtouch Rogue.tag
+	@cd ..\src
+
+..\dat\Samurai.tag : o\lev_comp.exe ..\dat\Samurai.des
+	@cd ..\dat
+	..\src\o\lev_comp Samurai.des
+	@wtouch Samurai.tag
+	@cd ..\src
+
+..\dat\Tourist.tag : o\lev_comp.exe ..\dat\Tourist.des
+	@cd ..\dat
+	..\src\o\lev_comp Tourist.des
+	@wtouch Tourist.tag
+	@cd ..\src
+
+..\dat\Valkyrie.tag : o\lev_comp.exe ..\dat\Valkyrie.des
+	@cd ..\dat
+	..\src\o\lev_comp Valkyrie.des
+	@wtouch Valkyrie.tag
+	@cd ..\src
+
+..\dat\Wizard.tag : o\lev_comp.exe ..\dat\Wizard.des
+	@cd ..\dat
+	..\src\o\lev_comp Wizard.des
+	@wtouch Wizard.tag
+	@cd ..\src
+
+..\dat\bigroom.tag : o\lev_comp.exe ..\dat\bigroom.des
+	@cd ..\dat
+	..\src\o\lev_comp bigroom.des
+	@wtouch bigroom.tag
+	@cd ..\src
+
+..\dat\castle.tag : o\lev_comp.exe ..\dat\castle.des
+	@cd ..\dat
+	..\src\o\lev_comp castle.des
+	@wtouch castle.tag
+	@cd ..\src
+
+..\dat\endgame.tag : o\lev_comp.exe ..\dat\endgame.des
+	@cd ..\dat
+	..\src\o\lev_comp endgame.des
+	@wtouch endgame.tag
+	@cd ..\src
+
+..\dat\gehennom.tag : o\lev_comp.exe ..\dat\gehennom.des
+	@cd ..\dat
+	..\src\o\lev_comp gehennom.des
+	@wtouch gehennom.tag
+	@cd ..\src
+
+..\dat\knox.tag : o\lev_comp.exe ..\dat\knox.des
+	@cd ..\dat
+	..\src\o\lev_comp knox.des
+	@wtouch knox.tag
+	@cd ..\src
+
+..\dat\medusa.tag : o\lev_comp.exe ..\dat\medusa.des
+	@cd ..\dat
+	..\src\o\lev_comp medusa.des
+	@wtouch medusa.tag
+	@cd ..\src
+
+..\dat\mines.tag : o\lev_comp.exe ..\dat\mines.des
+	@cd ..\dat
+	..\src\o\lev_comp mines.des
+	@wtouch mines.tag
+	@cd ..\src
+
+..\dat\oracle.tag : o\lev_comp.exe ..\dat\oracle.des
+	@cd ..\dat
+	..\src\o\lev_comp oracle.des
+	@wtouch oracle.tag
+	@cd ..\src
+
+..\dat\sokoban.tag : o\lev_comp.exe ..\dat\sokoban.des
+	@cd ..\dat
+	..\src\o\lev_comp sokoban.des
+	@wtouch sokoban.tag
+	@cd ..\src
+
+..\dat\tower.tag : o\lev_comp.exe ..\dat\tower.des
+	@cd ..\dat
+	..\src\o\lev_comp tower.des
+	@wtouch tower.tag
+	@cd ..\src
+
+..\dat\yendor.tag : o\lev_comp.exe ..\dat\yendor.des
+	@cd ..\dat
+	..\src\o\lev_comp yendor.des
+	@wtouch yendor.tag
+	@cd ..\src
+
+##############################################################################
+#                             tilemap and tile.c                             #
+##############################################################################
+
+TILEMAP_OBJS = o\tilemap.obj
+
+o\tilemap.exe : $(TILEMAP_OBJS)
+	@echo system dos4g >o\objs.txt
+	@echo name o\tilemap.exe >>o\objs.txt
+	@for %a in ($(TILEMAP_OBJS)) do @echo file %a >>o\objs.txt
+	wlink @o\objs.txt
+
+tile.c : o\tilemap.exe
+	o\tilemap
+
+##############################################################################
+#                          tile2bmp and nhtiles.bmp                          #
+##############################################################################
+
+TILE2BMP_OBJS = &
+o\tile2bmp.obj o\tiletext.obj o\tiletxt.obj o\monst.obj o\objects.obj &
+o\decl.obj o\drawing.obj o\stubvid.obj
+
+o\tile2bmp.exe : $(TILE2BMP_OBJS)
+	@echo system dos4g >o\objs.txt
+	@echo name o\tile2bmp.exe >>o\objs.txt
+	@for %a in ($(TILE2BMP_OBJS)) do @echo file %a >>o\objs.txt
+	wlink @o\objs.txt
+
+..\binary\nhtiles.bmp : o\tile2bmp.exe ..\win\share\monsters.txt ..\win\share\objects.txt ..\win\share\objects.txt ..\binary\license
+	o\tile2bmp ..\binary\nhtiles.bmp
+
+##############################################################################
+#              Files copied directly into the binary directory               #
+##############################################################################
+
+# All files created in ..\binary depend on ..\binary\license, except of course
+# ..\binary\license itself. The rule for ..\binary\license ensures that the
+# directory exists.
+
+..\binary\license : ..\dat\license
+	@-mkdir ..\binary
+	copy ..\dat\license ..\binary
+
+##############################################################################
+#                              All object files                              #
+##############################################################################
+
+# In src
+
+o\allmain.obj : allmain.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt allmain.c -fo=o\allmain.obj
+
+o\alloc.obj : alloc.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt alloc.c -fo=o\alloc.obj
+
+o\apply.obj : apply.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt apply.c -fo=o\apply.obj
+
+o\artifact.obj : artifact.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt artifact.c -fo=o\artifact.obj
+
+o\attrib.obj : attrib.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt attrib.c -fo=o\attrib.obj
+
+o\ball.obj : ball.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ball.c -fo=o\ball.obj
+
+o\bones.obj : bones.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt bones.c -fo=o\bones.obj
+
+o\botl.obj : botl.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt botl.c -fo=o\botl.obj
+
+o\cmd.obj : cmd.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt cmd.c -fo=o\cmd.obj
+
+o\dbridge.obj : dbridge.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt dbridge.c -fo=o\dbridge.obj
+
+o\decl.obj : decl.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt decl.c -fo=o\decl.obj
+
+o\detect.obj : detect.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt detect.c -fo=o\detect.obj
+
+o\dig.obj : dig.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt dig.c -fo=o\dig.obj
+
+o\display.obj : display.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt display.c -fo=o\display.obj
+
+o\dlb.obj : dlb.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt dlb.c -fo=o\dlb.obj
+
+o\do.obj : do.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt do.c -fo=o\do.obj
+
+o\dog.obj : dog.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt dog.c -fo=o\dog.obj
+
+o\dogmove.obj : dogmove.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt dogmove.c -fo=o\dogmove.obj
+
+o\dokick.obj : dokick.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt dokick.c -fo=o\dokick.obj
+
+o\do_name.obj : do_name.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt do_name.c -fo=o\do_name.obj
+
+o\dothrow.obj : dothrow.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt dothrow.c -fo=o\dothrow.obj
+
+o\do_wear.obj : do_wear.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt do_wear.c -fo=o\do_wear.obj
+
+o\drawing.obj : drawing.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt drawing.c -fo=o\drawing.obj
+
+o\dungeon.obj : dungeon.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt dungeon.c -fo=o\dungeon.obj
+
+o\eat.obj : eat.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt eat.c -fo=o\eat.obj
+
+o\end.obj : end.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt end.c -fo=o\end.obj
+
+o\engrave.obj : engrave.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt engrave.c -fo=o\engrave.obj
+
+o\exper.obj : exper.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt exper.c -fo=o\exper.obj
+
+o\explode.obj : explode.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt explode.c -fo=o\explode.obj
+
+o\extralev.obj : extralev.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt extralev.c -fo=o\extralev.obj
+
+o\files.obj : files.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt files.c -fo=o\files.obj
+
+o\fountain.obj : fountain.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt fountain.c -fo=o\fountain.obj
+
+o\hack.obj : hack.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt hack.c -fo=o\hack.obj
+
+o\hacklib.obj : hacklib.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt hacklib.c -fo=o\hacklib.obj
+
+o\invent.obj : invent.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt invent.c -fo=o\invent.obj
+
+o\light.obj : light.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt light.c -fo=o\light.obj
+
+o\lock.obj : lock.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt lock.c -fo=o\lock.obj
+
+o\mail.obj : mail.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mail.c -fo=o\mail.obj
+
+o\makemon.obj : makemon.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt makemon.c -fo=o\makemon.obj
+
+o\mapglyph.obj : mapglyph.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mapglyph.c -fo=o\mapglyph.obj
+
+o\mcastu.obj : mcastu.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mcastu.c -fo=o\mcastu.obj
+
+o\mhitm.obj : mhitm.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mhitm.c -fo=o\mhitm.obj
+
+o\mhitu.obj : mhitu.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mhitu.c -fo=o\mhitu.obj
+
+o\minion.obj : minion.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt minion.c -fo=o\minion.obj
+
+o\mklev.obj : mklev.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mklev.c -fo=o\mklev.obj
+
+o\mkmap.obj : mkmap.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mkmap.c -fo=o\mkmap.obj
+
+o\mkmaze.obj : mkmaze.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mkmaze.c -fo=o\mkmaze.obj
+
+o\mkobj.obj : mkobj.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mkobj.c -fo=o\mkobj.obj
+
+o\mkroom.obj : mkroom.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mkroom.c -fo=o\mkroom.obj
+
+o\mon.obj : mon.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mon.c -fo=o\mon.obj
+
+o\mondata.obj : mondata.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mondata.c -fo=o\mondata.obj
+
+o\monmove.obj : monmove.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt monmove.c -fo=o\monmove.obj
+
+o\monst.obj : monst.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt monst.c -fo=o\monst.obj
+
+o\monstr.obj : monstr.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt monstr.c -fo=o\monstr.obj
+
+o\mplayer.obj : mplayer.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mplayer.c -fo=o\mplayer.obj
+
+o\mthrowu.obj : mthrowu.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt mthrowu.c -fo=o\mthrowu.obj
+
+o\muse.obj : muse.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt muse.c -fo=o\muse.obj
+
+o\music.obj : music.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt music.c -fo=o\music.obj
+
+o\objects.obj : objects.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt objects.c -fo=o\objects.obj
+
+o\objnam.obj : objnam.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt objnam.c -fo=o\objnam.obj
+
+o\o_init.obj : o_init.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt o_init.c -fo=o\o_init.obj
+
+o\options.obj : options.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt options.c -fo=o\options.obj
+
+o\pager.obj : pager.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt pager.c -fo=o\pager.obj
+
+o\pickup.obj : pickup.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt pickup.c -fo=o\pickup.obj
+
+o\pline.obj : pline.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt pline.c -fo=o\pline.obj
+
+o\polyself.obj : polyself.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt polyself.c -fo=o\polyself.obj
+
+o\potion.obj : potion.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt potion.c -fo=o\potion.obj
+
+o\pray.obj : pray.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt pray.c -fo=o\pray.obj
+
+o\priest.obj : priest.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt priest.c -fo=o\priest.obj
+
+o\quest.obj : quest.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt quest.c -fo=o\quest.obj
+
+o\questpgr.obj : questpgr.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt questpgr.c -fo=o\questpgr.obj
+
+o\read.obj : read.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt read.c -fo=o\read.obj
+
+o\rect.obj : rect.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt rect.c -fo=o\rect.obj
+
+o\region.obj : region.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt region.c -fo=o\region.obj
+
+o\restore.obj : restore.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt restore.c -fo=o\restore.obj
+
+o\rip.obj : rip.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt rip.c -fo=o\rip.obj
+
+o\rnd.obj : rnd.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt rnd.c -fo=o\rnd.obj
+
+o\role.obj : role.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt role.c -fo=o\role.obj
+
+o\rumors.obj : rumors.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt rumors.c -fo=o\rumors.obj
+
+o\save.obj : save.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt save.c -fo=o\save.obj
+
+o\shk.obj : shk.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt shk.c -fo=o\shk.obj
+
+o\shknam.obj : shknam.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt shknam.c -fo=o\shknam.obj
+
+o\sit.obj : sit.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt sit.c -fo=o\sit.obj
+
+o\sounds.obj : sounds.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt sounds.c -fo=o\sounds.obj
+
+o\spell.obj : spell.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt spell.c -fo=o\spell.obj
+
+o\sp_lev.obj : sp_lev.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt sp_lev.c -fo=o\sp_lev.obj
+
+o\steal.obj : steal.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt steal.c -fo=o\steal.obj
+
+o\steed.obj : steed.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt steed.c -fo=o\steed.obj
+
+o\sys.obj : sys.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt sys.c -fo=o\sys.obj
+
+o\teleport.obj : teleport.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt teleport.c -fo=o\teleport.obj
+
+o\tile.obj : tile.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt tile.c -fo=o\tile.obj
+
+o\timeout.obj : timeout.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt timeout.c -fo=o\timeout.obj
+
+o\topten.obj : topten.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt topten.c -fo=o\topten.obj
+
+o\track.obj : track.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt track.c -fo=o\track.obj
+
+o\trap.obj : trap.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt trap.c -fo=o\trap.obj
+
+o\uhitm.obj : uhitm.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt uhitm.c -fo=o\uhitm.obj
+
+o\u_init.obj : u_init.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt u_init.c -fo=o\u_init.obj
+
+o\vault.obj : vault.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt vault.c -fo=o\vault.obj
+
+o\version.obj : version.c ..\include\pm.h ..\include\onames.h ..\include\date.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt version.c -fo=o\version.obj
+
+o\vision.obj : vision.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt vision.c -fo=o\vision.obj
+
+o\weapon.obj : weapon.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt weapon.c -fo=o\weapon.obj
+
+o\were.obj : were.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt were.c -fo=o\were.obj
+
+o\wield.obj : wield.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt wield.c -fo=o\wield.obj
+
+o\windows.obj : windows.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt windows.c -fo=o\windows.obj
+
+o\wizard.obj : wizard.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt wizard.c -fo=o\wizard.obj
+
+o\worm.obj : worm.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt worm.c -fo=o\worm.obj
+
+o\worn.obj : worn.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt worn.c -fo=o\worn.obj
+
+o\write.obj : write.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt write.c -fo=o\write.obj
+
+o\zap.obj : zap.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt zap.c -fo=o\zap.obj
+
+# In sys\msdos
+
+o\msdos.obj : ..\sys\msdos\msdos.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\msdos\msdos.c -fo=o\msdos.obj
+
+o\ovlinit.obj : ..\sys\msdos\ovlinit.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\msdos\ovlinit.c -fo=o\ovlinit.obj
+
+o\pckeys.obj : ..\sys\msdos\pckeys.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\msdos\pckeys.c -fo=o\pckeys.obj
+
+o\pctiles.obj : ..\sys\msdos\pctiles.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\msdos\pctiles.c -fo=o\pctiles.obj
+
+o\sound.obj : ..\sys\msdos\sound.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\msdos\sound.c -fo=o\sound.obj
+
+o\stubvid.obj : ..\sys\msdos\video.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt -DSTUBVIDEO ..\sys\msdos\video.c -fo=o\stubvid.obj
+
+o\tile2bin.obj : ..\sys\msdos\tile2bin.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\msdos\tile2bin.c -fo=o\tile2bin.obj
+
+o\video.obj : ..\sys\msdos\video.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\msdos\video.c -fo=o\video.obj
+
+o\vidtxt.obj : ..\sys\msdos\vidtxt.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\msdos\vidtxt.c -fo=o\vidtxt.obj
+
+o\vidvesa.obj : ..\sys\msdos\vidvesa.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt -I..\win\share ..\sys\msdos\vidvesa.c -fo=o\vidvesa.obj
+
+o\vidvga.obj : ..\sys\msdos\vidvga.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt -I..\win\share ..\sys\msdos\vidvga.c -fo=o\vidvga.obj
+
+# In sys\share
+
+o\dgn_lex.obj : ..\sys\share\dgn_lex.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\dgn_lex.c -fo=o\dgn_lex.obj
+
+o\dgn_yacc.obj : ..\sys\share\dgn_yacc.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\dgn_yacc.c -fo=o\dgn_yacc.obj
+
+o\ioctl.obj : ..\sys\share\ioctl.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\ioctl.c -fo=o\ioctl.obj
+
+o\lev_lex.obj : ..\sys\share\lev_lex.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\lev_lex.c -fo=o\lev_lex.obj
+
+o\lev_yacc.obj : ..\sys\share\lev_yacc.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\lev_yacc.c -fo=o\lev_yacc.obj
+
+o\nhlan.obj : ..\sys\share\nhlan.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\nhlan.c -fo=o\nhlan.obj
+
+o\pcmain.obj : ..\sys\share\pcmain.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\pcmain.c -fo=o\pcmain.obj
+
+o\pcsys.obj : ..\sys\share\pcsys.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\pcsys.c -fo=o\pcsys.obj
+
+o\pctty.obj : ..\sys\share\pctty.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\pctty.c -fo=o\pctty.obj
+
+o\pcunix.obj : ..\sys\share\pcunix.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\pcunix.c -fo=o\pcunix.obj
+
+o\pmatchre.obj : ..\sys\share\pmatchre.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\pmatchre.c -fo=o\pmatchre.obj
+
+o\posixreg.obj : ..\sys\share\posixreg.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\posixreg.c -fo=o\posixreg.obj
+
+o\random.obj : ..\sys\share\random.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\random.c -fo=o\random.obj
+
+o\tclib.obj : ..\sys\share\tclib.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\tclib.c -fo=o\tclib.obj
+
+o\unixtty.obj : ..\sys\share\unixtty.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\unixtty.c -fo=o\unixtty.obj
+
+o\uudecode.obj : ..\sys\share\uudecode.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\sys\share\uudecode.c -fo=o\uudecode.obj
+
+# In win\share
+
+o\bmptiles.obj : ..\win\share\bmptiles.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\bmptiles.c -fo=o\bmptiles.obj
+
+o\font.obj : ..\win\share\font.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\font.c -fo=o\font.obj
+
+o\gifread.obj : ..\win\share\gifread.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\gifread.c -fo=o\gifread.obj
+
+o\giftiles.obj : ..\win\share\giftiles.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\giftiles.c -fo=o\giftiles.obj
+
+o\pngtiles.obj : ..\win\share\pngtiles.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\pngtiles.c -fo=o\pngtiles.obj
+
+o\ppmwrite.obj : ..\win\share\ppmwrite.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\ppmwrite.c -fo=o\ppmwrite.obj
+
+o\thintile.obj : ..\win\share\thintile.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\thintile.c -fo=o\thintile.obj
+
+o\tile2bmp.obj : ..\win\share\tile2bmp.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\tile2bmp.c -fo=o\tile2bmp.obj
+
+o\tilemap.obj : ..\win\share\tilemap.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\tilemap.c -fo=o\tilemap.obj
+
+o\tileset.obj : ..\win\share\tileset.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\tileset.c -fo=o\tileset.obj
+
+o\tiletext.obj : ..\win\share\tiletext.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\tiletext.c -fo=o\tiletext.obj
+
+o\tiletxt.obj : ..\win\share\tilemap.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt -DTILETEXT ..\win\share\tilemap.c -fo=o\tiletxt.obj
+
+o\xpmtiles.obj : ..\win\share\xpmtiles.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\share\xpmtiles.c -fo=o\xpmtiles.obj
+
+# In win\tty
+
+o\getline.obj : ..\win\tty\getline.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\tty\getline.c -fo=o\getline.obj
+
+o\termcap.obj : ..\win\tty\termcap.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\tty\termcap.c -fo=o\termcap.obj
+
+o\topl.obj : ..\win\tty\topl.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\tty\topl.c -fo=o\topl.obj
+
+o\wintty.obj : ..\win\tty\wintty.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\win\tty\wintty.c -fo=o\wintty.obj
+
+# In util
+
+o\dgn_main.obj : ..\util\dgn_main.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\util\dgn_main.c -fo=o\dgn_main.obj
+
+o\dlb_main.obj : ..\util\dlb_main.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\util\dlb_main.c -fo=o\dlb_main.obj
+
+o\lev_main.obj : ..\util\lev_main.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\util\lev_main.c -fo=o\lev_main.obj
+
+o\makedefs.obj : ..\util\makedefs.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\util\makedefs.c -fo=o\makedefs.obj
+
+o\panic.obj : ..\util\panic.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\util\panic.c -fo=o\panic.obj
+
+o\recover.obj : ..\util\recover.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt ..\util\recover.c -fo=o\recover.obj
+
+o\cflags.txt:
+	@-mkdir o
+	@if exist o\cflags.txt del o\cflags.txt
+	@for %a in ($(CFLAGS)) do @echo %a >>o\cflags.txt
+
+##############################################################################
+#                                   Cleanup                                  #
+##############################################################################
+clean : .SYMBOLIC
+	if exist o\*.obj del o\*.obj
+	if exist *.err del *.err
+	for %a in ($(NHDAT_NEW_FILES)) do if exist %a del %a
+	for %a in ($(NHDAT_LEVEL_TAGS)) do if exist %a del %a
+	if exist ..\dat\*.lev del ..\dat\*.lev
+	if exist ..\dat\dungeon.pdf del ..\dat\dungeon.pdf
+	if exist ..\include\date.h del ..\include\date.h
+	if exist ..\include\onames.h del ..\include\onames.h
+	if exist ..\include\pm.h del ..\include\pm.h
+	if exist monstr.c del monstr.c
+	if exist tile.c del tile.c
+	if exist nethack.map del nethack.map
+	if exist o\cflags.txt del o\cflags.txt
+	if exist o\dgn_comp.exe del o\dgn_comp.exe
+	if exist o\dlb.exe del o\dlb.exe
+	if exist o\lev_comp.exe del o\lev_comp.exe
+	if exist o\makedefs.exe del o\makedefs.exe
+	if exist o\tile2bmp.exe del o\tile2bmp.exe
+	if exist o\tilemap.exe del o\tilemap.exe
+	if exist o\nhdat.txt del o\nhdat.txt
+	if exist o\objs.txt del o\objs.txt

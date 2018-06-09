@@ -18,6 +18,10 @@
 #include <sys/farptr.h>
 #endif
 
+#if defined(__WATCOMC__)
+#include <conio.h>
+#endif
+
 #if defined(_MSC_VER)
 #define outportb _outp
 #define outportw _outpw
@@ -26,6 +30,11 @@
 #if defined(__BORLANDC__)
 #define outportw outport
 /* #define inportb inport */
+#endif
+#if defined(__WATCOMC__)
+#define outportb outp
+#define outportw outpw
+#define inportb inp
 #endif
 
 #ifndef MK_PTR
@@ -53,10 +62,36 @@
     (_farpeekb(_go32_conventional_mem_selector(), (unsigned) x))
 #define READ_ABSOLUTE_WORD(x) \
     (_farpeekw(_go32_conventional_mem_selector(), (unsigned) x))
+#define READ_ABSOLUTE_DWORD(x) \
+    (_farpeekl(_go32_conventional_mem_selector(), (unsigned) x))
 #define WRITE_ABSOLUTE(x, y) \
     _farpokeb(_go32_conventional_mem_selector(), (unsigned) x, (y))
 #define WRITE_ABSOLUTE_WORD(x, y) \
     _farpokew(_go32_conventional_mem_selector(), (unsigned) x, (y))
+#define WRITE_ABSOLUTE_DWORD(x, y) \
+    _farpokel(_go32_conventional_mem_selector(), (unsigned) x, (y))
+#endif
+
+#if defined(__WATCOMC__)
+#define __far
+#define MK_PTR(seg, offset) \
+    (void *)(((unsigned) seg << 4) + (unsigned) offset)
+#define READ_ABSOLUTE(x) (*(unsigned char *)(x))
+#define READ_ABSOLUTE_WORD(x) (*(unsigned short *)(x))
+#define READ_ABSOLUTE_DWORD(x) (*(unsigned long *)(x))
+#define WRITE_ABSOLUTE(x, y) (*(unsigned char *)(x) = (y))
+#define WRITE_ABSOLUTE_WORD(x, y) (*(unsigned short *)(x) = (y))
+#define WRITE_ABSOLUTE_DWORD(x, y) (*(unsigned long *)(x) = (y))
+#endif
+
+/* Watcom in 32 bit mode uses a different union REGS and int386 instead
+   of int86 */
+#if defined(__WATCOMC__) && defined(__386__)
+#define R16(reg) x.e##reg
+#define INT86(a, b, c) int386((a), (b), (c))
+#else
+#define R16(reg) x.reg
+#define INT86(a, b, c) int86((a), (b), (c))
 #endif
 
 #ifdef OBSOLETE /* old djgpp V1.x way of mapping 1st MB */

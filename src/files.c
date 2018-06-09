@@ -57,6 +57,9 @@ const
 #else
 #include <sys/stat.h>
 #endif
+#ifdef __WATCOMC__
+#include <i86.h> /* delay() */
+#endif
 #endif
 #ifndef O_BINARY /* used for micros, no-op for others */
 #define O_BINARY 0

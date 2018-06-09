@@ -22,7 +22,7 @@
 #endif
 
 #ifdef SCREEN_DJGPPFAST
-/*# define MONO_CHECK 		/* djgpp should be able to do check  */
+/*# define MONO_CHECK*/ 		/* djgpp should be able to do check  */
 #endif
 
 /*
@@ -66,14 +66,14 @@
  * VGA Specific Stuff
  */
 #ifdef SCREEN_VGA
-/* #define HW_PANNING		/* Hardware panning enabled */
+/* #define HW_PANNING*/		/* Hardware panning enabled */
 #define USHORT unsigned short
 #define MODE640x480 0x0012 /* Switch to VGA 640 x 480 Graphics mode */
 #define MODETEXT 0x0003    /* Switch to Text mode 3 */
 
 #ifdef HW_PANNING
 #define PIXELINC 16 /* How much to increment by when panning */
-/*#define PIXELINC 1	/* How much to increment by when panning */
+/*#define PIXELINC 1*/	/* How much to increment by when panning */
 #define SCREENBYTES 128
 #define CharRows 30
 #define VERT_RETRACE                          \
@@ -238,12 +238,13 @@ E void NDECL(HideCursor);
 
 /* ### vidtxt.c ### */
 
+E void NDECL(txt_get_scr_size);
+
 #ifdef NO_TERMS
 E void NDECL(txt_backsp);
 E void NDECL(txt_clear_screen);
 E void FDECL(txt_cl_end, (int, int));
 E void NDECL(txt_cl_eos);
-E void NDECL(txt_get_scr_size);
 E void FDECL(txt_gotoxy, (int, int));
 E int NDECL(txt_monoadapt_check);
 E void NDECL(txt_nhbell);

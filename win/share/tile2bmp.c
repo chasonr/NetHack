@@ -14,7 +14,7 @@
 
 #include "hack.h"
 #include "tile.h"
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(__WATCOMC__)
 #include "win32api.h"
 #endif
 
@@ -87,7 +87,10 @@ lelong(INT32 x)
 #endif
 }
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__WATCOMC__)
+#ifdef __WATCOMC__
+#pragma pack(__push, 1)
+#endif
 typedef struct tagBMIH {
     UINT32 biSize;
     INT32 biWidth;
@@ -122,6 +125,9 @@ typedef struct tagRGBQ {
 #define BI_RLE8 1L
 #define BI_RLE4 2L
 #define BI_BITFIELDS 3L
+#ifdef __WATCOMC__
+#pragma pack(__pop)
+#endif
 #endif /* __GNUC__ */
 
 #pragma pack(1)

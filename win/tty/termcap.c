@@ -9,6 +9,9 @@
 
 #include "wintty.h"
 #include "tcap.h"
+#if defined(__WATCOMC__) && defined(MSDOS)
+#include <i86.h> /* delay() */
+#endif
 
 #ifdef MICROPORT_286_BUG
 #define Tgetstr(key) (tgetstr(key, tbuf))
