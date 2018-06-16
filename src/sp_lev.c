@@ -5303,7 +5303,7 @@ sp_lev *lvl;
         char *met = nh_getenv("SPCODER_MAX_RUNTIME");
 
         if (met && met[0] == '1')
-            max_execution = (1 << 30) - 1;
+            max_execution = (1L << 30) - 1;
     }
 
     for (tmpi = 0; tmpi <= MAX_NESTED_ROOMS; tmpi++) {
