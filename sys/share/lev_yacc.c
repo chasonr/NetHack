@@ -2664,7 +2664,7 @@ case 10:
 		      if (filling == INVALID_TYPE || filling >= MAX_TYPE)
 			  lc_error("INIT_MAP: Invalid fill char type.");
 		      add_opvars(splev, "ililiiiio",
-				 VA_PASS9(LVLINIT_SOLIDFILL,filling,0,(long)$5.lit,
+				 VA_PASS9(LVLINIT_SOLIDFILL,filling,0,(long)yyvsp[0].terr.lit,
 					  0,0,0,0, SPO_INITLEVEL));
 		      max_x_map = COLNO-1;
 		      max_y_map = ROWNO;
