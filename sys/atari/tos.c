@@ -171,7 +171,7 @@ DOSgetch()
 
 long
 freediskspace(path)
-char *path;
+const char *path;
 {
     int drive = 0;
     struct {

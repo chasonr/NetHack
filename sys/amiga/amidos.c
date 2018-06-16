@@ -114,7 +114,7 @@ dosh()
 /* TODO: update this for FFS */
 long
 freediskspace(path)
-char *path;
+const char *path;
 {
 #ifdef UNTESTED
     /* these changes from Patric Mueller <bhaak@gmx.net> for AROS to

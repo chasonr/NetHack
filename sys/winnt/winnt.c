@@ -58,7 +58,7 @@ switchar()
 
 long
 freediskspace(path)
-char *path;
+const char *path;
 {
     char tmppath[4];
     DWORD SectorsPerCluster = 0;

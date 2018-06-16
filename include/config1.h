@@ -30,6 +30,10 @@
 #undef UNIX
 #endif
 
+#ifdef OS2
+#undef UNIX
+#endif
+
 /*
  * Mac Stuff.
  */

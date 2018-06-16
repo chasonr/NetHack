@@ -188,7 +188,7 @@ kbhit()
 
 long
 freediskspace(path)
-char *path;
+const char *path;
 {
     FSALLOCATE FSInfoBuf;
 #ifdef OS2_32BITAPI

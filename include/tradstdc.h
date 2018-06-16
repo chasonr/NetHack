@@ -288,6 +288,9 @@ typedef genericptr genericptr_t; /* (void *) or (char *) */
 #if defined(MSDOS) && !defined(__GO32__)
 #define UNWIDENED_PROTOTYPES
 #endif
+#if defined(OS2) && defined(__WATCOMC__)
+#define UNWIDENED_PROTOTYPES
+#endif
 #if defined(AMIGA) && !defined(AZTEC_50)
 #define UNWIDENED_PROTOTYPES
 #endif

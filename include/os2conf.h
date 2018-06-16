@@ -13,18 +13,25 @@
  * selected either here or in Makefile.os2.
  */
 
-/* #define OS2_MSC		/* Microsoft C 5.1 and 6.0 */
+/* #define OS2_MSC */		/* Microsoft C 5.1 and 6.0 */
+#ifdef __EMX__
 #define OS2_GCC /* GCC emx 0.8f */
-                /* #define OS2_CSET2		/* IBM C Set/2 (courtesy Jeff Urlwin) */
-                /* #define OS2_CSET2_VER_1	/* CSet/2 version selection */
-                /* #define OS2_CSET2_VER_2	/* - " - */
+#endif
+                /* #define OS2_CSET2 */		/* IBM C Set/2 (courtesy Jeff Urlwin) */
+                /* #define OS2_CSET2_VER_1 */	/* CSet/2 version selection */
+                /* #define OS2_CSET2_VER_2 */	/* - " - */
+#ifdef __WATCOMC__
+#define OS2_WATCOMC
+#endif
 
 /*
  * System configuration.
  */
 
 #define OS2_USESYSHEADERS /* use compiler's own system headers */
-/* #define OS2_HPFS		/* use OS/2 High Performance File System */
+#if defined(__EMX__) || (defined(__WATCOMC__) && defined(__386__))
+#define OS2_HPFS		/* use OS/2 High Performance File System */
+#endif
 
 #if defined(OS2_GCC) || defined(OS2_CSET2)
 #define OS2_32BITAPI /* enable for compilation in OS/2 2.0 */
@@ -35,10 +42,12 @@
  * reason to touch the defaults, I think.
  */
 
-/*#define MFLOPPY			/* floppy and ramdisk support */
+#if defined(__WATCOMC__) && defined(__I86__)
+#define MFLOPPY			/* floppy and ramdisk support */
+#endif
 #define RANDOM /* Berkeley random(3) */
 #define SHELL  /* shell escape */
-/* #define TERMLIB		/* use termcap file */
+/* #define TERMLIB*/		/* use termcap file */
 #define ANSI_DEFAULT /* allows NetHack to run without termcap file */
 #define TEXTCOLOR    /* allow color */
 
@@ -56,6 +65,20 @@
 
 #if !defined(TERMLIB) && !defined(ANSI_DEFAULT)
 #define ANSI_DEFAULT /* have to have one or the other */
+#endif
+
+#if defined(__WATCOMC__)
+#ifdef strcmpi
+#undef strcmpi
+#endif
+#define lock djlock
+#include <stdlib.h>
+#include <string.h> /* Provides prototypes of strncmpi(), etc.     */
+#include <io.h>
+#undef lock
+#ifndef M
+#define M(c) ((char) (0x80 | (c)))
+#endif
 #endif
 
 #define PATHLEN 260  /* maximum pathlength (HPFS) */

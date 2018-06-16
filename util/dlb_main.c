@@ -13,6 +13,9 @@
 #if defined(__DJGPP__)
 #include <string.h>
 #endif
+#if defined(__WATCOMC__)
+#include <io.h>
+#endif
 
 static void FDECL(grow_ld, (libdir **, int *, int));
 static void FDECL(xexit, (int));

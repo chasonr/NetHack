@@ -359,7 +359,7 @@ switchar()
 
 long
 freediskspace(path)
-char *path;
+const char *path;
 {
     union REGS regs;
 

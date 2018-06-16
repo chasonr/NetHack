@@ -1508,8 +1508,8 @@ E int NDECL(tgetch);
 #ifndef TOS
 E char NDECL(switchar);
 #endif
-#if !defined(__GO32__) && !defined(__WATCOMC__)
-E long FDECL(freediskspace, (char *));
+#if !defined(__GO32__)
+E long FDECL(freediskspace, (const char *));
 #ifdef MSDOS
 E int FDECL(findfirst_file, (char *));
 E int NDECL(findnext_file);

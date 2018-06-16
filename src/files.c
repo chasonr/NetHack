@@ -2337,7 +2337,6 @@ char *origbuf;
         ramdisk = (strcmp(permbones, levels) != 0);
         ramdisk_specified = TRUE;
 #endif
-#endif
     } else if (match_varname(buf, "LEVELS", 4)) {
         if (strlen(bufp) >= PATHLEN)
             bufp[PATHLEN - 1] = '\0';
@@ -2345,6 +2344,7 @@ char *origbuf;
         if (!ramdisk_specified || !*levels)
             Strcpy(levels, bufp);
         ramdisk = (strcmp(permbones, levels) != 0);
+#endif
     } else if (match_varname(buf, "SAVE", 4)) {
 #ifdef MFLOPPY
         extern int saveprompt;
