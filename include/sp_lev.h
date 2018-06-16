@@ -242,7 +242,7 @@ enum sp_obj_var_flags {
 #define SP_REGION_X2(l) ((l >> 16) & 0xff)
 #define SP_REGION_Y2(l) ((l >> 24) & 0xff)
 #define SP_REGION_PACK(x1, y1, x2, y2) \
-    (((x1) & 0xff) + (((y1) & 0xff) << 8) + ((long)((x2) & 0xff) << 16) \
+    (((x1) & 0xff) + ((long)((y1) & 0xff) << 8) + ((long)((x2) & 0xff) << 16) \
      + ((long)((y2) & 0xff) << 24))
 
 /* permonst index, object index, and lit value might be negative;
