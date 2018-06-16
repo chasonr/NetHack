@@ -588,6 +588,7 @@ int col, row;
     unsigned width = (CO - 1 - col) * vesa_char_width;
     unsigned height = vesa_char_height;
 
+    vesa_flush_text();
     vesa_FillRect(left, top, width, height, BACKGROUND_VESA_COLOR);
 }
 
@@ -701,6 +702,14 @@ unsigned special; /* special feature: corpse, invis, detected, pet, ridden -
     int attr;
     int ry;
     const struct TileImage *packcell;
+
+    /* Certain glyphs should appear right away */
+    if (redraw_scheduled && (
+           (GLYPH_CMAP_OFF + S_vbeam <= glyphnum && glyphnum <= GLYPH_CMAP_OFF + S_poisoncloud)
+        || (GLYPH_EXPLODE_OFF <= glyphnum && glyphnum < GLYPH_SWALLOW_OFF)
+       )) {
+        vesa_redrawmap();
+    }
 
     row = currow;
     col = curcol;
