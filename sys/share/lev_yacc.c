@@ -2637,11 +2637,11 @@ case 7:
 					      0,0,0,0, SPO_INITLEVEL));
 		      } else {
 			  long bg = what_map_char((char) yyvsp[0].i);
-			  add_opvars(splev, "iiiiiiiio",
+			  add_opvars(splev, "iliiiiiio",
 				     VA_PASS9(LVLINIT_SOLIDFILL, bg, 0,0,
 					      0,0,0,0, SPO_INITLEVEL));
 		      }
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2(MAZELEVEL, SPO_LEVEL_FLAGS));
 		      max_x_map = COLNO-1;
 		      max_y_map = ROWNO;
@@ -2663,8 +2663,9 @@ case 10:
 		      long filling = yyvsp[0].terr.ter;
 		      if (filling == INVALID_TYPE || filling >= MAX_TYPE)
 			  lc_error("INIT_MAP: Invalid fill char type.");
-		      add_opvars(splev, "iiiiiiiio",
-				 LVLINIT_SOLIDFILL,filling,0,(long)yyvsp[0].terr.lit, 0,0,0,0, SPO_INITLEVEL);
+		      add_opvars(splev, "ililiiiio",
+				 VA_PASS9(LVLINIT_SOLIDFILL,filling,0,(long)$5.lit,
+					  0,0,0,0, SPO_INITLEVEL));
 		      max_x_map = COLNO-1;
 		      max_y_map = ROWNO;
 		  }
@@ -2674,7 +2675,7 @@ case 11:
 		      long filling = what_map_char((char) yyvsp[0].i);
 		      if (filling == INVALID_TYPE || filling >= MAX_TYPE)
 			  lc_error("INIT_MAP: Invalid fill char type.");
-		      add_opvars(splev, "iiiiiiiio",
+		      add_opvars(splev, "iliiiiiio",
 				 VA_PASS9(LVLINIT_MAZEGRID,filling,0,0,
 					  0,0,0,0, SPO_INITLEVEL));
 		      max_x_map = COLNO-1;
@@ -2707,7 +2708,7 @@ case 13:
 		      if (filling == INVALID_TYPE)
 			  lc_error("INIT_MAP: Invalid fill char type.");
 
-		      add_opvars(splev, "iiiiiiiio",
+		      add_opvars(splev, "illlllllo",
 				 VA_PASS9(LVLINIT_MINES,filling,walled,lit,
 					  joined,smoothed,bg,fg,
 					  SPO_INITLEVEL));
@@ -2753,7 +2754,7 @@ case 22:
 break;
 case 23:
 {
-		      add_opvars(splev, "io", VA_PASS2(yyvsp[0].i, SPO_LEVEL_FLAGS));
+		      add_opvars(splev, "lo", VA_PASS2(yyvsp[0].i, SPO_LEVEL_FLAGS));
 		  }
 break;
 case 24:
@@ -2852,7 +2853,7 @@ case 105:
 {
 		      long n_items = yyvsp[-1].i;
 		      variable_definitions = add_vardef_type(variable_definitions, yyvsp[-4].map, SPOVAR_INT|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, yyvsp[-4].map, SPO_VAR_INIT));
 		      Free(yyvsp[-4].map);
 		  }
@@ -2861,7 +2862,7 @@ case 106:
 {
 		      long n_items = yyvsp[-1].i;
 		      variable_definitions = add_vardef_type(variable_definitions, yyvsp[-4].map, SPOVAR_COORD|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, yyvsp[-4].map, SPO_VAR_INIT));
 		      Free(yyvsp[-4].map);
 		  }
@@ -2870,7 +2871,7 @@ case 107:
 {
 		      long n_items = yyvsp[-1].i;
 		      variable_definitions = add_vardef_type(variable_definitions, yyvsp[-4].map, SPOVAR_REGION|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, yyvsp[-4].map, SPO_VAR_INIT));
 		      Free(yyvsp[-4].map);
 		  }
@@ -2879,7 +2880,7 @@ case 108:
 {
 		      long n_items = yyvsp[-1].i;
 		      variable_definitions = add_vardef_type(variable_definitions, yyvsp[-6].map, SPOVAR_MAPCHAR|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, yyvsp[-6].map, SPO_VAR_INIT));
 		      Free(yyvsp[-6].map);
 		  }
@@ -2888,7 +2889,7 @@ case 109:
 {
 		      long n_items = yyvsp[-1].i;
 		      variable_definitions = add_vardef_type(variable_definitions, yyvsp[-6].map, SPOVAR_MONST|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, yyvsp[-6].map, SPO_VAR_INIT));
 		      Free(yyvsp[-6].map);
 		  }
@@ -2897,7 +2898,7 @@ case 110:
 {
 		      long n_items = yyvsp[-1].i;
 		      variable_definitions = add_vardef_type(variable_definitions, yyvsp[-6].map, SPOVAR_OBJ|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, yyvsp[-6].map, SPO_VAR_INIT));
 		      Free(yyvsp[-6].map);
 		  }
@@ -2906,7 +2907,7 @@ case 111:
 {
 		      long n_items = yyvsp[-1].i;
 		      variable_definitions = add_vardef_type(variable_definitions, yyvsp[-4].map, SPOVAR_STRING|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, yyvsp[-4].map, SPO_VAR_INIT));
 		      Free(yyvsp[-4].map);
 		  }
@@ -3065,7 +3066,7 @@ case 129:
 			      set_opvar_int(jmp, splev->n_opcodes - jmp->vardata.l);
 			  }
 			  l = tmpfunc->addr - splev->n_opcodes - 2;
-			  add_opvars(splev, "iio",
+			  add_opvars(splev, "llo",
 				     VA_PASS3(nparams, l, SPO_CALL));
 			  tmpfunc->n_called++;
 		      } else {
@@ -3092,7 +3093,7 @@ break;
 case 133:
 {
 		      /* val > rn2(100) */
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "lio",
 				 VA_PASS3((long)yyvsp[0].i, 100, SPO_RN2));
 		      yyval.i = SPO_JG;
                   }
@@ -3151,7 +3152,7 @@ case 138:
 			     splev->n_opcodes - switch_check_jump->vardata.l);
 
 		      for (i = 0; i < n_switch_case_list; i++) {
-			  add_opvars(splev, "oio",
+			  add_opvars(splev, "olo",
 				     VA_PASS3(SPO_COPY,
 					      switch_case_value[i], SPO_CMP));
 			  set_opvar_int(switch_case_list[i],
@@ -3278,7 +3279,7 @@ case 150:
 				 VA_PASS3(0, forloop_list[n_forloops].varname,
 					  SPO_VAR_INIT));
 		      /* jump back if compared values were not equal */
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2(
 		    forloop_list[n_forloops].jmp_point - splev->n_opcodes - 1,
 					  SPO_JNE));
@@ -3420,7 +3421,7 @@ case 161:
 break;
 case 162:
 {
-		      add_opvars(splev, "iiiiiio",
+		      add_opvars(splev, "iliiiio",
 			      VA_PASS7(-1, yyvsp[0].i, -1, -1, -1, -1, SPO_CORRIDOR));
 		  }
 break;
@@ -3432,7 +3433,7 @@ case 163:
 break;
 case 164:
 {
-		      add_opvars(splev, "iiiiiio",
+		      add_opvars(splev, "llllllo",
 				 VA_PASS7(yyvsp[-2].corpos.room, yyvsp[-2].corpos.door, yyvsp[-2].corpos.wall,
 					  yyvsp[0].corpos.room, yyvsp[0].corpos.door, yyvsp[0].corpos.wall,
 					  SPO_CORRIDOR));
@@ -3440,7 +3441,7 @@ case 164:
 break;
 case 165:
 {
-		      add_opvars(splev, "iiiiiio",
+		      add_opvars(splev, "llliilo",
 				 VA_PASS7(yyvsp[-2].corpos.room, yyvsp[-2].corpos.door, yyvsp[-2].corpos.wall,
 					  -1, -1, (long)yyvsp[0].i,
 					  SPO_CORRIDOR));
@@ -3458,7 +3459,7 @@ case 167:
 		      if ((yyvsp[-2].i < 100) && (yyvsp[-3].i == OROOM))
 			  lc_error("Only typed rooms can have a chance.");
 		      else {
-			  add_opvars(splev, "iii",
+			  add_opvars(splev, "lll",
 				     VA_PASS3((long)yyvsp[-3].i, (long)yyvsp[-2].i, (long)yyvsp[0].i));
 		      }
                   }
@@ -3468,7 +3469,7 @@ case 168:
 		      long rflags = yyvsp[0].i;
 
 		      if (rflags == -1) rflags = (1 << 0);
-		      add_opvars(splev, "iiiiiiio",
+		      add_opvars(splev, "liillllo",
 				 VA_PASS8(rflags, ERR, ERR,
 					  yyvsp[-3].crd.x, yyvsp[-3].crd.y, yyvsp[-1].sze.width, yyvsp[-1].sze.height,
 					  SPO_SUBROOM));
@@ -3486,7 +3487,7 @@ case 170:
 		      long rflags = yyvsp[-2].i;
 
 		      if (rflags == -1) rflags = (1 << 0);
-		      add_opvars(splev, "iiiiiiio",
+		      add_opvars(splev, "lllllllo",
 				 VA_PASS8(rflags,
 					  yyvsp[-3].crd.x, yyvsp[-3].crd.y, yyvsp[-5].crd.x, yyvsp[-5].crd.y,
 					  yyvsp[-1].sze.width, yyvsp[-1].sze.height, SPO_ROOM));
@@ -3568,7 +3569,7 @@ case 182:
 			if (yyvsp[-2].i == ERR && yyvsp[0].i != ERR) {
 			    lc_error("If the door wall is random, so must be its pos!");
 			} else {
-			    add_opvars(splev, "iiiio",
+			    add_opvars(splev, "llllo",
 				       VA_PASS5((long)yyvsp[0].i, (long)yyvsp[-4].i, (long)yyvsp[-6].i,
 						(long)yyvsp[-2].i, SPO_ROOM_DOOR));
 			}
@@ -3576,7 +3577,7 @@ case 182:
 break;
 case 183:
 {
-		      add_opvars(splev, "io", VA_PASS2((long)yyvsp[-2].i, SPO_DOOR));
+		      add_opvars(splev, "lo", VA_PASS2((long)yyvsp[-2].i, SPO_DOOR));
 		  }
 break;
 case 188:
@@ -3592,14 +3593,14 @@ break;
 case 192:
 {
 		      add_opvars(splev, "ciisiio",
-				 VA_PASS7(0, 0, 1, (char *)0, 0, 0, SPO_MAP));
+				 VA_PASS7(0L, 0, 1, (char *)0, 0, 0, SPO_MAP));
 		      max_x_map = COLNO-1;
 		      max_y_map = ROWNO;
 		  }
 break;
 case 193:
 {
-		      add_opvars(splev, "cii",
+		      add_opvars(splev, "cil",
 				 VA_PASS3(SP_COORD_PACK((yyvsp[-4].i),(yyvsp[-2].i)),
 					  1, (long)yyvsp[-1].i));
 		      scan_map(yyvsp[0].map, splev);
@@ -3608,7 +3609,7 @@ case 193:
 break;
 case 194:
 {
-		      add_opvars(splev, "ii", VA_PASS2(2, (long)yyvsp[-1].i));
+		      add_opvars(splev, "il", VA_PASS2(2, (long)yyvsp[-1].i));
 		      scan_map(yyvsp[0].map, splev);
 		      Free(yyvsp[0].map);
 		  }
@@ -3660,28 +3661,28 @@ case 205:
 break;
 case 206:
 {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)yyvsp[0].i, SP_M_V_PEACEFUL));
 		      yyval.i = 0x0002;
 		  }
 break;
 case 207:
 {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)yyvsp[0].i, SP_M_V_ASLEEP));
 		      yyval.i = 0x0004;
 		  }
 break;
 case 208:
 {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)yyvsp[0].i, SP_M_V_ALIGN));
 		      yyval.i = 0x0008;
 		  }
 break;
 case 209:
 {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)yyvsp[-1].i, SP_M_V_APPEAR));
 		      yyval.i = 0x0010;
 		  }
@@ -3748,7 +3749,7 @@ case 219:
 break;
 case 220:
 {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)yyvsp[0].i, SP_M_V_SEENTRAPS));
 		      yyval.i = 0x8000;
 		  }
@@ -3783,14 +3784,14 @@ case 224:
 {
 		      long cnt = 0;
 		      if (in_container_obj) cnt |= SP_OBJ_CONTENT;
-		      add_opvars(splev, "io", VA_PASS2(cnt, SPO_OBJECT));
+		      add_opvars(splev, "lo", VA_PASS2(cnt, SPO_OBJECT));
 		  }
 break;
 case 225:
 {
 		      long cnt = SP_OBJ_CONTAINER;
 		      if (in_container_obj) cnt |= SP_OBJ_CONTENT;
-		      add_opvars(splev, "io", VA_PASS2(cnt, SPO_OBJECT));
+		      add_opvars(splev, "lo", VA_PASS2(cnt, SPO_OBJECT));
 		      in_container_obj++;
 		      break_stmt_start();
 		  }
@@ -3827,7 +3828,7 @@ case 229:
 break;
 case 230:
 {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)yyvsp[0].i, SP_O_V_CURSE));
 		      yyval.i = 0x0001;
 		  }
@@ -3864,7 +3865,7 @@ case 235:
 break;
 case 236:
 {
-		      add_opvars(splev, "ii", VA_PASS2((long)yyvsp[0].i, SP_O_V_LIT));
+		      add_opvars(splev, "li", VA_PASS2((long)yyvsp[0].i, SP_O_V_LIT));
 		      yyval.i = 0x0040;
 		  }
 break;
@@ -3894,7 +3895,7 @@ case 239:
 break;
 case 240:
 {
-		      add_opvars(splev, "ii", VA_PASS2(yyvsp[0].i, SP_O_V_TRAPPED));
+		      add_opvars(splev, "li", VA_PASS2(yyvsp[0].i, SP_O_V_TRAPPED));
 		      yyval.i = 0x0400;
 		  }
 break;
@@ -3924,7 +3925,7 @@ case 244:
 break;
 case 245:
 {
-		      add_opvars(splev, "io", VA_PASS2((long)yyvsp[-2].i, SPO_TRAP));
+		      add_opvars(splev, "lo", VA_PASS2((long)yyvsp[-2].i, SPO_TRAP));
 		  }
 break;
 case 246:
@@ -3951,19 +3952,19 @@ case 246:
 			   state = -1;
 		       else
 			   lc_error("A drawbridge can only be open, closed or random!");
-		       add_opvars(splev, "iio",
+		       add_opvars(splev, "llo",
 				  VA_PASS3(state, dir, SPO_DRAWBRIDGE));
 		   }
 break;
 case 247:
 {
-		      add_opvars(splev, "iiio",
+		      add_opvars(splev, "liio",
 				 VA_PASS4((long)yyvsp[0].i, 1, 0, SPO_MAZEWALK));
 		  }
 break;
 case 248:
 {
-		      add_opvars(splev, "iiio",
+		      add_opvars(splev, "lllo",
 				 VA_PASS4((long)yyvsp[-3].i, (long)yyvsp[-1].i,
 					  (long)yyvsp[0].i, SPO_MAZEWALK));
 		  }
@@ -3982,28 +3983,28 @@ case 250:
 break;
 case 251:
 {
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2((long)yyvsp[0].i, SPO_LADDER));
 		  }
 break;
 case 252:
 {
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2((long)yyvsp[0].i, SPO_STAIR));
 		  }
 break;
 case 253:
 {
-		      add_opvars(splev, "iiiii iiiii iiso",
+		      add_opvars(splev, "lllll lllll liso",
 				 VA_PASS14(yyvsp[-4].lregn.x1, yyvsp[-4].lregn.y1, yyvsp[-4].lregn.x2, yyvsp[-4].lregn.y2, yyvsp[-4].lregn.area,
 					   yyvsp[-2].lregn.x1, yyvsp[-2].lregn.y1, yyvsp[-2].lregn.x2, yyvsp[-2].lregn.y2, yyvsp[-2].lregn.area,
 				     (long) ((yyvsp[0].i) ? LR_UPSTAIR : LR_DOWNSTAIR),
-					   0, (char *) 0, SPO_LEVREGION));
+					   0, (char const *) 0, SPO_LEVREGION));
 		  }
 break;
 case 254:
 {
-		      add_opvars(splev, "iiiii iiiii iiso",
+		      add_opvars(splev, "lllll lllll iiso",
 				 VA_PASS14(yyvsp[-4].lregn.x1, yyvsp[-4].lregn.y1, yyvsp[-4].lregn.x2, yyvsp[-4].lregn.y2, yyvsp[-4].lregn.area,
 					   yyvsp[-2].lregn.x1, yyvsp[-2].lregn.y1, yyvsp[-2].lregn.x2, yyvsp[-2].lregn.y2, yyvsp[-2].lregn.area,
 					   LR_PORTAL, 0, yyvsp[0].map, SPO_LEVREGION));
@@ -4018,7 +4019,7 @@ case 255:
 		      case  0: rtyp = LR_DOWNTELE; break;
 		      case  1: rtyp = LR_UPTELE; break;
 		      }
-		      add_opvars(splev, "iiiii iiiii iiso",
+		      add_opvars(splev, "lllll lllll liso",
 				 VA_PASS14(yyvsp[-3].lregn.x1, yyvsp[-3].lregn.y1, yyvsp[-3].lregn.x2, yyvsp[-3].lregn.y2, yyvsp[-3].lregn.area,
 					   yyvsp[-1].lregn.x1, yyvsp[-1].lregn.y1, yyvsp[-1].lregn.x2, yyvsp[-1].lregn.y2, yyvsp[-1].lregn.area,
 					   rtyp, 0, (char *)0, SPO_LEVREGION));
@@ -4026,7 +4027,7 @@ case 255:
 break;
 case 256:
 {
-		      add_opvars(splev, "iiiii iiiii iiso",
+		      add_opvars(splev, "lllll lllll liso",
 				 VA_PASS14(yyvsp[-2].lregn.x1, yyvsp[-2].lregn.y1, yyvsp[-2].lregn.x2, yyvsp[-2].lregn.y2, yyvsp[-2].lregn.area,
 					   yyvsp[0].lregn.x1, yyvsp[0].lregn.y1, yyvsp[0].lregn.x2, yyvsp[0].lregn.y2, yyvsp[0].lregn.area,
 					   (long) LR_BRANCH, 0,
@@ -4072,7 +4073,7 @@ case 263:
 break;
 case 264:
 {
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2(yyvsp[0].i, SPO_REPLACETERRAIN));
 		  }
 break;
@@ -4100,7 +4101,7 @@ case 268:
 		      if (rflags == -1) rflags = (1 << 0);
 		      if (!(rflags & 1)) rt += MAXRTYPE+1;
 		      irr = ((rflags & 2) != 0);
-		      add_opvars(splev, "iiio",
+		      add_opvars(splev, "lllo",
 				 VA_PASS4((long)yyvsp[-3].i, rt, rflags, SPO_REGION));
 		      yyval.i = (irr || (rflags & 1) || rt != OROOM);
 		      break_stmt_start();
@@ -4127,7 +4128,7 @@ case 271:
 break;
 case 272:
 {
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "llo",
 				 VA_PASS3((long)yyvsp[0].i, (long)yyvsp[-2].i, SPO_ALTAR));
 		  }
 break;
@@ -4155,7 +4156,7 @@ case 276:
 break;
 case 277:
 {
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2((long)yyvsp[-2].i, SPO_ENGRAVING));
 		  }
 break;
@@ -4166,7 +4167,7 @@ case 278:
 break;
 case 279:
 {
-		      add_opvars(splev, "iiiio",
+		      add_opvars(splev, "llllo",
 				 VA_PASS5(-1L, -1L, -1L, -1L, SPO_MINERALIZE));
 		  }
 break;
@@ -4524,7 +4525,7 @@ case 341:
 break;
 case 342:
 {
-		      add_opvars(splev, "i", VA_PASS1(yyvsp[0].i));
+		      add_opvars(splev, "l", VA_PASS1(yyvsp[0].i));
 		  }
 break;
 case 343:
@@ -4534,7 +4535,7 @@ case 343:
 break;
 case 344:
 {
-		      add_opvars(splev, "i", VA_PASS1(yyvsp[-1].i));
+		      add_opvars(splev, "l", VA_PASS1(yyvsp[-1].i));
 		  }
 break;
 case 345:
@@ -4706,12 +4707,12 @@ case 371:
 break;
 case 372:
 {
-		      add_opvars(splev, "io", VA_PASS2(yyvsp[-3].i, SPO_SEL_GROW));
+		      add_opvars(splev, "lo", VA_PASS2(yyvsp[-3].i, SPO_SEL_GROW));
 		  }
 break;
 case 373:
 {
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "lio",
 			     VA_PASS3(yyvsp[-3].i, SPOFILTER_PERCENT, SPO_SEL_FILTER));
 		  }
 break;
@@ -4740,7 +4741,7 @@ case 377:
 break;
 case 378:
 {
-		      add_opvars(splev, "oio",
+		      add_opvars(splev, "olo",
 				 VA_PASS3(SPO_COPY, yyvsp[-1].i, SPO_SEL_ELLIPSE));
 		  }
 break;
@@ -4751,12 +4752,12 @@ case 379:
 break;
 case 380:
 {
-		      add_opvars(splev, "io", VA_PASS2(yyvsp[-1].i, SPO_SEL_ELLIPSE));
+		      add_opvars(splev, "lo", VA_PASS2(yyvsp[-1].i, SPO_SEL_ELLIPSE));
 		  }
 break;
 case 381:
 {
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "llo",
 				 VA_PASS3(yyvsp[-5].i, yyvsp[-11].i, SPO_SEL_GRADIENT));
 		  }
 break;
@@ -4790,23 +4791,23 @@ case 386:
 break;
 case 387:
 {
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "llo",
 				 VA_PASS3(yyvsp[0].dice.num, yyvsp[0].dice.die, SPO_DICE));
 		  }
 break;
 case 391:
 {
-		      add_opvars(splev, "i", VA_PASS1(yyvsp[0].i));
+		      add_opvars(splev, "l", VA_PASS1(yyvsp[0].i));
 		  }
 break;
 case 392:
 {
-		      add_opvars(splev, "i", VA_PASS1(yyvsp[0].i));
+		      add_opvars(splev, "l", VA_PASS1(yyvsp[0].i));
 		  }
 break;
 case 393:
 {
-		      add_opvars(splev, "i", VA_PASS1(yyvsp[0].i));
+		      add_opvars(splev, "l", VA_PASS1(yyvsp[0].i));
 		  }
 break;
 case 394:

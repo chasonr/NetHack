@@ -234,7 +234,7 @@ enum sp_obj_var_flags {
 
 #define SP_COORD_X(l) (l & 0xff)
 #define SP_COORD_Y(l) ((l >> 16) & 0xff)
-#define SP_COORD_PACK(x, y) (((x) & 0xff) + (((y) & 0xff) << 16))
+#define SP_COORD_PACK(x, y) (((x) & 0xff) + ((long)((y) & 0xff) << 16))
 #define SP_COORD_PACK_RANDOM(f) (SP_COORD_IS_RANDOM | (f))
 
 #define SP_REGION_X1(l) (l & 0xff)
@@ -242,8 +242,8 @@ enum sp_obj_var_flags {
 #define SP_REGION_X2(l) ((l >> 16) & 0xff)
 #define SP_REGION_Y2(l) ((l >> 24) & 0xff)
 #define SP_REGION_PACK(x1, y1, x2, y2) \
-    (((x1) & 0xff) + (((y1) & 0xff) << 8) + (((x2) & 0xff) << 16) \
-     + (((y2) & 0xff) << 24))
+    (((x1) & 0xff) + (((y1) & 0xff) << 8) + ((long)((x2) & 0xff) << 16) \
+     + ((long)((y2) & 0xff) << 24))
 
 /* permonst index, object index, and lit value might be negative;
  * add 10 to accept -1 through -9 while forcing non-negative for bit shift

@@ -318,11 +318,11 @@ level_def	: LEVEL_ID ':' STRING
 					      0,0,0,0, SPO_INITLEVEL));
 		      } else {
 			  long bg = what_map_char((char) $5);
-			  add_opvars(splev, "iiiiiiiio",
+			  add_opvars(splev, "iliiiiiio",
 				     VA_PASS9(LVLINIT_SOLIDFILL, bg, 0,0,
 					      0,0,0,0, SPO_INITLEVEL));
 		      }
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2(MAZELEVEL, SPO_LEVEL_FLAGS));
 		      max_x_map = COLNO-1;
 		      max_y_map = ROWNO;
@@ -345,8 +345,9 @@ lev_init	: LEV_INIT_ID ':' SOLID_FILL_ID ',' terrain_type
 		      long filling = $5.ter;
 		      if (filling == INVALID_TYPE || filling >= MAX_TYPE)
 			  lc_error("INIT_MAP: Invalid fill char type.");
-		      add_opvars(splev, "iiiiiiiio",
-				 LVLINIT_SOLIDFILL,filling,0,(long)$5.lit, 0,0,0,0, SPO_INITLEVEL);
+		      add_opvars(splev, "ililiiiio",
+				 VA_PASS9(LVLINIT_SOLIDFILL,filling,0,(long)$5.lit,
+					  0,0,0,0, SPO_INITLEVEL));
 		      max_x_map = COLNO-1;
 		      max_y_map = ROWNO;
 		  }
@@ -355,7 +356,7 @@ lev_init	: LEV_INIT_ID ':' SOLID_FILL_ID ',' terrain_type
 		      long filling = what_map_char((char) $5);
 		      if (filling == INVALID_TYPE || filling >= MAX_TYPE)
 			  lc_error("INIT_MAP: Invalid fill char type.");
-		      add_opvars(splev, "iiiiiiiio",
+		      add_opvars(splev, "iliiiiiio",
 				 VA_PASS9(LVLINIT_MAZEGRID,filling,0,0,
 					  0,0,0,0, SPO_INITLEVEL));
 		      max_x_map = COLNO-1;
@@ -386,7 +387,7 @@ lev_init	: LEV_INIT_ID ':' SOLID_FILL_ID ',' terrain_type
 		      if (filling == INVALID_TYPE)
 			  lc_error("INIT_MAP: Invalid fill char type.");
 
-		      add_opvars(splev, "iiiiiiiio",
+		      add_opvars(splev, "illlllllo",
 				 VA_PASS9(LVLINIT_MINES,filling,walled,lit,
 					  joined,smoothed,bg,fg,
 					  SPO_INITLEVEL));
@@ -437,7 +438,7 @@ flags		: /* nothing */
 		  }
 		| FLAGS_ID ':' flag_list
 		  {
-		      add_opvars(splev, "io", VA_PASS2($3, SPO_LEVEL_FLAGS));
+		      add_opvars(splev, "lo", VA_PASS2($3, SPO_LEVEL_FLAGS));
 		  }
 		;
 
@@ -608,7 +609,7 @@ variable_define	: any_var_or_arr '=' math_expr_var
 		  {
 		      long n_items = $4;
 		      variable_definitions = add_vardef_type(variable_definitions, $1, SPOVAR_INT|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, $1, SPO_VAR_INIT));
 		      Free($1);
 		  }
@@ -616,7 +617,7 @@ variable_define	: any_var_or_arr '=' math_expr_var
 		  {
 		      long n_items = $4;
 		      variable_definitions = add_vardef_type(variable_definitions, $1, SPOVAR_COORD|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, $1, SPO_VAR_INIT));
 		      Free($1);
 		  }
@@ -624,7 +625,7 @@ variable_define	: any_var_or_arr '=' math_expr_var
 		  {
 		      long n_items = $4;
 		      variable_definitions = add_vardef_type(variable_definitions, $1, SPOVAR_REGION|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, $1, SPO_VAR_INIT));
 		      Free($1);
 		  }
@@ -632,7 +633,7 @@ variable_define	: any_var_or_arr '=' math_expr_var
 		  {
 		      long n_items = $6;
 		      variable_definitions = add_vardef_type(variable_definitions, $1, SPOVAR_MAPCHAR|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, $1, SPO_VAR_INIT));
 		      Free($1);
 		  }
@@ -640,7 +641,7 @@ variable_define	: any_var_or_arr '=' math_expr_var
 		  {
 		      long n_items = $6;
 		      variable_definitions = add_vardef_type(variable_definitions, $1, SPOVAR_MONST|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, $1, SPO_VAR_INIT));
 		      Free($1);
 		  }
@@ -648,7 +649,7 @@ variable_define	: any_var_or_arr '=' math_expr_var
 		  {
 		      long n_items = $6;
 		      variable_definitions = add_vardef_type(variable_definitions, $1, SPOVAR_OBJ|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, $1, SPO_VAR_INIT));
 		      Free($1);
 		  }
@@ -656,7 +657,7 @@ variable_define	: any_var_or_arr '=' math_expr_var
 		  {
 		      long n_items = $4;
 		      variable_definitions = add_vardef_type(variable_definitions, $1, SPOVAR_STRING|SPOVAR_ARRAY);
-		      add_opvars(splev, "iso",
+		      add_opvars(splev, "lso",
 				 VA_PASS3(n_items, $1, SPO_VAR_INIT));
 		      Free($1);
 		  }
@@ -815,7 +816,7 @@ function_call	: NQSTRING '(' func_call_params_list ')'
 			      set_opvar_int(jmp, splev->n_opcodes - jmp->vardata.l);
 			  }
 			  l = tmpfunc->addr - splev->n_opcodes - 2;
-			  add_opvars(splev, "iio",
+			  add_opvars(splev, "llo",
 				     VA_PASS3(nparams, l, SPO_CALL));
 			  tmpfunc->n_called++;
 		      } else {
@@ -844,7 +845,7 @@ opt_percent	: /* nothing */
 comparestmt     : PERCENT
                   {
 		      /* val > rn2(100) */
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "lio",
 				 VA_PASS3((long)$1, 100, SPO_RN2));
 		      $$ = SPO_JG;
                   }
@@ -900,7 +901,7 @@ switchstatement	: SWITCH_ID
 			     splev->n_opcodes - switch_check_jump->vardata.l);
 
 		      for (i = 0; i < n_switch_case_list; i++) {
-			  add_opvars(splev, "oio",
+			  add_opvars(splev, "olo",
 				     VA_PASS3(SPO_COPY,
 					      switch_case_value[i], SPO_CMP));
 			  set_opvar_int(switch_case_list[i],
@@ -1035,7 +1036,7 @@ forstatement	: forstmt_start
 				 VA_PASS3(0, forloop_list[n_forloops].varname,
 					  SPO_VAR_INIT));
 		      /* jump back if compared values were not equal */
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2(
 		    forloop_list[n_forloops].jmp_point - splev->n_opcodes - 1,
 					  SPO_JNE));
@@ -1177,7 +1178,7 @@ random_corridors: RAND_CORRIDOR_ID
 		  }
 		| RAND_CORRIDOR_ID ':' all_integers
 		  {
-		      add_opvars(splev, "iiiiiio",
+		      add_opvars(splev, "iliiiio",
 			      VA_PASS7(-1, $3, -1, -1, -1, -1, SPO_CORRIDOR));
 		  }
 		| RAND_CORRIDOR_ID ':' RANDOM_TYPE
@@ -1189,14 +1190,14 @@ random_corridors: RAND_CORRIDOR_ID
 
 corridor	: CORRIDOR_ID ':' corr_spec ',' corr_spec
 		  {
-		      add_opvars(splev, "iiiiiio",
+		      add_opvars(splev, "llllllo",
 				 VA_PASS7($3.room, $3.door, $3.wall,
 					  $5.room, $5.door, $5.wall,
 					  SPO_CORRIDOR));
 		  }
 		| CORRIDOR_ID ':' corr_spec ',' all_integers
 		  {
-		      add_opvars(splev, "iiiiiio",
+		      add_opvars(splev, "llliilo",
 				 VA_PASS7($3.room, $3.door, $3.wall,
 					  -1, -1, (long)$5,
 					  SPO_CORRIDOR));
@@ -1216,7 +1217,7 @@ room_begin      : room_type opt_percent ',' light_state
 		      if (($2 < 100) && ($1 == OROOM))
 			  lc_error("Only typed rooms can have a chance.");
 		      else {
-			  add_opvars(splev, "iii",
+			  add_opvars(splev, "lll",
 				     VA_PASS3((long)$1, (long)$2, (long)$4));
 		      }
                   }
@@ -1227,7 +1228,7 @@ subroom_def	: SUBROOM_ID ':' room_begin ',' subroom_pos ',' room_size optroomreg
 		      long rflags = $8;
 
 		      if (rflags == -1) rflags = (1 << 0);
-		      add_opvars(splev, "iiiiiiio",
+		      add_opvars(splev, "liillllo",
 				 VA_PASS8(rflags, ERR, ERR,
 					  $5.x, $5.y, $7.width, $7.height,
 					  SPO_SUBROOM));
@@ -1245,7 +1246,7 @@ room_def	: ROOM_ID ':' room_begin ',' room_pos ',' room_align ',' room_size optr
 		      long rflags = $8;
 
 		      if (rflags == -1) rflags = (1 << 0);
-		      add_opvars(splev, "iiiiiiio",
+		      add_opvars(splev, "lllllllo",
 				 VA_PASS8(rflags,
 					  $7.x, $7.y, $5.x, $5.y,
 					  $9.width, $9.height, SPO_ROOM));
@@ -1327,14 +1328,14 @@ door_detail	: ROOMDOOR_ID ':' secret ',' door_state ',' door_wall ',' door_pos
 			if ($7 == ERR && $9 != ERR) {
 			    lc_error("If the door wall is random, so must be its pos!");
 			} else {
-			    add_opvars(splev, "iiiio",
+			    add_opvars(splev, "llllo",
 				       VA_PASS5((long)$9, (long)$5, (long)$3,
 						(long)$7, SPO_ROOM_DOOR));
 			}
 		  }
 		| DOOR_ID ':' door_state ',' ter_selection
 		  {
-		      add_opvars(splev, "io", VA_PASS2((long)$3, SPO_DOOR));
+		      add_opvars(splev, "lo", VA_PASS2((long)$3, SPO_DOOR));
 		  }
 		;
 
@@ -1363,13 +1364,13 @@ door_pos	: INTEGER
 map_definition	: NOMAP_ID
 		  {
 		      add_opvars(splev, "ciisiio",
-				 VA_PASS7(0, 0, 1, (char *)0, 0, 0, SPO_MAP));
+				 VA_PASS7(0L, 0, 1, (char *)0, 0, 0, SPO_MAP));
 		      max_x_map = COLNO-1;
 		      max_y_map = ROWNO;
 		  }
 		| GEOMETRY_ID ':' h_justif ',' v_justif roomfill MAP_ID
 		  {
-		      add_opvars(splev, "cii",
+		      add_opvars(splev, "cil",
 				 VA_PASS3(SP_COORD_PACK(($3),($5)),
 					  1, (long)$6));
 		      scan_map($7, splev);
@@ -1377,7 +1378,7 @@ map_definition	: NOMAP_ID
 		  }
 		| GEOMETRY_ID ':' coord_or_var roomfill MAP_ID
 		  {
-		      add_opvars(splev, "ii", VA_PASS2(2, (long)$4));
+		      add_opvars(splev, "il", VA_PASS2(2, (long)$4));
 		      scan_map($5, splev);
 		      Free($5);
 		  }
@@ -1437,25 +1438,25 @@ monster_info	: string_expr
 		  }
 		| MON_ATTITUDE
 		  {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)$<i>1, SP_M_V_PEACEFUL));
 		      $$ = 0x0002;
 		  }
 		| MON_ALERTNESS
 		  {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)$<i>1, SP_M_V_ASLEEP));
 		      $$ = 0x0004;
 		  }
 		| alignment_prfx
 		  {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)$1, SP_M_V_ALIGN));
 		      $$ = 0x0008;
 		  }
 		| MON_APPEARANCE string_expr
 		  {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)$<i>1, SP_M_V_APPEAR));
 		      $$ = 0x0010;
 		  }
@@ -1511,7 +1512,7 @@ monster_info	: string_expr
 		  }
 		| SEENTRAPS_ID ':' seen_trap_mask
 		  {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)$3, SP_M_V_SEENTRAPS));
 		      $$ = 0x8000;
 		  }
@@ -1546,13 +1547,13 @@ object_detail	: OBJECT_ID ':' object_desc
 		  {
 		      long cnt = 0;
 		      if (in_container_obj) cnt |= SP_OBJ_CONTENT;
-		      add_opvars(splev, "io", VA_PASS2(cnt, SPO_OBJECT));
+		      add_opvars(splev, "lo", VA_PASS2(cnt, SPO_OBJECT));
 		  }
 		| COBJECT_ID ':' object_desc
 		  {
 		      long cnt = SP_OBJ_CONTAINER;
 		      if (in_container_obj) cnt |= SP_OBJ_CONTENT;
-		      add_opvars(splev, "io", VA_PASS2(cnt, SPO_OBJECT));
+		      add_opvars(splev, "lo", VA_PASS2(cnt, SPO_OBJECT));
 		      in_container_obj++;
 		      break_stmt_start();
 		  }
@@ -1590,7 +1591,7 @@ object_infos	: /* nothing */
 
 object_info	: CURSE_TYPE
 		  {
-		      add_opvars(splev, "ii",
+		      add_opvars(splev, "li",
 				 VA_PASS2((long)$1, SP_O_V_CURSE));
 		      $$ = 0x0001;
 		  }
@@ -1621,7 +1622,7 @@ object_info	: CURSE_TYPE
 		  }
 		| LIGHT_STATE
 		  {
-		      add_opvars(splev, "ii", VA_PASS2((long)$1, SP_O_V_LIT));
+		      add_opvars(splev, "li", VA_PASS2((long)$1, SP_O_V_LIT));
 		      $$ = 0x0040;
 		  }
 		| ERODED_ID ':' integer_or_var
@@ -1647,7 +1648,7 @@ object_info	: CURSE_TYPE
 		  }
 		| TRAPPED_STATE
 		  {
-		      add_opvars(splev, "ii", VA_PASS2($1, SP_O_V_TRAPPED));
+		      add_opvars(splev, "li", VA_PASS2($1, SP_O_V_TRAPPED));
 		      $$ = 0x0400;
 		  }
 		| RECHARGED_ID ':' integer_or_var
@@ -1674,7 +1675,7 @@ object_info	: CURSE_TYPE
 
 trap_detail	: TRAP_ID ':' trap_name ',' coord_or_var
 		  {
-		      add_opvars(splev, "io", VA_PASS2((long)$3, SPO_TRAP));
+		      add_opvars(splev, "lo", VA_PASS2((long)$3, SPO_TRAP));
 		  }
 		;
 
@@ -1702,19 +1703,19 @@ drawbridge_detail: DRAWBRIDGE_ID ':' coord_or_var ',' DIRECTION ',' door_state
 			   state = -1;
 		       else
 			   lc_error("A drawbridge can only be open, closed or random!");
-		       add_opvars(splev, "iio",
+		       add_opvars(splev, "llo",
 				  VA_PASS3(state, dir, SPO_DRAWBRIDGE));
 		   }
 		;
 
 mazewalk_detail : MAZEWALK_ID ':' coord_or_var ',' DIRECTION
 		  {
-		      add_opvars(splev, "iiio",
+		      add_opvars(splev, "liio",
 				 VA_PASS4((long)$5, 1, 0, SPO_MAZEWALK));
 		  }
 		| MAZEWALK_ID ':' coord_or_var ',' DIRECTION ',' BOOLEAN opt_fillchar
 		  {
-		      add_opvars(splev, "iiio",
+		      add_opvars(splev, "lllo",
 				 VA_PASS4((long)$5, (long)$<i>7,
 					  (long)$8, SPO_MAZEWALK));
 		  }
@@ -1734,21 +1735,21 @@ wallify_detail	: WALLIFY_ID
 
 ladder_detail	: LADDER_ID ':' coord_or_var ',' UP_OR_DOWN
 		  {
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2((long)$<i>5, SPO_LADDER));
 		  }
 		;
 
 stair_detail	: STAIR_ID ':' coord_or_var ',' UP_OR_DOWN
 		  {
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2((long)$<i>5, SPO_STAIR));
 		  }
 		;
 
 stair_region	: STAIR_ID ':' lev_region ',' lev_region ',' UP_OR_DOWN
 		  {
-		      add_opvars(splev, "iiiii iiiii iiso",
+		      add_opvars(splev, "lllll lllll liso",
 				 VA_PASS14($3.x1, $3.y1, $3.x2, $3.y2, $3.area,
 					   $5.x1, $5.y1, $5.x2, $5.y2, $5.area,
 				     (long) (($7) ? LR_UPSTAIR : LR_DOWNSTAIR),
@@ -1758,7 +1759,7 @@ stair_region	: STAIR_ID ':' lev_region ',' lev_region ',' UP_OR_DOWN
 
 portal_region	: PORTAL_ID ':' lev_region ',' lev_region ',' STRING
 		  {
-		      add_opvars(splev, "iiiii iiiii iiso",
+		      add_opvars(splev, "lllll lllll iiso",
 				 VA_PASS14($3.x1, $3.y1, $3.x2, $3.y2, $3.area,
 					   $5.x1, $5.y1, $5.x2, $5.y2, $5.area,
 					   LR_PORTAL, 0, $7, SPO_LEVREGION));
@@ -1774,7 +1775,7 @@ teleprt_region	: TELEPRT_ID ':' lev_region ',' lev_region teleprt_detail
 		      case  0: rtyp = LR_DOWNTELE; break;
 		      case  1: rtyp = LR_UPTELE; break;
 		      }
-		      add_opvars(splev, "iiiii iiiii iiso",
+		      add_opvars(splev, "lllll lllll liso",
 				 VA_PASS14($3.x1, $3.y1, $3.x2, $3.y2, $3.area,
 					   $5.x1, $5.y1, $5.x2, $5.y2, $5.area,
 					   rtyp, 0, (char *)0, SPO_LEVREGION));
@@ -1783,7 +1784,7 @@ teleprt_region	: TELEPRT_ID ':' lev_region ',' lev_region teleprt_detail
 
 branch_region	: BRANCH_ID ':' lev_region ',' lev_region
 		  {
-		      add_opvars(splev, "iiiii iiiii iiso",
+		      add_opvars(splev, "lllll lllll liso",
 				 VA_PASS14($3.x1, $3.y1, $3.x2, $3.y2, $3.area,
 					   $5.x1, $5.y1, $5.x2, $5.y2, $5.area,
 					   (long) LR_BRANCH, 0,
@@ -1833,7 +1834,7 @@ terrain_type	: CHAR
 
 replace_terrain_detail : REPLACE_TERRAIN_ID ':' region_or_var ',' mapchar_or_var ',' mapchar_or_var ',' SPERCENT
 		  {
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2($9, SPO_REPLACETERRAIN));
 		  }
 		;
@@ -1865,7 +1866,7 @@ region_detail	: REGION_ID ':' region_or_var ',' light_state ',' room_type optroo
 		      if (rflags == -1) rflags = (1 << 0);
 		      if (!(rflags & 1)) rt += MAXRTYPE+1;
 		      irr = ((rflags & 2) != 0);
-		      add_opvars(splev, "iiio",
+		      add_opvars(splev, "lllo",
 				 VA_PASS4((long)$5, rt, rflags, SPO_REGION));
 		      $<i>$ = (irr || (rflags & 1) || rt != OROOM);
 		      break_stmt_start();
@@ -1892,7 +1893,7 @@ region_detail_end : /* nothing */
 
 altar_detail	: ALTAR_ID ':' coord_or_var ',' alignment ',' altar_type
 		  {
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "llo",
 				 VA_PASS3((long)$7, (long)$5, SPO_ALTAR));
 		  }
 		;
@@ -1921,7 +1922,7 @@ gold_detail	: GOLD_ID ':' math_expr_var ',' coord_or_var
 
 engraving_detail: ENGRAVING_ID ':' coord_or_var ',' engraving_type ',' string_expr
 		  {
-		      add_opvars(splev, "io",
+		      add_opvars(splev, "lo",
 				 VA_PASS2((long)$5, SPO_ENGRAVING));
 		  }
 		;
@@ -1932,7 +1933,7 @@ mineralize	: MINERALIZE_ID ':' integer_or_var ',' integer_or_var ',' integer_or_
 		  }
 		| MINERALIZE_ID
 		  {
-		      add_opvars(splev, "iiiio",
+		      add_opvars(splev, "llllo",
 				 VA_PASS5(-1L, -1L, -1L, -1L, SPO_MINERALIZE));
 		  }
 		;
@@ -2305,7 +2306,7 @@ string_expr	: string_or_var                 { }
 
 math_expr_var	: INTEGER
 		  {
-		      add_opvars(splev, "i", VA_PASS1($1));
+		      add_opvars(splev, "l", VA_PASS1($1));
 		  }
 		| dice
 		  {
@@ -2313,7 +2314,7 @@ math_expr_var	: INTEGER
 		  }
 		| '(' MINUS_INTEGER ')'
 		  {
-		      add_opvars(splev, "i", VA_PASS1($2));
+		      add_opvars(splev, "l", VA_PASS1($2));
 		  }
 		| VARSTRING_INT
 		  {
@@ -2481,11 +2482,11 @@ ter_selection_x	: coord_or_var
 		  }
 		| grow_ID '(' dir_list ',' ter_selection ')'
 		  {
-		      add_opvars(splev, "io", VA_PASS2($3, SPO_SEL_GROW));
+		      add_opvars(splev, "lo", VA_PASS2($3, SPO_SEL_GROW));
 		  }
 		| filter_ID '(' SPERCENT ',' ter_selection ')'
 		  {
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "lio",
 			     VA_PASS3($3, SPOFILTER_PERCENT, SPO_SEL_FILTER));
 		  }
 		| filter_ID '(' ter_selection ',' ter_selection ')'
@@ -2509,7 +2510,7 @@ ter_selection_x	: coord_or_var
 		  }
 		| circle_ID '(' coord_or_var ',' math_expr_var ',' FILLING ')'
 		  {
-		      add_opvars(splev, "oio",
+		      add_opvars(splev, "olo",
 				 VA_PASS3(SPO_COPY, $7, SPO_SEL_ELLIPSE));
 		  }
 		| ellipse_ID '(' coord_or_var ',' math_expr_var ',' math_expr_var ')'
@@ -2518,11 +2519,11 @@ ter_selection_x	: coord_or_var
 		  }
 		| ellipse_ID '(' coord_or_var ',' math_expr_var ',' math_expr_var ',' FILLING ')'
 		  {
-		      add_opvars(splev, "io", VA_PASS2($9, SPO_SEL_ELLIPSE));
+		      add_opvars(splev, "lo", VA_PASS2($9, SPO_SEL_ELLIPSE));
 		  }
 		| gradient_ID '(' GRADIENT_TYPE ',' '(' math_expr_var '-' math_expr_var opt_limited ')' ',' coord_or_var opt_coord_or_var ')'
 		  {
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "llo",
 				 VA_PASS3($9, $3, SPO_SEL_GRADIENT));
 		  }
 		| complement_ID ter_selection_x
@@ -2554,7 +2555,7 @@ ter_selection	: ter_selection_x
 
 dice		: DICE
 		  {
-		      add_opvars(splev, "iio",
+		      add_opvars(splev, "llo",
 				 VA_PASS3($1.num, $1.die, SPO_DICE));
 		  }
 		;
@@ -2566,15 +2567,15 @@ all_integers	: MINUS_INTEGER
 
 all_ints_push	: MINUS_INTEGER
 		  {
-		      add_opvars(splev, "i", VA_PASS1($1));
+		      add_opvars(splev, "l", VA_PASS1($1));
 		  }
 		| PLUS_INTEGER
 		  {
-		      add_opvars(splev, "i", VA_PASS1($1));
+		      add_opvars(splev, "l", VA_PASS1($1));
 		  }
 		| INTEGER
 		  {
-		      add_opvars(splev, "i", VA_PASS1($1));
+		      add_opvars(splev, "l", VA_PASS1($1));
 		  }
 		| dice
 		  {

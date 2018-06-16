@@ -644,6 +644,13 @@ VA_DECL2(sp_lev *, sp, const char *, fmt)
         case 'i': /* integer */
         {
             struct opvar *ov = New(struct opvar);
+            set_opvar_int(ov, VA_NEXT(la, int));
+            add_opcode(sp, SPO_PUSH, ov);
+            break;
+        }
+        case 'l': /* integer */
+        {
+            struct opvar *ov = New(struct opvar);
             set_opvar_int(ov, VA_NEXT(la, long));
             add_opcode(sp, SPO_PUSH, ov);
             break;
@@ -1436,7 +1443,7 @@ sp_lev *sp;
 
     mbuf[((max_hig - 1) * max_len) + (max_len - 1) + 1] = '\0';
 
-    add_opvars(sp, "siio", VA_PASS4(mbuf, (long) max_hig, (long) max_len,
+    add_opvars(sp, "sllo", VA_PASS4(mbuf, (long) max_hig, (long) max_len,
                                     SPO_MAP));
 
     for (dy = 0; dy < max_hig; dy++)
