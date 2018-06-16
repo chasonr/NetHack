@@ -3999,7 +3999,7 @@ case 253:
 				 VA_PASS14(yyvsp[-4].lregn.x1, yyvsp[-4].lregn.y1, yyvsp[-4].lregn.x2, yyvsp[-4].lregn.y2, yyvsp[-4].lregn.area,
 					   yyvsp[-2].lregn.x1, yyvsp[-2].lregn.y1, yyvsp[-2].lregn.x2, yyvsp[-2].lregn.y2, yyvsp[-2].lregn.area,
 				     (long) ((yyvsp[0].i) ? LR_UPSTAIR : LR_DOWNSTAIR),
-					   0, (char const *) 0, SPO_LEVREGION));
+					   0, (char *) 0, SPO_LEVREGION));
 		  }
 break;
 case 254:
