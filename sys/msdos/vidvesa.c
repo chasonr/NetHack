@@ -11,6 +11,9 @@
 #ifdef __DJGPP__
 #include <dpmi.h>
 #endif
+#ifdef __WATCOMC__
+#include "watdpmi.h"
+#endif
 
 #include "pcvideo.h"
 #include "tile.h"
@@ -186,145 +189,6 @@ static const struct OldModeInfo old_mode_table[] = {
     { 0x011A, 1280, 1024, 16, 6 },
     { 0x011B, 1280, 1024, 24, 6 },
 };
-
-/* Watcom does not provide DPMI support functions. Here we provide the needed
-   functions under the same names that DJGPP uses. */
-#ifdef __WATCOMC__
-#pragma pack(__push, 1)
-typedef union nh_dpmi_regs {
-    struct {
-        uint32_t edi;
-        uint32_t esi;
-        uint32_t ebp;
-        uint32_t res;
-        uint32_t ebx;
-        uint32_t edx;
-        uint32_t ecx;
-        uint32_t eax;
-    } d;
-    struct {
-        uint16_t di, di_hi;
-        uint16_t si, si_hi;
-        uint16_t bp, bp_hi;
-        uint16_t res, res_hi;
-        uint16_t bx, bx_hi;
-        uint16_t dx, dx_hi;
-        uint16_t cx, cx_hi;
-        uint16_t ax, ax_hi;
-        uint16_t flags;
-        uint16_t es;
-        uint16_t ds;
-        uint16_t fs;
-        uint16_t gs;
-        uint16_t ip;
-        uint16_t cs;
-        uint16_t sp;
-        uint16_t ss;
-    } x;
-    struct {
-        uint8_t edi[4];
-        uint8_t esi[4];
-        uint8_t ebp[4];
-        uint8_t res[4];
-        uint8_t bl, bh, ebx_b2, ebx_b3;
-        uint8_t dl, dh, edx_b2, edx_b3;
-        uint8_t cl, ch, ecx_b2, ecx_b3;
-        uint8_t al, ah, eax_b2, eax_b3;
-    } h;
-} __dpmi_regs;
-#pragma pack(__pop)
-
-static int
-__dpmi_int(int vector, __dpmi_regs *regs)
-{
-    unsigned char flags = 0;
-	int rc;
-
-    _asm {
-		push ebx
-		push edi
-        mov ax,ds
-        mov es,ax
-        mov eax,0300h
-        mov ebx,vector
-        and ebx,0FFh
-        xor ecx,ecx
-        mov edi,regs
-        int 31h
-        lahf
-        mov flags,ah
-		pop edi
-		pop ebx
-    }
-    if ((flags & 0x1) == 0) {
-        rc = -1;
-    } else {
-        rc = 0;
-    }
-	return rc;
-}
-
-static int
-__dpmi_allocate_dos_memory(int paragraphs, int *selector_max)
-{
-    unsigned char flags = 0;
-    int dos_seg = 0;
-    int dos_sel = 0;
-    int dos_max = 0;
-
-    _asm {
-        mov eax,0100h
-        mov ebx,paragraphs
-        int 31h
-        mov dos_seg,eax
-        mov dos_sel,edx
-        mov dos_max,ebx
-        lahf
-        mov flags,ah
-    }
-    if ((flags & 0x1) == 0) {
-        /* carry clear; return is OK */
-        *selector_max = dos_sel;
-    } else {
-        *selector_max = dos_max;
-        dos_seg = -1;
-    }
-	return dos_seg;
-}
-
-static int
-__dpmi_free_dos_memory(int selector)
-{
-    unsigned char flags = 0;
-	int rc;
-
-    _asm {
-        mov eax,0101h
-        mov edx,selector
-        int 31h
-        lahf
-        mov flags,ah
-    }
-    if ((flags & 0x1) == 0) {
-        rc = -1;
-    } else {
-        rc = 0;
-    }
-	return rc;
-}
-
-static void
-dosmemget(unsigned long offset, size_t length, void *buffer)
-{
-    memcpy(buffer, (void *)offset, length);
-}
-
-static void
-dosmemput(const  void *buffer, size_t length, unsigned long offset)
-{
-    memcpy((void *)offset, buffer, length);
-}
-#endif
 
 /* Retrieve the mode info block */
 static boolean
