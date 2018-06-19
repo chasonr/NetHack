@@ -59,7 +59,7 @@ o\uhitm.obj    o\u_init.obj   o\vault.obj    o\version.obj  o\vision.obj   &
 o\weapon.obj   o\were.obj     o\wield.obj    o\windows.obj  o\wizard.obj   &
 o\worm.obj     o\worn.obj     o\write.obj    o\zap.obj      &
 o\msdos.obj    o\pckeys.obj   o\sound.obj    o\video.obj    o\vidtxt.obj   &
-o\vidvesa.obj  o\vidvga.obj   &
+o\vidvesa.obj  o\vidvga.obj   o\watdpmi.obj  &
 o\pcmain.obj   o\pcsys.obj    o\pctty.obj    o\pcunix.obj   o\pmatchre.obj &
 o\random.obj   &
 o\getline.obj  o\termcap.obj  o\topl.obj     o\wintty.obj   &
@@ -927,6 +927,9 @@ o\vidvesa.obj : ..\sys\msdos\vidvesa.c ..\include\pm.h ..\include\onames.h o\cfl
 
 o\vidvga.obj : ..\sys\msdos\vidvga.c ..\include\pm.h ..\include\onames.h o\cflags.txt .AUTODEPEND
 	$(CC) @o\cflags.txt -I..\win\share ..\sys\msdos\vidvga.c -fo=o\vidvga.obj
+
+o\watdpmi.obj : ..\sys\msdos\watdpmi.c o\cflags.txt .AUTODEPEND
+	$(CC) @o\cflags.txt -I..\win\share ..\sys\msdos\watdpmi.c -fo=o\watdpmi.obj
 
 # In sys\share
 
