@@ -1144,7 +1144,7 @@ unsigned mode;
         iflags.grmode = 1;
 		memset(&regs, 0, sizeof(regs));
         regs.x.ax = 0x4F02;
-        regs.x.bx = mode & 0x81FF;
+        regs.x.bx = mode;
         (void) __dpmi_int(VIDEO_BIOS, &regs);
         /* Record that the window position is unknown */
         vesa_win_pos[0] = 0xFFFFFFFF;
