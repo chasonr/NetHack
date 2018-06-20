@@ -1,11 +1,12 @@
 /* watdpmi.h -- DPMI functions for the Open Watcom compiler */
 
-#include <string.h>
-#include "watdpmi.h"
-
 #ifndef __WATCOMC__
 # error "watdpmi.c is made for the Open Watcom compiler"
 #endif
+
+#include <string.h>
+#include <i86.h>
+#include "watdpmi.h"
 
 /* Watcom does not provide DPMI support functions. Here we provide the needed
    functions under the same names that DJGPP uses. */
@@ -84,6 +85,136 @@ __dpmi_free_dos_memory(int selector)
 	return rc;
 }
 
+int
+__dpmi_physical_address_mapping(__dpmi_meminfo *info)
+{
+    unsigned char flags = 0;
+    uint16_t retcode = 0;
+    uint32_t addr, size;
+
+    addr = info->address;
+    size = info->size;
+    _asm {
+        mov ax,0x0800
+        mov ecx,addr
+        mov edi,size
+        mov ebx,ecx
+        mov esi,edi
+        shr ebx,16
+        shr esi,16
+        int 0x31
+        mov retcode,ax
+        lahf
+        mov flags,ah
+        shl ebx,16
+        mov bx,cx
+        mov addr,ebx
+    }
+
+    if (flags & 0x1) {
+        return -1;
+    } else {
+        info->address = addr;
+        return 0;
+    }
+}
+
+unsigned
+__dpmi_allocate_ldt_descriptors(unsigned count)
+{
+    unsigned char flags = 0;
+    uint16_t retcode = 0;
+
+    _asm {
+        mov eax,0x0000
+        mov ecx,count
+        int 0x31
+        mov retcode,ax
+        lahf
+        mov flags,ah
+    }
+    if (flags & 0x1) {
+        return 0;
+    } else {
+        return retcode;
+    }
+}
+
+int
+__dpmi_free_ldt_descriptor(unsigned sel)
+{
+    unsigned char flags = 0;
+    uint16_t retcode = 0;
+
+    _asm {
+        mov eax,0x0001
+        mov ebx,sel
+        int 0x31
+        mov retcode,ax
+        lahf
+        mov flags,ah
+    }
+
+    return (flags & 0x1) ? -1 : 0;
+}
+
+int
+__dpmi_set_segment_base_address(unsigned sel, uint32_t addr)
+{
+    unsigned char flags = 0;
+    uint16_t retcode = 0;
+
+    _asm {
+        mov ax,0x0007
+        mov ebx,sel
+        mov edx,addr
+        mov ecx,edx
+        shr ecx,16
+        int 0x31
+        mov retcode,ax
+        lahf
+        mov flags,ah
+    }
+    return (flags & 1) ? -1 : 0;
+}
+
+int
+__dpmi_set_segment_limit(unsigned sel, uint32_t limit)
+{
+    unsigned char flags = 0;
+    uint16_t retcode = 0;
+
+    _asm {
+        mov ax,0x0008
+        mov ebx,sel
+        mov edx,limit
+        mov ecx,edx
+        shr ecx,16
+        int 0x31
+        mov retcode,ax
+        lahf
+        mov flags,ah
+    }
+    return (flags & 1) ? -1 : 0;
+}
+
+unsigned
+__dpmi_segment_to_descriptor(unsigned segment)
+{
+    unsigned char flags = 0;
+    uint16_t retcode = 0;
+
+    _asm {
+        mov eax,0x0002
+        mov ebx,segment
+        int 0x31
+        mov retcode,ax
+        lahf
+        mov flags,ah
+    }
+    return (flags & 1) ? 0 : retcode;
+}
+
 /* Not actually DPMI, but useful just the same */
 void
 dosmemget(unsigned long offset, size_t length, void *buffer)
@@ -95,4 +226,40 @@ void
 dosmemput(const void *buffer, size_t length, unsigned long offset)
 {
     memcpy((void *)offset, buffer, length);
+}
+
+uint8_t
+_farpeekb(uint16_t selector, unsigned offset)
+{
+    return *(uint8_t const __far *)MK_FP(selector, offset);
+}
+
+uint16_t
+_farpeekw(uint16_t selector, unsigned offset)
+{
+    return *(uint16_t const __far *)MK_FP(selector, offset);
+}
+
+uint32_t
+_farpeekl(uint16_t selector, unsigned offset)
+{
+    return *(uint32_t const __far *)MK_FP(selector, offset);
+}
+
+void
+_farpokeb(uint16_t selector, unsigned offset, uint8_t num)
+{
+    *(uint8_t __far *)MK_FP(selector, offset) = num;
+}
+
+void
+_farpokew(uint16_t selector, unsigned offset, uint16_t num)
+{
+    *(uint16_t __far *)MK_FP(selector, offset) = num;
+}
+
+void
+_farpokel(uint16_t selector, unsigned offset, uint32_t num)
+{
+    *(uint32_t __far *)MK_FP(selector, offset) = num;
 }

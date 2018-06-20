@@ -51,12 +51,30 @@ typedef union nh_dpmi_regs {
 } __dpmi_regs;
 #pragma pack(__pop)
 
+typedef struct nh_dpmi_meminfo {
+    unsigned handle;
+    uint32_t address;
+    uint32_t size;
+} __dpmi_meminfo;
+
 int __dpmi_int(int vector, __dpmi_regs *regs);
 int __dpmi_allocate_dos_memory(int paragraphs, int *selector_max);
 int __dpmi_free_dos_memory(int selector);
+int __dpmi_physical_address_mapping(__dpmi_meminfo *info);
+unsigned __dpmi_allocate_ldt_descriptors(unsigned count);
+int __dpmi_free_ldt_descriptor(unsigned sel);
+int __dpmi_set_segment_base_address(unsigned sel, uint32_t addr);
+int __dpmi_set_segment_limit(unsigned sel, uint32_t limit);
+unsigned __dpmi_segment_to_descriptor(unsigned segment);
 
 /* Not actually DPMI, but useful just the same */
 void dosmemget(unsigned long offset, size_t length, void *buffer);
 void dosmemput(const void *buffer, size_t length, unsigned long offset);
+uint8_t _farpeekb(uint16_t selector, unsigned offset);
+uint16_t _farpeekw(uint16_t selector, unsigned offset);
+uint32_t _farpeekl(uint16_t selector, unsigned offset);
+void _farpokeb(uint16_t selector, unsigned offset, uint8_t num);
+void _farpokew(uint16_t selector, unsigned offset, uint16_t num);
+void _farpokel(uint16_t selector, unsigned offset, uint32_t num);
 
 #endif
