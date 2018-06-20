@@ -1244,8 +1244,27 @@ vesa_detect()
     mode_addr = (vbe_info.VideoModePtr >> 16) * 16L
               + (vbe_info.VideoModePtr & 0xFFFF);
 
+    /* Allow the user to select a specific mode */
+    mode_str = getenv("NH_DISPLAY_MODE");
+    if (mode_str != NULL) {
+        char *end;
+        unsigned long num = strtoul(mode_str, &end, 16);
+        if (*end == '\0') {
+            /* Can we select this mode? */
+            if (vesa_GetModeInfo(num, &mode_info)
+            &&  mode_info.XResolution >= 640
+            &&  mode_info.YResolution >= 480
+            &&  mode_info.BitsPerPixel >= 8) {
+                vesa_mode = num & 0x47FF;
+            }
+        }
+        if (vesa_mode == 0xFFFF)
+            mode_str = NULL;
+    }
+
     /* Scan the mode list for an acceptable mode */
-    vesa_mode = vesa_FindMode(mode_addr, 32);
+    if (vesa_mode == 0xFFFF)
+        vesa_mode = vesa_FindMode(mode_addr, 32);
     if (vesa_mode == 0xFFFF)
         vesa_mode = vesa_FindMode(mode_addr, 24);
     if (vesa_mode == 0xFFFF)
@@ -1338,7 +1357,8 @@ vesa_detect()
     }
 
     /* Configure a linear frame buffer if we have it */
-    if (mode_info.ModeAttributes & 0x80) {
+    if ((mode_info.ModeAttributes & 0x80) != 0
+        && (mode_str == NULL || (vesa_mode & 0x4000) != 0)) {
         unsigned sel = __dpmi_allocate_ldt_descriptors(1);
         unsigned win_size = mode_info.BytesPerScanLine * mode_info.YResolution;
         unsigned addr = vesa_map_frame_buffer(mode_info.PhysBasePtr, win_size);
