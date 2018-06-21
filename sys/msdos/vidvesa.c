@@ -1214,6 +1214,7 @@ vesa_detect()
     __dpmi_regs regs;
     unsigned long mode_addr;
     struct ModeInfoBlock mode_info;
+    const char *mode_str;
 
     vbe_info_seg = __dpmi_allocate_dos_memory(
             (sizeof(vbe_info) + 15) / 16,
