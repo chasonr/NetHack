@@ -1,8 +1,39 @@
 ##############################################################################
+#               Makefile for MS-DOS NetHack and Open Watcom 1.9              #
+##############################################################################
+
+##############################################################################
+#                               Configuration                                #
+##############################################################################
+
+# Uncomment this to enable a graphical version.
+WANT_TILES = Y
+
+# Uncomment this to build a NetHack that uses standard input and output.
+# You will need to install ANSI.SYS, NANSI.SYS or equivalent to use it.
+# This only matters if WANT_TILES is not set.
+#WANT_STDIO = Y
+
+# Uncomment this to enable PNG support.
+# This only matters if WANT_TILES is set.
+#WANT_PNG = Y
+
+# Directory where the following files can be found:
+#    include\png.h
+#    include\pngconf.h
+#    include\pnglibco.h
+#    include\zconf.h
+#    include\zlib.h
+#    lib\libpng.lib
+#    lib\zlib_f.lib
+# This only matters if WANT_TILES and WANT_PNG are both set.
+WATLIB_DIR = c:\watlibs
+
+##############################################################################
 #                             All build products                             #
 ##############################################################################
 
-all : &
+ALL_FILES = &
 ..\binary\nethack.exe &
 ..\binary\nhdat &
 ..\binary\defaults.nh &
@@ -11,25 +42,40 @@ all : &
 ..\binary\license &
 ..\binary\logfile &
 ..\binary\nethack.txt &
-..\binary\nhtiles.bmp &
 ..\binary\paniclog &
 ..\binary\record &
 ..\binary\symbols &
-..\binary\sysconf &
-..\binary\ter-u16b.psf
-..\binary\ter-u20b.psf
-..\binary\ter-u28b.psf
-..\binary\ter-u16v.psf
-..\binary\ter-u24b.psf
+..\binary\sysconf
+
+!if "$(WANT_TILES)" == "Y"
+ALL_FILES += &
+..\binary\nhtiles.bmp &
+..\binary\ter-u16b.psf &
+..\binary\ter-u20b.psf &
+..\binary\ter-u28b.psf &
+..\binary\ter-u16v.psf &
+..\binary\ter-u24b.psf &
 ..\binary\ter-u32b.psf
+!endif
+
+all : $(ALL_FILES) .SYMBOLIC
 
 ##############################################################################
 #                               Compiler setup                               #
 ##############################################################################
 
 CC = wcc386
-#CFLAGS = -ox -wx -I..\include -DDLB -DSUPPRESS_GRAPHICS
-CFLAGS = -ox -wx -I..\include -DDLB -DUSE_TILES
+CFLAGS = -ox -wx -zc -zq -I..\include -DDLB
+!if "$(WANT_TILES)" == "Y"
+CFLAGS += -DUSE_TILES
+!   if "$(WANT_PNG)" == "Y"
+CFLAGS += -DHAVE_PNG -I$(WATLIB_DIR)\include
+!   endif
+!else
+!   if "$(WANT_STDIO)" == "Y"
+CFLAGS += -DSUPPRESS_GRAPHICS
+!   endif
+!endif
 
 ##############################################################################
 #                           The NetHack executable                           #
@@ -58,13 +104,17 @@ o\tile.obj     o\timeout.obj  o\topten.obj   o\track.obj    o\trap.obj     &
 o\uhitm.obj    o\u_init.obj   o\vault.obj    o\version.obj  o\vision.obj   &
 o\weapon.obj   o\were.obj     o\wield.obj    o\windows.obj  o\wizard.obj   &
 o\worm.obj     o\worn.obj     o\write.obj    o\zap.obj      &
-o\msdos.obj    o\pckeys.obj   o\sound.obj    o\video.obj    o\vidtxt.obj   &
-o\vidvesa.obj  o\vidvga.obj   o\watdpmi.obj  &
+o\msdos.obj    o\sound.obj    o\video.obj    o\vidtxt.obj   &
 o\pcmain.obj   o\pcsys.obj    o\pctty.obj    o\pcunix.obj   o\pmatchre.obj &
 o\random.obj   &
 o\getline.obj  o\termcap.obj  o\topl.obj     o\wintty.obj   &
+
+!if "$(WANT_TILES)" == "Y"
+NETHACK_OBJS += &
+o\pckeys.obj   o\vidvesa.obj  o\vidvga.obj   o\watdpmi.obj  &
 o\tileset.obj  o\bmptiles.obj o\giftiles.obj o\pngtiles.obj o\xpmtiles.obj &
 o\font.obj
+!endif
 
 ..\binary\nethack.exe : $(NETHACK_OBJS) ..\binary\license
 	@echo system dos4g >o\objs.txt
@@ -72,6 +122,10 @@ o\font.obj
 	@echo name ..\binary\nethack.exe >>o\objs.txt
 	@echo library clib3r.lib >>o\objs.txt
 	@for %a in ($(NETHACK_OBJS)) do @echo file %a >>o\objs.txt
+!if "$(WANT_PNG)" == "Y"
+	@echo library $(WATLIB_DIR)\lib\zlib_f.lib >>o\objs.txt
+	@echo library $(WATLIB_DIR)\lib\libpng.lib >>o\objs.txt
+!endif
 	wlink @o\objs.txt
 
 ##############################################################################
