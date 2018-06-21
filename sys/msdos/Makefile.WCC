@@ -120,6 +120,7 @@ o\font.obj
 	@echo system dos4g >o\objs.txt
 	@echo option map >>o\objs.txt
 	@echo name ..\binary\nethack.exe >>o\objs.txt
+	@echo library doslfn3r.lib >>o\objs.txt
 	@echo library clib3r.lib >>o\objs.txt
 	@for %a in ($(NETHACK_OBJS)) do @echo file %a >>o\objs.txt
 !if "$(WANT_PNG)" == "Y"
