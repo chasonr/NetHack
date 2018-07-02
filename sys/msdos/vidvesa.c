@@ -513,7 +513,7 @@ unsigned left, top, width, height, color;
 
     switch (vesa_pixel_bytes) {
     case 1:
-        memset(p_row, c32, p_row_size);
+        memset(p_row, color, p_row_size);
         break;
 
     case 2:
@@ -1932,13 +1932,10 @@ static boolean
 vesa_SetHardPalette(palette)
 const struct Pixel *palette;
 {
-    const struct Pixel *p = palette;
     int palette_sel = -1; /* custodial */
     int palette_seg;
-    unsigned long palette_ptr;
+    unsigned char p2[1024];
     unsigned i, shift;
-    unsigned char r, g, b;
-    unsigned long color;
     __dpmi_regs regs;
 
     palette_seg = __dpmi_allocate_dos_memory( 1024 / 16, &palette_sel);
@@ -1958,36 +1955,23 @@ const struct Pixel *palette;
         shift = 8 - regs.h.bh;
     }
 
+    /* First, try the VESA palette function */
     /* Set the tile set and text colors */
-    palette_ptr = palette_seg * 16L;
 #ifdef USE_TILES
     for (i = 0; i < FIRST_TEXT_COLOR; ++i) {
-        r = p->r >> shift;
-        g = p->g >> shift;
-        b = p->b >> shift;
-        color =   ((unsigned long) r << 16)
-                | ((unsigned long) g <<  8)
-                | ((unsigned long) b <<  0);
-        WRITE_ABSOLUTE_DWORD(palette_ptr, color);
-        palette_ptr += 4;
-        ++p;
+        p2[i*4 + 0] = palette[i].b >> shift;
+        p2[i*4 + 1] = palette[i].g >> shift;
+        p2[i*4 + 2] = palette[i].r >> shift;
     }
-#else
-    palette_ptr += FIRST_TEXT_COLOR * 4;
 #endif
-    p = defpalette;
     for (i = FIRST_TEXT_COLOR; i < 256; ++i) {
-        r = p->r >> shift;
-        g = p->g >> shift;
-        b = p->b >> shift;
-        color =   ((unsigned long) r << 16)
-                | ((unsigned long) g <<  8)
-                | ((unsigned long) b <<  0);
-        WRITE_ABSOLUTE_DWORD(palette_ptr, color);
-        palette_ptr += 4;
-        ++p;
+        p2[i*4 + 0] = defpalette[i-FIRST_TEXT_COLOR].b >> shift;
+        p2[i*4 + 1] = defpalette[i-FIRST_TEXT_COLOR].g >> shift;
+        p2[i*4 + 2] = defpalette[i-FIRST_TEXT_COLOR].r >> shift;
     }
 
+    /* Call the BIOS */
+    dosmemput(p2, 256*4, palette_seg*16L);
     memset(&regs, 0, sizeof(regs));
     regs.x.ax = 0x4F09;
     regs.h.bl = 0;
@@ -1996,6 +1980,33 @@ const struct Pixel *palette;
     regs.x.di = 0;
     regs.x.es = palette_seg;
     (void) __dpmi_int(VIDEO_BIOS, &regs);
+
+    /* If that didn't work, use the original BIOS function */
+    if (regs.x.ax != 0x004F) {
+        /* Set the tile set and text colors */
+#ifdef USE_TILES
+        for (i = 0; i < FIRST_TEXT_COLOR; ++i) {
+            p2[i*3 + 0] = palette[i].r >> shift;
+            p2[i*3 + 1] = palette[i].g >> shift;
+            p2[i*3 + 2] = palette[i].b >> shift;
+        }
+#endif
+        for (i = FIRST_TEXT_COLOR; i < 256; ++i) {
+            p2[i*3 + 0] = defpalette[i-FIRST_TEXT_COLOR].r >> shift;
+            p2[i*3 + 1] = defpalette[i-FIRST_TEXT_COLOR].g >> shift;
+            p2[i*3 + 2] = defpalette[i-FIRST_TEXT_COLOR].b >> shift;
+        }
+
+        /* Call the BIOS */
+        dosmemput(p2, 256*3, palette_seg*16L);
+        memset(&regs, 0, sizeof(regs));
+        regs.x.ax = 0x1012;
+        regs.x.cx = 256;
+        regs.x.bx = 0;
+        regs.x.dx = 0;
+        regs.x.es = palette_seg;
+        (void) __dpmi_int(VIDEO_BIOS, &regs);
+    }
 
     __dpmi_free_dos_memory(palette_sel);
     return TRUE;
