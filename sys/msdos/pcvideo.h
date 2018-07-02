@@ -306,7 +306,6 @@ E void NDECL(vesa_HideCursor);
 E void NDECL(vesa_Init);
 E void NDECL(vesa_tty_end_screen);
 E void FDECL(vesa_tty_startup, (int *, int *));
-E void NDECL(vesa_schedule_redraw);
 E void FDECL(vesa_xputs, (const char *, int, int));
 E void FDECL(vesa_xputc, (CHAR_P, int));
 E void FDECL(vesa_xputg, (int, int, unsigned));

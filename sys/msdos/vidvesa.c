@@ -161,13 +161,6 @@ static struct VesaCharacter chr_cache[100];
 static unsigned chr_cache_size;
 static unsigned chr_cache_pixx, chr_cache_pixy, chr_cache_lastx;
 
-/*
- * For optimization of tile drawing. If we draw more than a few tiles without
- * drawing any text, we stop updating the map until more text is drawn, then
- * redraw the entire map.
- */
-static boolean redraw_scheduled = FALSE;
-
 struct OldModeInfo {
     unsigned mode;
 
@@ -707,14 +700,6 @@ unsigned special; /* special feature: corpse, invis, detected, pet, ridden -
     int ry;
     const struct TileImage *packcell;
 
-    /* Certain glyphs should appear right away */
-    if (redraw_scheduled && (
-           (GLYPH_CMAP_OFF + S_vbeam <= glyphnum && glyphnum <= GLYPH_CMAP_OFF + S_poisoncloud)
-        || (GLYPH_EXPLODE_OFF <= glyphnum && glyphnum < GLYPH_SWALLOW_OFF)
-       )) {
-        vesa_redrawmap();
-    }
-
     row = currow;
     col = curcol;
     if ((col < 0 || col >= COLNO)
@@ -728,7 +713,7 @@ unsigned special; /* special feature: corpse, invis, detected, pet, ridden -
     map[ry][col].attr = attr;
     if (iflags.traditional_view) {
         vesa_WriteChar(ch, col, row, attr);
-    } else if (!redraw_scheduled) {
+    } else {
         if ((col >= clipx) && (col <= clipxmax)
         &&  (ry >= clipy) && (ry <= clipymax)) {
             packcell = get_tile(glyph2tile[glyphnum]);
@@ -807,9 +792,6 @@ int x, y;
 void
 vesa_schedule_redraw()
 {
-    if (vesa_segment == 0) {
-        redraw_scheduled = TRUE;
-    }
 }
 
 static void
@@ -1025,7 +1007,6 @@ vesa_redrawmap()
     }
 
     free(p_row);
-    redraw_scheduled = FALSE;
 }
 #endif /* USE_TILES && CLIPPING */
 
