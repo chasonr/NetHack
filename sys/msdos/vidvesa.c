@@ -25,11 +25,18 @@
 
 #define FIRST_TEXT_COLOR 240
 
+struct VesaCharacter {
+    int colour;
+    int chr;
+};
+
 static unsigned long FDECL(vesa_SetWindow, (int window, unsigned long offset));
 static unsigned long FDECL(vesa_ReadPixel32, (unsigned x, unsigned y));
 static void FDECL(vesa_WritePixel32, (unsigned x, unsigned y,
         unsigned long color));
 static void FDECL(vesa_WritePixel, (unsigned x, unsigned y, unsigned color));
+static void FDECL(vesa_WritePixelRow, (unsigned long offset,
+        unsigned char const *p_row, unsigned p_row_size));
 static unsigned long FDECL(vesa_MakeColor, (unsigned r, unsigned g, unsigned b));
 static void FDECL(vesa_FillRect, (
         unsigned left, unsigned top,
@@ -47,7 +54,10 @@ static boolean FDECL(vesa_SetSoftPalette, (const struct Pixel *));
 static void FDECL(vesa_DisplayCell, (const struct TileImage *tile, int, int));
 static unsigned FDECL(vesa_FindMode, (unsigned long mode_addr, unsigned bits));
 static void FDECL(vesa_WriteChar, (int, int, int, int));
-static void FDECL(vesa_WriteCharXY, (int, int, int, int, BOOLEAN_P));
+static void FDECL(vesa_WriteCharXY, (int, int, int, int));
+static void FDECL(vesa_WriteCharTransparent, (int, int, int, int));
+static void FDECL(vesa_WriteTextRow, (int pixx, int pixy,
+        struct VesaCharacter const *t_row, unsigned t_row_width));
 static boolean FDECL(vesa_GetCharPixel, (int, unsigned, unsigned));
 static void FDECL(vesa_WriteStr, (const char *, int, int, int, int));
 static unsigned char __far *NDECL(vesa_FontPtrs);
@@ -147,14 +157,9 @@ static unsigned long *undercursor;
 #endif
 
 /* Used to cache character writes for speed */
-struct VesaCharacter {
-    int pixx, pixy;
-    int colour;
-    int chr;
-    boolean transparent;
-};
 static struct VesaCharacter chr_cache[100];
 static unsigned chr_cache_size;
+static unsigned chr_cache_pixx, chr_cache_pixy, chr_cache_lastx;
 
 /*
  * For optimization of tile drawing. If we draw more than a few tiles without
@@ -465,6 +470,32 @@ unsigned color;
     }
 }
 
+static void
+vesa_WritePixelRow(offset, p_row, p_row_size)
+unsigned long offset;
+unsigned char const *p_row;
+unsigned p_row_size;
+{
+    if (vesa_segment != 0) {
+        /* Linear frame buffer in use */
+        movedata(_go32_my_ds(), (unsigned)p_row, vesa_segment, offset, p_row_size);
+    } else {
+        /* Windowed frame buffer in use */
+        unsigned long addr = vesa_SetWindow(vesa_write_win, offset);
+        unsigned i = 0;
+        while (offset + p_row_size > vesa_win_pos[vesa_write_win] + vesa_win_size) {
+            /* The row passes the end of the current window. Write what we can,
+             * and advance the window */
+            unsigned w = (vesa_win_pos[vesa_write_win] + vesa_win_size)
+                       - (offset + i);
+            dosmemput(p_row + i, w, addr);
+            i += w;
+            addr = vesa_SetWindow(vesa_write_win, offset + i);
+        }
+        dosmemput(p_row + i, p_row_size - i, addr);
+    }
+}
+
 static unsigned long
 vesa_MakeColor(r, g, b)
 unsigned r, g, b;
@@ -481,13 +512,44 @@ static void
 vesa_FillRect(left, top, width, height, color)
 unsigned left, top, width, height, color;
 {
+    unsigned p_row_size = width * vesa_pixel_bytes;
+    unsigned char *p_row = (unsigned char *) alloc(p_row_size);
+    unsigned long c32 = vesa_palette[color & 0xFF];
+    unsigned long offset = top * (unsigned long)vesa_scan_line + left * vesa_pixel_bytes;
     unsigned x, y;
 
-    for (y = 0; y < height; ++y) {
+    switch (vesa_pixel_bytes) {
+    case 1:
+        memset(p_row, c32, p_row_size);
+        break;
+
+    case 2:
         for (x = 0; x < width; ++x) {
-            vesa_WritePixel(left + x, top + y, color);
+            ((uint16_t *)p_row)[x] = c32;
         }
+        break;
+
+    case 3:
+        for (x = 0; x < width; ++x) {
+            p_row[3*x + 0] =  c32        & 0xFF;
+            p_row[3*x + 1] = (c32 >>  8) & 0xFF;
+            p_row[3*x + 2] =  c32 >> 16        ;
+        }
+        break;
+
+    case 4:
+        for (x = 0; x < width; ++x) {
+            ((uint32_t *)p_row)[x] = c32;
+        }
+        break;
     }
+
+    for (y = 0; y < height; ++y) {
+        vesa_WritePixelRow(offset, p_row, p_row_size);
+        offset += vesa_scan_line;
+    }
+
+    free(p_row);
 }
 
 void
@@ -757,6 +819,9 @@ vesa_redrawmap()
     unsigned y_bottom = vesa_y_res - 5 * vesa_char_height;
     unsigned x, y, cx, cy, px, py;
     unsigned long color;
+    unsigned long offset = y_top * (unsigned long) vesa_scan_line;
+    unsigned char *p_row = NULL;
+    unsigned p_row_width;
 
     /*
      * The map is drawn in pixel-row order (pixel row 0, then row 1, etc.),
@@ -764,28 +829,29 @@ vesa_redrawmap()
      */
     if (iflags.traditional_view) {
         /* Text mode */
-        int ch, attr;
-        for (y = y_top; y < y_bottom; ++y) {
-            cy = (y - y_top) / vesa_char_height + clipy;
-            if (cy > clipymax || cy >= ROWNO) break;
-            py = (y - y_top) % vesa_char_height;
-            for (x = 0; x < vesa_x_res; ++x) {
-                cx = x / vesa_char_width + clipx;
-                if (cx > clipxmax || cx >= COLNO) break;
-                px = x % vesa_char_width;
-                ch = map[cy][cx].ch;
-                attr = map[cy][cx].attr;
-                color = vesa_GetCharPixel(ch, px, py) ? attr : 0;
-                vesa_WritePixel(x, y, color + FIRST_TEXT_COLOR);
+        y = y_top;
+        for (cy = clipy; cy <= clipymax && cy < ROWNO; ++cy) {
+            struct VesaCharacter t_row[COLNO];
+            for (cx = clipx; cx <= clipxmax && cx < COLNO; ++cx) {
+                t_row[cx].chr = map[cy][cx].ch;
+                t_row[cx].colour = map[cy][cx].attr;
             }
+            vesa_WriteTextRow(0, y, t_row + clipx, cx - clipx);
+            x = (cx - clipx) * vesa_char_width;
             if (x < vesa_x_res) {
-                vesa_FillRect(x, y, vesa_x_res - x, 1, BACKGROUND_VESA_COLOR);
+                vesa_FillRect(x, y, vesa_x_res - x, vesa_char_height, BACKGROUND_VESA_COLOR);
             }
+            y += vesa_char_height;
         }
     } else if (iflags.over_view) {
         /* Overview mode */
         struct TileImage *tile_row[COLNO];
         const struct TileImage *tile;
+        struct Pixel p;
+
+        p_row_width = COLNO * vesa_oview_width * vesa_pixel_bytes;
+        p_row = (unsigned char *) alloc(p_row_width);
+        y = y_top;
         for (cy = 0; cy < ROWNO; ++cy) {
             for (cx = 0; cx < COLNO; ++cx) {
                 tile = get_tile(glyph2tile[map[cy][cx].glyph]);
@@ -794,54 +860,163 @@ vesa_redrawmap()
                                             vesa_oview_height);
             }
             for (py = 0; py < vesa_oview_height; ++py) {
-                y = cy * vesa_oview_height + py + y_top;
-                for (x = 0; x < vesa_x_res; ++x) {
-                    cx = x / vesa_oview_width + clipx;
-                    if (cx > clipxmax || cx >= COLNO) break;
-                    px = x % vesa_oview_width;
-                    tile = tile_row[cx];
-                    if (vesa_pixel_size == 8) {
-                        color = tile->indexes[py * tile->width + px];
-                    } else {
-                        struct Pixel p;
-                        p = tile->pixels[py * tile->width + px];
-                        color = vesa_MakeColor(p.r, p.g, p.b);
+                x = 0;
+                switch (vesa_pixel_bytes) {
+                case 1:
+                    for (cx = 0; cx < COLNO; ++cx) {
+                        tile = tile_row[cx];
+                        memcpy(p_row + x, tile->indexes + py * tile->width, vesa_oview_width);
+                        x += vesa_oview_width;
                     }
-                    vesa_WritePixel32(x, y, color);
+                    break;
+
+                case 2:
+                    for (cx = 0; cx < COLNO; ++cx) {
+                        tile = tile_row[cx];
+                        for (px = 0; px < vesa_oview_width; ++px) {
+                            p = tile->pixels[py * tile->width + px];
+                            color = vesa_MakeColor(p.r, p.g, p.b);
+                            ((uint16_t *)p_row)[x] = color;
+                            ++x;
+                        }
+                    }
+                    break;
+
+                case 3:
+                    for (cx = 0; cx < COLNO; ++cx) {
+                        tile = tile_row[cx];
+                        for (px = 0; px < vesa_oview_width; ++px) {
+                            p = tile->pixels[py * tile->width + px];
+                            color = vesa_MakeColor(p.r, p.g, p.b);
+                            p_row[3*x + 0] =  color        & 0xFF;
+                            p_row[3*x + 1] = (color >>  8) & 0xFF;
+                            p_row[3*x + 2] =  color >> 16        ;
+                            ++x;
+                        }
+                    }
+                    break;
+
+                case 4:
+                    for (cx = 0; cx < COLNO; ++cx) {
+                        tile = tile_row[cx];
+                        for (px = 0; px < vesa_oview_width; ++px) {
+                            p = tile->pixels[py * tile->width + px];
+                            color = vesa_MakeColor(p.r, p.g, p.b);
+                            ((uint32_t *)p_row)[x] = color;
+                            ++x;
+                        }
+                    }
+                    break;
                 }
+                vesa_WritePixelRow(offset, p_row, x * vesa_pixel_bytes);
                 if (x < vesa_x_res) {
                     vesa_FillRect(x, y, vesa_x_res - x, 1, BACKGROUND_VESA_COLOR);
                 }
+                offset += vesa_scan_line;
+                ++y;
             }
             for (cx = 0; cx < COLNO; ++cx) {
                 free_tile(tile_row[cx]);
             }
         }
-        y = ROWNO * vesa_oview_height + y_top;
     } else {
         /* Normal tiled mode */
         const struct TileImage *tile;
-        for (y = y_top; y < y_bottom; ++y) {
-            cy = (y - y_top) / iflags.wc_tile_height + clipy;
-            if (cy > clipymax || cy >= ROWNO) break;
-            py = (y - y_top) % iflags.wc_tile_height;
-            for (x = 0; x < vesa_x_res; ++x) {
-                cx = x / iflags.wc_tile_width + clipx;
-                if (cx > clipxmax || cx >= COLNO) break;
-                px = x % iflags.wc_tile_width;
-                tile = get_tile(glyph2tile[map[cy][cx].glyph]);
-                if (vesa_pixel_size == 8) {
-                    color = tile->indexes[py * tile->width + px];
-                } else {
-                    struct Pixel p;
-                    p = tile->pixels[py * tile->width + px];
-                    color = vesa_MakeColor(p.r, p.g, p.b);
+        struct Pixel p;
+
+        p_row_width = COLNO * iflags.wc_tile_width * vesa_pixel_bytes;
+        p_row = (unsigned char *) alloc(p_row_width);
+        y = y_top;
+        switch (vesa_pixel_bytes) {
+        case 1:
+            for (cy = clipy; cy <= clipymax && cy < ROWNO; ++cy) {
+                for (py = 0; py < iflags.wc_tile_height; ++py) {
+                    x = 0;
+                    for (cx = clipx; cx <= clipxmax && cx < COLNO; ++cx) {
+                        tile = get_tile(glyph2tile[map[cy][cx].glyph]);
+                        memcpy(p_row + x, tile->indexes + py * tile->width, iflags.wc_tile_width);
+                        x += iflags.wc_tile_width;
+                    }
+                    vesa_WritePixelRow(offset, p_row, x * vesa_pixel_bytes);
+                    if (x < vesa_x_res) {
+                        vesa_FillRect(x, y, vesa_x_res - x, 1, BACKGROUND_VESA_COLOR);
+                    }
+                    offset += vesa_scan_line;
+                    ++y;
                 }
-                vesa_WritePixel32(x, y, color);
             }
-            if (x < vesa_x_res) {
-                vesa_FillRect(x, y, vesa_x_res - x, 1, BACKGROUND_VESA_COLOR);
+            break;
+
+        case 2:
+            for (cy = clipy; cy <= clipymax && cy < ROWNO; ++cy) {
+                for (py = 0; py < iflags.wc_tile_height; ++py) {
+                    x = 0;
+                    for (cx = clipx; cx <= clipxmax && cx < COLNO; ++cx) {
+                        tile = get_tile(glyph2tile[map[cy][cx].glyph]);
+                        for (px = 0; px < iflags.wc_tile_width; ++px) {
+                            p = tile->pixels[py * tile->width + px];
+                            color = vesa_MakeColor(p.r, p.g, p.b);
+                            ((uint16_t *)p_row)[x] = color;
+                            ++x;
+                        }
+                    }
+                    vesa_WritePixelRow(offset, p_row, x * vesa_pixel_bytes);
+                    if (x < vesa_x_res) {
+                        vesa_FillRect(x, y, vesa_x_res - x, 1, BACKGROUND_VESA_COLOR);
+                    }
+                    offset += vesa_scan_line;
+                    ++y;
+                }
             }
+            break;
+
+        case 3:
+            for (cy = clipy; cy <= clipymax && cy < ROWNO; ++cy) {
+                for (py = 0; py < iflags.wc_tile_height; ++py) {
+                    x = 0;
+                    for (cx = clipx; cx <= clipxmax && cx < COLNO; ++cx) {
+                        tile = get_tile(glyph2tile[map[cy][cx].glyph]);
+                        for (px = 0; px < iflags.wc_tile_width; ++px) {
+                            p = tile->pixels[py * tile->width + px];
+                            color = vesa_MakeColor(p.r, p.g, p.b);
+                            p_row[3*x + 0] =  color        & 0xFF;
+                            p_row[3*x + 1] = (color >>  8) & 0xFF;
+                            p_row[3*x + 2] =  color >> 16        ;
+                            ++x;
+                        }
+                    }
+                    vesa_WritePixelRow(offset, p_row, x * vesa_pixel_bytes);
+                    if (x < vesa_x_res) {
+                        vesa_FillRect(x, y, vesa_x_res - x, 1, BACKGROUND_VESA_COLOR);
+                    }
+                    offset += vesa_scan_line;
+                    ++y;
+                }
+            }
+            break;
+
+        case 4:
+            for (cy = clipy; cy <= clipymax && cy < ROWNO; ++cy) {
+                for (py = 0; py < iflags.wc_tile_height; ++py) {
+                    x = 0;
+                    for (cx = clipx; cx <= clipxmax && cx < COLNO; ++cx) {
+                        tile = get_tile(glyph2tile[map[cy][cx].glyph]);
+                        for (px = 0; px < iflags.wc_tile_width; ++px) {
+                            p = tile->pixels[py * tile->width + px];
+                            color = vesa_MakeColor(p.r, p.g, p.b);
+                            ((uint32_t *)p_row)[x] = color;
+                            ++x;
+                        }
+                    }
+                    vesa_WritePixelRow(offset, p_row, x * vesa_pixel_bytes);
+                    if (x < vesa_x_res) {
+                        vesa_FillRect(x, y, vesa_x_res - x, 1, BACKGROUND_VESA_COLOR);
+                    }
+                    offset += vesa_scan_line;
+                    ++y;
+                }
+            }
+            break;
         }
     }
     /* Loops leave y as the start of any remaining unfilled space */
@@ -849,6 +1024,7 @@ vesa_redrawmap()
         vesa_FillRect(0, y, vesa_x_res, y_bottom - y, BACKGROUND_VESA_COLOR);
     }
 
+    free(p_row);
     redraw_scheduled = FALSE;
 }
 #endif /* USE_TILES && CLIPPING */
@@ -1452,7 +1628,7 @@ int chr, col, row, colour;
     pixx += vesa_x_center;
     pixy += vesa_y_center;
 
-    vesa_WriteCharXY(chr, pixx, pixy, colour, FALSE);
+    vesa_WriteCharXY(chr, pixx, pixy, colour);
 }
 
 /*
@@ -1460,54 +1636,157 @@ int chr, col, row, colour;
  * transparency
  */
 static void
-vesa_WriteCharXY(chr, pixx, pixy, colour, transparent)
+vesa_WriteCharXY(chr, pixx, pixy, colour)
 int chr, pixx, pixy, colour;
-boolean transparent;
 {
-    /* Flush if cache is full or if starting a new line */
-    if (chr_cache_size >= SIZE(chr_cache)
-        || (chr_cache_size != 0 && chr_cache[chr_cache_size-1].pixy != pixy)) {
+    /* Flush if cache is full or if not contiguous to the last character */
+    if (chr_cache_size >= SIZE(chr_cache)) {
+        vesa_flush_text();
+    }
+    if (chr_cache_size != 0 && chr_cache_lastx + vesa_char_width != pixx) {
+        vesa_flush_text();
+    }
+    if (chr_cache_size != 0 && chr_cache_pixy != pixy) {
         vesa_flush_text();
     }
     /* Add to cache and write later */
-    chr_cache[chr_cache_size].pixx = pixx;
-    chr_cache[chr_cache_size].pixy = pixy;
+    if (chr_cache_size == 0) {
+        chr_cache_pixx = pixx;
+        chr_cache_pixy = pixy;
+    }
+    chr_cache_lastx = pixx;
     chr_cache[chr_cache_size].chr = chr;
     chr_cache[chr_cache_size].colour = colour;
-    chr_cache[chr_cache_size].transparent = transparent;
     ++chr_cache_size;
+}
+
+/*
+ * Draw a character with a transparent background
+ * Don't bother cacheing; only the position bar and the cursor use this
+ */
+static void
+vesa_WriteCharTransparent(chr, pixx, pixy, colour)
+int chr, pixx, pixy, colour;
+{
+    int px, py;
+
+    for (py = 0; py < vesa_char_height; ++py) {
+        for (px = 0; px < vesa_char_width; ++px) {
+            if (vesa_GetCharPixel(chr, px, py)) {
+                vesa_WritePixel(pixx + px, pixy + py, colour + FIRST_TEXT_COLOR);
+            }
+        }
+    }
 }
 
 void
 vesa_flush_text()
 {
-    int x, y, pixy;
-    unsigned i;
-
     if (chr_cache_size == 0) return;
 
-    /* All cache entries have the same Y coordinate */
-    pixy = chr_cache[0].pixy;
-    /* First loop: draw one raster line of all cache entries */
-    for (y = 0; y < vesa_char_height; ++y) {
-        /* Second loop: draw one raster line of one character */
-        for (i = 0; i < chr_cache_size; ++i) {
-            int chr = chr_cache[i].chr;
-            int pixx = chr_cache[i].pixx;
-            int colour = chr_cache[i].colour;
-            boolean transparent = chr_cache[i].transparent;
-            /* Third loop: draw one pixel */
-            for (x = 0; x < vesa_char_width; ++x) {
-                if (vesa_GetCharPixel(chr, x, y)) {
-                    vesa_WritePixel(pixx + x, pixy + y, colour + FIRST_TEXT_COLOR);
-                } else if (!transparent) {
-                    vesa_WritePixel(pixx + x, pixy + y, BACKGROUND_VESA_COLOR);
+    vesa_WriteTextRow(chr_cache_pixx, chr_cache_pixy, chr_cache, chr_cache_size);
+    chr_cache_size = 0;
+}
+
+static void
+vesa_WriteTextRow(pixx, pixy, t_row, t_row_width)
+int pixx, pixy;
+struct VesaCharacter const *t_row;
+unsigned t_row_width;
+{
+    int x, px, py;
+    unsigned i;
+    unsigned p_row_width = t_row_width * vesa_char_width * vesa_pixel_bytes;
+    unsigned char *p_row = (unsigned char *) alloc(p_row_width);
+    unsigned long offset = pixy * (unsigned long)vesa_scan_line + pixx * vesa_pixel_bytes;
+
+    /* First loop: draw one raster line of all row entries */
+    for (py = 0; py < vesa_char_height; ++py) {
+        x = 0;
+        switch (vesa_pixel_bytes) {
+        case 1:
+            /* Second loop: draw one raster line of one character */
+            for (i = 0; i < t_row_width; ++i) {
+                int chr = t_row[i].chr;
+                int colour = t_row[i].colour;
+                /* Third loop: draw one pixel */
+                for (px = 0; px < vesa_char_width; ++px) {
+                    int pix;
+                    if (vesa_GetCharPixel(chr, px, py)) {
+                        pix = colour + FIRST_TEXT_COLOR;
+                    } else {
+                        pix = BACKGROUND_VESA_COLOR;
+                    }
+                    p_row[x] = pix;
+                    ++x;
                 }
             }
-        }
-    }
+            break;
 
-    chr_cache_size = 0;
+        case 2:
+            /* Second loop: draw one raster line of one character */
+            for (i = 0; i < t_row_width; ++i) {
+                int chr = t_row[i].chr;
+                int colour = t_row[i].colour;
+                /* Third loop: draw one pixel */
+                for (px = 0; px < vesa_char_width; ++px) {
+                    int pix;
+                    if (vesa_GetCharPixel(chr, px, py)) {
+                        pix = colour + FIRST_TEXT_COLOR;
+                    } else {
+                        pix = BACKGROUND_VESA_COLOR;
+                    }
+                    ((uint16_t *)p_row)[x] = vesa_palette[pix];
+                    ++x;
+                }
+            }
+            break;
+
+        case 3:
+            /* Second loop: draw one raster line of one character */
+            for (i = 0; i < t_row_width; ++i) {
+                int chr = t_row[i].chr;
+                int colour = t_row[i].colour;
+                /* Third loop: draw one pixel */
+                for (px = 0; px < vesa_char_width; ++px) {
+                    unsigned long pix;
+                    if (vesa_GetCharPixel(chr, px, py)) {
+                        pix = colour + FIRST_TEXT_COLOR;
+                    } else {
+                        pix = BACKGROUND_VESA_COLOR;
+                    }
+                    pix = vesa_palette[pix];
+                    p_row[3*x + 0] =  pix        & 0xFF;
+                    p_row[3*x + 1] = (pix >>  8) & 0xFF;
+                    p_row[3*x + 2] =  pix >> 16        ;
+                    ++x;
+                }
+            }
+            break;
+
+        case 4:
+            /* Second loop: draw one raster line of one character */
+            for (i = 0; i < t_row_width; ++i) {
+                int chr = t_row[i].chr;
+                int colour = t_row[i].colour;
+                /* Third loop: draw one pixel */
+                for (px = 0; px < vesa_char_width; ++px) {
+                    int pix;
+                    if (vesa_GetCharPixel(chr, px, py)) {
+                        pix = colour + FIRST_TEXT_COLOR;
+                    } else {
+                        pix = BACKGROUND_VESA_COLOR;
+                    }
+                    ((uint32_t *)p_row)[x] = vesa_palette[pix];
+                    ++x;
+                }
+            }
+            break;
+        }
+        vesa_WritePixelRow(offset, p_row, p_row_width);
+        offset += vesa_scan_line;
+    }
+    free(p_row);
 }
 
 static boolean
@@ -1558,60 +1837,69 @@ vesa_DisplayCell(tile, col, row)
 const struct TileImage *tile;
 int col, row;
 {
-    int i, j, pixx, pixy;
+    int px, py, pixx, pixy;
+    unsigned long offset;
+    unsigned p_row_width;
+    unsigned char *p_row;
+    struct TileImage *ov_tile = NULL;
 
     if (iflags.over_view) {
-        struct TileImage *ov_tile = stretch_tile(
-                tile, vesa_oview_width, vesa_oview_height);
-        pixx = col * vesa_oview_width;
-        pixy = row * vesa_oview_height + TOP_MAP_ROW * vesa_char_height;
-        pixx += vesa_x_center;
-        pixy += vesa_y_center;
-        if (vesa_pixel_size != 8) {
-            for (i = 0; i < ov_tile->height; ++i) {
-                for (j = 0; j < ov_tile->width; ++j) {
-                    unsigned index = i * ov_tile->width + j;
-                    struct Pixel p = ov_tile->pixels[index];
-
-                    vesa_WritePixel32(pixx + j, pixy + i,
-                            vesa_MakeColor(p.r, p.g, p.b));
-                }
-            }
-        } else {
-            for (i = 0; i < ov_tile->height; ++i) {
-                for (j = 0; j < ov_tile->width; ++j) {
-                    unsigned index = i * ov_tile->width + j;
-                    vesa_WritePixel(pixx + j, pixy + i, ov_tile->indexes[index]);
-                }
-            }
-        }
-        free_tile(ov_tile);
-    } else {
-        unsigned index = 0;
-        pixx = col * tile->width;
-        pixy = row * tile->height + TOP_MAP_ROW * vesa_char_height;
-        pixx += vesa_x_center;
-        pixy += vesa_y_center;
-        if (vesa_pixel_size != 8) {
-            for (i = 0; i < tile->height; ++i) {
-                for (j = 0; j < tile->width; ++j) {
-                    unsigned char r = tile->pixels[index].r;
-                    unsigned char g = tile->pixels[index].g;
-                    unsigned char b = tile->pixels[index].b;
-                    vesa_WritePixel32(pixx + j, pixy + i,
-                                      vesa_MakeColor(r, g, b));
-                    ++index;
-                }
-            }
-        } else {
-            for (i = 0; i < tile->height; ++i) {
-                for (j = 0; j < tile->width; ++j) {
-                    vesa_WritePixel(pixx + j, pixy + i, tile->indexes[index]);
-                    ++index;
-                }
-            }
-        }
+        ov_tile = stretch_tile(tile, vesa_oview_width, vesa_oview_height);
+        tile = ov_tile;
     }
+
+    p_row_width = tile->width * vesa_pixel_bytes;
+    p_row = (unsigned char *) alloc(p_row_width);
+
+    pixx = col * tile->width;
+    pixy = row * tile->height + TOP_MAP_ROW * vesa_char_height;
+    pixx += vesa_x_center;
+    pixy += vesa_y_center;
+    offset = pixy * (unsigned long)vesa_scan_line + pixx * vesa_pixel_bytes;
+
+    for (py = 0; py < tile->height; ++py) {
+        switch (vesa_pixel_bytes) {
+        case 1:
+            memcpy(p_row, tile->indexes + py * tile->width, tile->width);
+            break;
+
+        case 2:
+            for (px = 0; px < tile->width; ++px) {
+                unsigned index = py * tile->width + px;
+                struct Pixel p = tile->pixels[index];
+                unsigned long color = vesa_MakeColor(p.r, p.g, p.b);
+                ((uint16_t *)p_row)[px] = color;
+            }
+            break;
+
+        case 3:
+            for (px = 0; px < tile->width; ++px) {
+                unsigned index = py * tile->width + px;
+                struct Pixel p = tile->pixels[index];
+                unsigned long color = vesa_MakeColor(p.r, p.g, p.b);
+                p_row[3*px + 0] =  color        & 0xFF;
+                p_row[3*px + 1] = (color >>  8) & 0xFF;
+                p_row[3*px + 2] =  color >> 16        ;
+            }
+            break;
+
+        case 4:
+            for (px = 0; px < tile->width; ++px) {
+                unsigned index = py * tile->width + px;
+                struct Pixel p = tile->pixels[index];
+                unsigned long color = vesa_MakeColor(p.r, p.g, p.b);
+                ((uint32_t *)p_row)[px] = color;
+            }
+            break;
+        }
+        vesa_WritePixelRow(offset, p_row, p_row_width);
+        offset += vesa_scan_line;
+    }
+
+    if (ov_tile != NULL) {
+        free_tile(ov_tile);
+    }
+    free(p_row);
 }
 
 /*
@@ -1839,17 +2127,17 @@ positionbar()
             pixx = col * vesa_x_res / COLNO;
             switch (feature) {
             case '>':
-                vesa_WriteCharXY(feature, pixx, pixy, PBAR_COLOR_STAIRS, TRUE);
+                vesa_WriteCharTransparent(feature, pixx, pixy, PBAR_COLOR_STAIRS);
                 break;
             case '<':
-                vesa_WriteCharXY(feature, pixx, pixy, PBAR_COLOR_STAIRS, TRUE);
+                vesa_WriteCharTransparent(feature, pixx, pixy, PBAR_COLOR_STAIRS);
                 break;
             case '@':
                 ucol = col;
-                vesa_WriteCharXY(feature, pixx, pixy, PBAR_COLOR_HERO, TRUE);
+                vesa_WriteCharTransparent(feature, pixx, pixy, PBAR_COLOR_HERO);
                 break;
             default: /* unanticipated symbols */
-                vesa_WriteCharXY(feature, pixx, pixy, PBAR_COLOR_STAIRS, TRUE);
+                vesa_WriteCharTransparent(feature, pixx, pixy, PBAR_COLOR_STAIRS);
                 break;
             }
         }
@@ -1858,8 +2146,8 @@ positionbar()
     if (inmap) {
         tmp = curcol + 1;
         if ((tmp != ucol) && (curcol >= 0))
-            vesa_WriteCharXY('_', tmp * vesa_x_res / COLNO, pixy,
-                             PBAR_COLOR_HERO, TRUE);
+            vesa_WriteCharTransparent('_', tmp * vesa_x_res / COLNO, pixy,
+                                      PBAR_COLOR_HERO);
     }
 #endif
     vesa_flush_text();
@@ -1872,15 +2160,17 @@ positionbar()
 void
 vesa_DrawCursor()
 {
+    static boolean last_inmap = FALSE;
     unsigned x, y, left, top, right, bottom, width, height;
     boolean isrogue = Is_rogue_level(&u.uz);
     boolean halfwidth =
         (isrogue || iflags.over_view || iflags.traditional_view || !inmap);
     int curtyp;
 
-    if (redraw_scheduled && inmap) {
+    if (inmap && !last_inmap) {
         vesa_redrawmap();
     }
+    last_inmap = inmap;
 
     if (!cursor_type && inmap)
         return; /* CURSOR_INVIS - nothing to do */
