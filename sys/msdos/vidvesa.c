@@ -1177,9 +1177,6 @@ vesa_Init(void)
     const char *tile_file;
     int tilefailure = 0;
 
-    if (vesa_mode == 0xFFFF) {
-        vesa_detect();
-    }
     /*
      * Attempt to open the required tile files. If we can't
      * don't perform the video mode switch, use TTY code instead.
@@ -1207,6 +1204,21 @@ vesa_Init(void)
         return;
     }
 #endif
+
+    vesa_mode = 0xFFFF; /* might want an 8 bit mode after loading tiles */
+    vesa_detect();
+    if (vesa_mode == 0xFFFF) {
+        raw_printf("Reverting to TTY mode, no VESA mode available.",
+                   tilefailure);
+        wait_synch();
+        iflags.usevga = 0;
+        iflags.tile_view = FALSE;
+        iflags.over_view = FALSE;
+        CO = 80;
+        LI = 25;
+        /*	clear_screen()	*/ /* not vesa_clear_screen() */
+        return;
+    }
 
     vesa_SwitchMode(vesa_mode);
     vesa_SetViewPort();
@@ -1421,6 +1433,8 @@ vesa_detect()
     }
 
     /* Scan the mode list for an acceptable mode */
+    if (get_palette() != NULL && vesa_mode == 0xFFFF)
+        vesa_mode = vesa_FindMode(mode_addr,  8);
     if (vesa_mode == 0xFFFF)
         vesa_mode = vesa_FindMode(mode_addr, 32);
     if (vesa_mode == 0xFFFF)
