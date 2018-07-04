@@ -39,7 +39,7 @@ static void FDECL(vesa_WritePixel32, (unsigned x, unsigned y,
 static void FDECL(vesa_WritePixel, (unsigned x, unsigned y, unsigned color));
 static void FDECL(vesa_WritePixelRow, (unsigned long offset,
         unsigned char const *p_row, unsigned p_row_size));
-static unsigned long FDECL(vesa_MakeColor, (unsigned r, unsigned g, unsigned b));
+static unsigned long FDECL(vesa_MakeColor, (struct Pixel));
 static void FDECL(vesa_FillRect, (
         unsigned left, unsigned top,
         unsigned width, unsigned height,
@@ -498,12 +498,12 @@ unsigned p_row_size;
 }
 
 static unsigned long
-vesa_MakeColor(r, g, b)
-unsigned r, g, b;
+vesa_MakeColor(p)
+struct Pixel p;
 {
-    r = (r & 0xFF) >> (8 - vesa_red_size);
-    g = (g & 0xFF) >> (8 - vesa_green_size);
-    b = (b & 0xFF) >> (8 - vesa_blue_size);
+    unsigned long r = p.r >> (8 - vesa_red_size);
+    unsigned long g = p.g >> (8 - vesa_green_size);
+    unsigned long b = p.b >> (8 - vesa_blue_size);
     return ((unsigned long) r << vesa_red_pos)
          | ((unsigned long) g << vesa_green_pos)
          | ((unsigned long) b << vesa_blue_pos);
@@ -1171,26 +1171,22 @@ vesa_Init(void)
 
         case 2:
             for (j = 0; j < num_pixels; ++j) {
-                struct Pixel p = tile->pixels[j];
-                ((uint16_t *)t_img)[j] = vesa_MakeColor(p.r, p.g, p.b);
+                ((uint16_t *)t_img)[j] = vesa_MakeColor(tile->pixels[j]);
             }
             for (j = 0; j < num_oview_pixels; ++j) {
-                struct Pixel p = ov_tile->pixels[j];
-                ((uint16_t *)ot_img)[j] = vesa_MakeColor(p.r, p.g, p.b);
+                ((uint16_t *)ot_img)[j] = vesa_MakeColor(tile->pixels[j]);
             }
             break;
 
         case 3:
             for (j = 0; j < num_pixels; ++j) {
-                struct Pixel p = tile->pixels[j];
-                unsigned long color = vesa_MakeColor(p.r, p.g, p.b);
+                unsigned long color = vesa_MakeColor(tile->pixels[j]);
                 t_img[3*j + 0] =  color        & 0xFF;
                 t_img[3*j + 1] = (color >>  8) & 0xFF;
                 t_img[3*j + 2] = (color >> 16) & 0xFF;
             }
             for (j = 0; j < num_oview_pixels; ++j) {
-                struct Pixel p = ov_tile->pixels[j];
-                unsigned long color = vesa_MakeColor(p.r, p.g, p.b);
+                unsigned long color = vesa_MakeColor(tile->pixels[j]);
                 ot_img[3*j + 0] =  color        & 0xFF;
                 ot_img[3*j + 1] = (color >>  8) & 0xFF;
                 ot_img[3*j + 2] = (color >> 16) & 0xFF;
@@ -1199,12 +1195,10 @@ vesa_Init(void)
 
         case 4:
             for (j = 0; j < num_pixels; ++j) {
-                struct Pixel p = tile->pixels[j];
-                ((uint32_t *)t_img)[j] = vesa_MakeColor(p.r, p.g, p.b);
+                ((uint32_t *)t_img)[j] = vesa_MakeColor(tile->pixels[j]);
             }
             for (j = 0; j < num_oview_pixels; ++j) {
-                struct Pixel p = ov_tile->pixels[j];
-                ((uint32_t *)ot_img)[j] = vesa_MakeColor(p.r, p.g, p.b);
+                ((uint32_t *)ot_img)[j] = vesa_MakeColor(tile->pixels[j]);
             }
             break;
         }
@@ -1930,27 +1924,20 @@ const struct Pixel *palette;
 {
     const struct Pixel *p;
     unsigned i;
-    unsigned char r, g, b;
 
     /* Set the tile set and text colors */
 #ifdef USE_TILES
     if (palette != NULL) {
         p = palette;
         for (i = 0; i < FIRST_TEXT_COLOR; ++i) {
-            r = p->r;
-            g = p->g;
-            b = p->b;
-            vesa_palette[i] = vesa_MakeColor(r, g, b);
+            vesa_palette[i] = vesa_MakeColor(*p);
             ++p;
         }
     }
 #endif
     p = defpalette;
     for (i = FIRST_TEXT_COLOR; i < 256; ++i) {
-        r = p->r;
-        g = p->g;
-        b = p->b;
-        vesa_palette[i] = vesa_MakeColor(r, g, b);
+        vesa_palette[i] = vesa_MakeColor(*p);
         ++p;
     }
     return TRUE;
