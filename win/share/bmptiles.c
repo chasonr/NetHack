@@ -291,7 +291,7 @@ struct TileSetImage *image;
                 break;
             case 32:
                 for (x = 0; x < image->width; ++x) {
-                    uint32 color = read_u32(row_bytes + x * 2);
+                    uint32 color = read_u32(row_bytes + x * 4);
                     row[x] = build_pixel(&header2, color);
                 }
                 break;
