@@ -6,6 +6,7 @@
  */
 
 #include "hack.h"
+#include <time.h>
 
 #ifdef SCREEN_VESA /* this file is for SCREEN_VESA only    */
 #ifdef __DJGPP__
@@ -1050,6 +1051,8 @@ vesa_Init(void)
     const char *font_name;
     unsigned i;
     unsigned num_pixels, num_oview_pixels;
+    clock_t t1 = clock();
+    FILE *fp = fopen("nethack.log", "a");
 #ifdef USE_TILES
     const char *tile_file;
     int tilefailure = 0;
@@ -1081,6 +1084,8 @@ vesa_Init(void)
         return;
     }
 #endif
+    fprintf(fp, "%s(%d): CLOCKS_PER_SEC = %ld\n", __FILE__, __LINE__, (long)CLOCKS_PER_SEC);
+    fprintf(fp, "%s(%d): time = %ld\n", __FILE__, __LINE__, (long)(clock() - t1));
 
     vesa_mode = 0xFFFF; /* might want an 8 bit mode after loading tiles */
     vesa_detect();
@@ -1150,6 +1155,7 @@ vesa_Init(void)
     }
 
     /* Process tiles for the current video mode */
+    fprintf(fp, "%s(%d): time = %ld\n", __FILE__, __LINE__, (long)(clock() - t1));
     vesa_tiles = (unsigned char **) alloc(total_tiles_used * sizeof(void *));
     vesa_oview_tiles = (unsigned char **) alloc(total_tiles_used * sizeof(void *));
     num_pixels = iflags.wc_tile_width * iflags.wc_tile_height;
@@ -1174,7 +1180,7 @@ vesa_Init(void)
                 ((uint16_t *)t_img)[j] = vesa_MakeColor(tile->pixels[j]);
             }
             for (j = 0; j < num_oview_pixels; ++j) {
-                ((uint16_t *)ot_img)[j] = vesa_MakeColor(tile->pixels[j]);
+                ((uint16_t *)ot_img)[j] = vesa_MakeColor(ov_tile->pixels[j]);
             }
             break;
 
@@ -1186,7 +1192,7 @@ vesa_Init(void)
                 t_img[3*j + 2] = (color >> 16) & 0xFF;
             }
             for (j = 0; j < num_oview_pixels; ++j) {
-                unsigned long color = vesa_MakeColor(tile->pixels[j]);
+                unsigned long color = vesa_MakeColor(ov_tile->pixels[j]);
                 ot_img[3*j + 0] =  color        & 0xFF;
                 ot_img[3*j + 1] = (color >>  8) & 0xFF;
                 ot_img[3*j + 2] = (color >> 16) & 0xFF;
@@ -1198,12 +1204,14 @@ vesa_Init(void)
                 ((uint32_t *)t_img)[j] = vesa_MakeColor(tile->pixels[j]);
             }
             for (j = 0; j < num_oview_pixels; ++j) {
-                ((uint32_t *)ot_img)[j] = vesa_MakeColor(tile->pixels[j]);
+                ((uint32_t *)ot_img)[j] = vesa_MakeColor(ov_tile->pixels[j]);
             }
             break;
         }
         free_tile(ov_tile);
     }
+    fprintf(fp, "%s(%d): time = %ld\n", __FILE__, __LINE__, (long)(clock() - t1));
+    fclose(fp);
     free_tiles();
 }
 
