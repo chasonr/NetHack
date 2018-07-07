@@ -6,7 +6,6 @@
  */
 
 #include "hack.h"
-#include <time.h>
 
 #ifdef SCREEN_VESA /* this file is for SCREEN_VESA only    */
 #ifdef __DJGPP__
@@ -149,11 +148,11 @@ static unsigned long vesa_win_gran; /* Window granularity */
 static unsigned char vesa_pixel_size;
 static unsigned char vesa_pixel_bytes;
 static unsigned char vesa_red_pos;
-static unsigned char vesa_red_size;
+static unsigned char vesa_red_shift;
 static unsigned char vesa_green_pos;
-static unsigned char vesa_green_size;
+static unsigned char vesa_green_shift;
 static unsigned char vesa_blue_pos;
-static unsigned char vesa_blue_size;
+static unsigned char vesa_blue_shift;
 static unsigned long vesa_palette[256];
 static struct BitmapFont *vesa_font = NULL;
 static unsigned vesa_char_width = 8, vesa_char_height = 16;
@@ -502,12 +501,12 @@ static unsigned long
 vesa_MakeColor(p)
 struct Pixel p;
 {
-    unsigned long r = p.r >> (8 - vesa_red_size);
-    unsigned long g = p.g >> (8 - vesa_green_size);
-    unsigned long b = p.b >> (8 - vesa_blue_size);
-    return ((unsigned long) r << vesa_red_pos)
-         | ((unsigned long) g << vesa_green_pos)
-         | ((unsigned long) b << vesa_blue_pos);
+    unsigned long r = p.r >> vesa_red_shift;
+    unsigned long g = p.g >> vesa_green_shift;
+    unsigned long b = p.b >> vesa_blue_shift;
+    return (r << vesa_red_pos)
+         | (g << vesa_green_pos)
+         | (b << vesa_blue_pos);
 }
 
 static void
@@ -1047,16 +1046,18 @@ unsigned special;
 void
 vesa_Init(void)
 {
+    static boolean inited = FALSE;
     const struct Pixel *paletteptr;
     const char *font_name;
     unsigned i;
     unsigned num_pixels, num_oview_pixels;
-    clock_t t1 = clock();
-    FILE *fp = fopen("nethack.log", "a");
-#ifdef USE_TILES
     const char *tile_file;
     int tilefailure = 0;
 
+    if (inited) return;
+    inited = TRUE;
+
+#ifdef USE_TILES
     /*
      * Attempt to open the required tile files. If we can't
      * don't perform the video mode switch, use TTY code instead.
@@ -1084,8 +1085,6 @@ vesa_Init(void)
         return;
     }
 #endif
-    fprintf(fp, "%s(%d): CLOCKS_PER_SEC = %ld\n", __FILE__, __LINE__, (long)CLOCKS_PER_SEC);
-    fprintf(fp, "%s(%d): time = %ld\n", __FILE__, __LINE__, (long)(clock() - t1));
 
     vesa_mode = 0xFFFF; /* might want an 8 bit mode after loading tiles */
     vesa_detect();
@@ -1155,7 +1154,6 @@ vesa_Init(void)
     }
 
     /* Process tiles for the current video mode */
-    fprintf(fp, "%s(%d): time = %ld\n", __FILE__, __LINE__, (long)(clock() - t1));
     vesa_tiles = (unsigned char **) alloc(total_tiles_used * sizeof(void *));
     vesa_oview_tiles = (unsigned char **) alloc(total_tiles_used * sizeof(void *));
     num_pixels = iflags.wc_tile_width * iflags.wc_tile_height;
@@ -1210,8 +1208,6 @@ vesa_Init(void)
         }
         free_tile(ov_tile);
     }
-    fprintf(fp, "%s(%d): time = %ld\n", __FILE__, __LINE__, (long)(clock() - t1));
-    fclose(fp);
     free_tiles();
 }
 
@@ -1411,47 +1407,47 @@ vesa_detect()
     if (vbe_info.VbeVersion >= 0x0300) {
         if (mode_info.ModeAttributes & 0x80) {
             vesa_red_pos = mode_info.LinRedFieldPosition;
-            vesa_red_size = mode_info.LinRedMaskSize;
+            vesa_red_shift = 8 - mode_info.LinRedMaskSize;
             vesa_green_pos = mode_info.LinGreenFieldPosition;
-            vesa_green_size = mode_info.LinGreenMaskSize;
+            vesa_green_shift = 8 - mode_info.LinGreenMaskSize;
             vesa_blue_pos = mode_info.LinBlueFieldPosition;
-            vesa_blue_size = mode_info.LinBlueMaskSize;
+            vesa_blue_shift = 8 - mode_info.LinBlueMaskSize;
         } else {
             vesa_red_pos = mode_info.RedFieldPosition;
-            vesa_red_size = mode_info.RedMaskSize;
+            vesa_red_shift = 8 - mode_info.RedMaskSize;
             vesa_green_pos = mode_info.GreenFieldPosition;
-            vesa_green_size = mode_info.GreenMaskSize;
+            vesa_green_shift = 8 - mode_info.GreenMaskSize;
             vesa_blue_pos = mode_info.BlueFieldPosition;
-            vesa_blue_size = mode_info.BlueMaskSize;
+            vesa_blue_shift = 8 - mode_info.BlueMaskSize;
         }
     } else {
         switch (vesa_pixel_size) {
         case 15:
             vesa_blue_pos = 0;
-            vesa_blue_size = 5;
+            vesa_blue_shift = 3;
             vesa_green_pos = 5;
-            vesa_green_size = 5;
+            vesa_green_shift = 3;
             vesa_red_pos = 10;
-            vesa_red_size = 5;
+            vesa_red_shift = 3;
             break;
 
         case 16:
             vesa_blue_pos = 0;
-            vesa_blue_size = 5;
+            vesa_blue_shift = 3;
             vesa_green_pos = 5;
-            vesa_green_size = 6;
+            vesa_green_shift = 2;
             vesa_red_pos = 11;
-            vesa_red_size = 5;
+            vesa_red_shift = 3;
             break;
 
         case 24:
         case 32:
             vesa_blue_pos = 0;
-            vesa_blue_size = 8;
+            vesa_blue_shift = 0;
             vesa_green_pos = 8;
-            vesa_green_size = 8;
+            vesa_green_shift = 0;
             vesa_red_pos = 16;
-            vesa_red_size = 8;
+            vesa_red_shift = 0;
             break;
         }
     }
