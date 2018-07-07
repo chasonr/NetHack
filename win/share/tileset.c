@@ -356,7 +356,7 @@ const struct TileSetImage *image;
 {
     unsigned tile_rows, tile_cols;
     size_t tile_size, i, j;
-    unsigned x1, y1, x2, y2;
+    unsigned x1, y1, y2;
 
     /* Get the number of tiles */
     tile_rows = image->height / image->tile_height;
@@ -370,27 +370,35 @@ const struct TileSetImage *image;
 
     /* Copy the pixels into the tile structures */
     for (y1 = 0; y1 < tile_rows; ++y1) {
+        unsigned y = y1 * image->tile_height;
+
         for (x1 = 0; x1 < tile_cols; ++x1) {
             struct TileImage *tile = &tiles[y1 * tile_cols + x1];
+            unsigned x = x1 * image->tile_width;
 
             tile->width = image->tile_width;
             tile->height = image->tile_height;
-            tile->pixels = (struct Pixel *)
-                    alloc(tile_size * sizeof (struct Pixel));
+            if (image->pixels != NULL) {
+                tile->pixels = (struct Pixel *)
+                        alloc(tile_size * sizeof (struct Pixel));
+                i = y * image->width + x;
+                j = 0;
+                for (y2 = 0; y2 < image->tile_height; ++y2) {
+                    memcpy(tile->pixels + j, image->pixels + i,
+                           image->tile_width * sizeof(struct Pixel));
+                    i += image->width;
+                    j += tile->width;
+                }
+            }
             if (image->indexes != NULL) {
                 tile->indexes = (unsigned char *) alloc(tile_size);
-            }
-            for (y2 = 0; y2 < image->tile_height; ++y2) {
-                for (x2 = 0; x2 < image->tile_width; ++x2) {
-                    unsigned x = x1 * image->tile_width + x2;
-                    unsigned y = y1 * image->tile_height + y2;
-
-                    i = y * image->width + x;
-                    j = y2 * tile->width + x2;
-                    tile->pixels[j] = image->pixels[i];
-                    if (image->indexes != NULL) {
-                        tile->indexes[j] = image->indexes[i];
-                    }
+                i = y * image->width + x;
+                j = 0;
+                for (y2 = 0; y2 < image->tile_height; ++y2) {
+                    memcpy(tile->indexes + j, image->indexes + i,
+                           image->tile_width);
+                    i += image->width;
+                    j += tile->width;
                 }
             }
         }
