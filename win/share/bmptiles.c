@@ -271,9 +271,7 @@ struct TileSetImage *image;
                 }
                 break;
             case 8:
-                for (x = 0; x < image->width; ++x) {
-                    ind[x] = row_bytes[x];
-                }
+                memcpy(ind, row_bytes, image->width);
                 break;
             case 16:
                 for (x = 0; x < image->width; ++x) {
