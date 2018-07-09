@@ -605,9 +605,9 @@ int cy;
     cl_end();
     if (cy < LI - 1) {
         unsigned left = 0;
-        unsigned top  = vesa_y_center + cy * 16;
+        unsigned top  = vesa_y_center + cy * vesa_char_height;
         unsigned width = vesa_x_res;
-        unsigned height = (LI - 1 - cy) * 16;
+        unsigned height = (LI - 1 - cy) * vesa_char_height;
 
         vesa_FillRect(left, top, width, height, BACKGROUND_VESA_COLOR);
     }
