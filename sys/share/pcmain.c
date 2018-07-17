@@ -14,12 +14,8 @@
 
 #include <ctype.h>
 
-#if !defined(AMIGA) && !defined(GNUDOS)
-#include <sys\stat.h>
-#else
-#ifdef GNUDOS
+#if !defined(AMIGA)
 #include <sys/stat.h>
-#endif
 #endif
 
 #ifdef WIN32

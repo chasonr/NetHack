@@ -52,11 +52,7 @@ const
 #endif
 
 #if defined(MSDOS) || defined(OS2) || defined(TOS) || defined(WIN32)
-#ifndef GNUDOS
-#include <sys\stat.h>
-#else
 #include <sys/stat.h>
-#endif
 #ifdef __WATCOMC__
 #include <i86.h> /* delay() */
 #endif
