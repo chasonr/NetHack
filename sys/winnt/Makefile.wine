@@ -83,11 +83,11 @@ WANT_WIN_CURSES = N
 # https://www.qt.io/download-open-source/
 # Earlier versions of Qt are not compatible with Windows
 # For Qt 5, use:
-QT4_DIRECTORY = /Qt/Qt5.9.2/5.9.2/mingw53_32
+QT4_DIRECTORY = /usr/x86_64-w64-mingw32/sys-root/mingw
 HAVE_QT5 = Y
 
 # For Qt 4, comment out the above two lines and use:
-#QT4_DIRECTORY = /Qt/4.8.6
+#QT4_DIRECTORY = /usr/x86_64-w64-mingw32/sys-root/mingw
 #HAVE_QT5 = N
 
 # For Win32, uncomment this to enable PNG support
@@ -99,15 +99,11 @@ LIBRARIES = $(USERPROFILE)/$(TARGET_CPU)libs
 
 # WANT_WIN_SDL2 requires SDL2
 # SDL2 under SDL2-2.0.3, see https://libsdl.org/download-2.0.php
-SDL2_DIRECTORY = $(LIBRARIES)/SDL2-2.0.3
+SDL2_DIRECTORY = /usr/x86_64-w64-mingw32/sys-root/mingw
 
 # WANT_WIN_CURSES requires win32a (a fork of PDCurses, see
 # http://www.projectpluto.com/win32a.htm).
 WIN32A_DIRECTORY = $(LIBRARIES)/win32a
-
-# WANT_PNG requires libpng and zlib
-LIBPNG_DIRECTORY = $(LIBRARIES)/lpng1621
-ZLIB_DIRECTORY = $(LIBRARIES)/zlib-1.2.8
 
 # This marks the end of the BUILD DECISIONS section.
 #==============================================================================
@@ -235,7 +231,7 @@ ifeq "$(WANT_WIN_CURSES)" "Y"
     WINPFLAG += -DCURSES_GRAPHICS
 endif
 ifeq "$(WANT_PNG)" "Y"
-    WINPFLAG += -DHAVE_PNG -I$(LIBPNG_DIRECTORY)
+    WINPFLAG += -DHAVE_PNG
 endif
 # To store all the level files,
 # help files, etc. in a single library file.
@@ -274,25 +270,25 @@ guilibs = -lcomctl32
 ifeq "$(WANT_WIN_QT4)" "Y"
     # Might be either Qt 4 or Qt 5
     ifeq "$(HAVE_QT5)" "Y"
-        guilibs += $(QT4_DIRECTORY)/lib/libQt5Core.a
-        guilibs += $(QT4_DIRECTORY)/lib/libQt5Gui.a
-        guilibs += $(QT4_DIRECTORY)/lib/libQt5Widgets.a
-        conlibs += $(QT4_DIRECTORY)/lib/libQt5Core.a
+        guilibs += -lQt5Core
+        guilibs += -lQt5Gui
+        guilibs += -lQt5Widgets
+        conlibs += -lQt5Core
     else
-        guilibs += $(QT4_DIRECTORY)/lib/libQtCore4.a
-        guilibs += $(QT4_DIRECTORY)/lib/libQtGui4.a
-        conlibs += $(QT4_DIRECTORY)/lib/libQtCore4.a
+        guilibs += -lQtCore4
+        guilibs += -lQtGui4
+        conlibs += -lQtCore4
     endif
 endif
 ifeq "$(WANT_WIN_SDL2)" "Y"
-    guilibs += $(SDL2_DIRECTORY)/$(SDL2_ARCH)/lib/libSDL2.a
+    guilibs += -lSDL2
     guilibs +=-limm32 -lole32 -loleaut32 -lversion
 endif
 ifeq "$(WANT_WIN_CURSES)" "Y"
     guilibs += $(WIN32A_DIRECTORY)/win32a/pdcurses.a
 endif
 ifeq "$(WANT_PNG)" "Y"
-    guilibs += $(LIBPNG_DIRECTORY)/libpng.a $(ZLIB_DIRECTORY)/libz.a
+    guilibs += -lpng
 endif
 guilibs += -lwinmm
 
@@ -449,6 +445,7 @@ ifeq "$(WANT_WIN_QT4)" "Y"
 	$(O)qt4main.o $(O)qt4map.o $(O)qt4menu.o $(O)qt4msg.o $(O)qt4plsel.o \
 	$(O)qt4rip.o $(O)qt4set.o $(O)qt4stat.o $(O)qt4str.o $(O)qt4streq.o \
 	$(O)qt4svsel.o $(O)qt4win.o $(O)qt4xcmd.o $(O)qt4yndlg.o
+	TTYOBJ += $(O)qt4stub.o
 endif
 ifeq "$(WANT_WIN_SDL2)" "Y"
     GUIOBJ += $(O)sdl2font_windows.o $(O)sdl2getlin.o $(O)sdl2map.o \
@@ -615,22 +612,28 @@ $(OBJ)/%.o : $(MSWIN)/%.c
 #==========================================
 
 ifeq "$(HAVE_QT5)" "Y"
-QT4_CXXFLAGS = -std=c++11
-else
-QT4_CXXFLAGS =
-endif
 $(OBJ)/%.o : $(QT4)/%.cpp
-	$(cxx) $(CXXFLAGS) $(QT4_CXXFLAGS) -I$(MSWIN) -I$(QT4_DIRECTORY)/include -o$@  $<
+	$(cxx) $(CXXFLAGS) -std=c++11 -I$(MSWIN) -I$(QT4_DIRECTORY)/include/qt5 -o$@  $<
 
 $(QT4)/%.moc : $(QT4)/%.h
-	$(QT4_DIRECTORY)\bin\moc -o $@ $<
+	$(MINGW_PREFIX)moc-qt5 -o $@ $<
+else
+$(OBJ)/%.o : $(QT4)/%.cpp
+	$(cxx) $(CXXFLAGS) -I$(MSWIN) -I$(QT4_DIRECTORY)/include/qt4 -o$@  $<
+
+$(QT4)/%.moc : $(QT4)/%.h
+	$(MINGW_PREFIX)moc-qt4 -o $@ $<
+endif
+
+$(OBJ)/%.o : $(QT4)/%.c
+	$(cc) $(CFLAGS)  -o$@  $<
 
 #==========================================
 # Rules for files in win/sdl2
 #==========================================
 
 $(OBJ)/%.o : $(SDL2)/%.c
-	$(cc) $(CFLAGS) -I$(MSWIN) -I$(SDL2_DIRECTORY)/include -o$@  $<
+	$(cc) $(CFLAGS) -I$(MSWIN) -I$(SDL2_DIRECTORY)/include/SDL2 -o$@  $<
 
 #==========================================
 # Rules for files in win/curses
