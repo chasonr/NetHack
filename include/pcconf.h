@@ -63,8 +63,11 @@
                  /* screen routines into the .exe     */
 
 #ifdef NO_TERMS     /* if NO_TERMS select one screen package below */
+#ifdef __DJGPP__
+#define SCREEN_DJGPPFAST /* Use djgpp fast screen routines	*/
+#else
 #define SCREEN_BIOS /* Use bios calls for all screen control */
-/* #define SCREEN_DJGPPFAST */ /* Use djgpp fast screen routines	*/
+#endif
 #endif
 
 /* # define PC9800 */ /* Allows NetHack to run on NEC PC-9800 machines */
