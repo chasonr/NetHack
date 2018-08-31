@@ -98,15 +98,14 @@ txt_get_scr_size()
 #include <unistd.h>
 #endif
 
+static int cursor_x, cursor_y;
+
 void FDECL(txt_gotoxy, (int, int));
 
-#if defined(SCREEN_BIOS) && !defined(PC9800)
+#if !defined(PC9800)
 void FDECL(txt_get_cursor, (int *, int *));
 #endif
 
-#ifdef SCREEN_DJGPPFAST
-#define txt_get_cursor(x, y) ScreenGetCursor(y, x)
-#endif
 
 extern int g_attribute; /* Current attribute to use */
 extern int monoflag;    /* 0 = not monochrome, else monochrome */
@@ -388,22 +387,12 @@ int attr;
  *                    the location of the player on the NetHack level.
  */
 
-#if defined(SCREEN_BIOS) && !defined(PC9800)
-/*
- * This is implemented as a macro under DJGPPFAST.
- */
+#if !defined(PC9800)
 void txt_get_cursor(x, y) /* get cursor position */
 int *x, *y;
 {
-    union REGS regs;
-
-    regs.R16(dx) = 0;
-    regs.h.ah = GETCURPOS; /* get cursor position */
-    regs.R16(cx) = 0;
-    regs.R16(bx) = 0;
-    (void) INT86(VIDEO_BIOS, &regs, &regs); /* Get Cursor Position */
-    *x = regs.h.dl;
-    *y = regs.h.dh;
+    *x = cursor_x;
+    *y = cursor_y;
 }
 #endif /* SCREEN_BIOS && !PC9800 */
 
@@ -436,6 +425,9 @@ int x, y;
      * then we'll need to set BH appropriately.  This function
      * returns nothing.  -3.
      */
+
+    cursor_x = x;
+    cursor_y = y;
 }
 
 /*
