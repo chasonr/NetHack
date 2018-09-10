@@ -686,7 +686,9 @@ int attr;
         break;
     default:
         vesa_WriteChar((unsigned char) ch, col, row, attr);
-        vesa_flush_text();
+        if (ch == '.') {
+            vesa_flush_text();
+        }
         if (col < (CO - 1))
             ++col;
         break;
