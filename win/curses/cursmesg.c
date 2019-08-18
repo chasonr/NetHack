@@ -23,6 +23,7 @@ long curs_mesg_suppress_turn = -1;
 /* Private declatations */
 
 typedef struct nhpm {
+    int glyph;                  /* Glyph to be displayed, for / command */
     char *str;                  /* Message text */
     long turn;                  /* Turn number for message */
     struct nhpm *prev_mesg;     /* Pointer to previous message */
@@ -32,7 +33,7 @@ typedef struct nhpm {
 static void scroll_window(winid wid);
 static void unscroll_window(winid wid);
 static void directional_scroll(winid wid, int nlines);
-static void mesg_add_line(const char *mline);
+static void mesg_add_line(int glyph, const char *mline);
 static nhprev_mesg *get_msg_line(boolean reverse, int mindex);
 
 static int turn_lines = 0;
@@ -47,7 +48,7 @@ static int last_messages = 0;
 /* Write string to the message window.  Attributes set by calling function. */
 
 void
-curses_message_win_puts(const char *message, boolean recursed)
+curses_message_win_puts(const char *message, int glyph, boolean recursed)
 {
     int height, width, border_space, linespace;
     char *tmpstr;
@@ -93,7 +94,7 @@ curses_message_win_puts(const char *message, boolean recursed)
 
     if (!recursed) {
         strcpy(toplines, message);
-        mesg_add_line(message);
+        mesg_add_line(glyph, message);
     }
 
     linespace = width - 3 - (mx - border_space);
@@ -138,9 +139,37 @@ curses_message_win_puts(const char *message, boolean recursed)
         if (bold)
             curses_toggle_color_attr(win, NONE, A_BOLD, OFF);
         tmpstr = curses_str_remainder(message, (width - 2), 1);
-        curses_message_win_puts(tmpstr, TRUE);
+        curses_message_win_puts(tmpstr, glyph, TRUE);
         free(tmpstr);
     } else {
+        if (glyph != NO_GLYPH) {
+            int ch;
+            int color;
+            unsigned int special;
+            mapglyph(glyph, &ch, &color, &special, 0, 0);
+            if (!symset[PRIMARY].name || !strcmpi(symset[PRIMARY].name, "curses")) {
+                ch = curses_convert_glyph(ch, glyph);
+            }
+#ifndef NO_WIDE_CURSES
+            else if (SYMHANDLING(H_IBM)) {
+                ch = cp437_table[(uchar)ch];
+            }
+#endif
+            curses_toggle_color_attr(win, color, NONE, ON);
+#ifndef NO_WIDE_CURSES
+            if (SYMHANDLING(H_IBM) || SYMHANDLING(H_UNICODE)) {
+                wchar_t wch[2];
+                wch[0] = ch;
+                wch[1] = 0;
+                mvwaddwstr(win, my, mx, wch);
+            } else
+#endif
+            {
+                mvwaddch(win, my, mx, ch);
+            }
+            curses_toggle_color_attr(win, color, NONE, OFF);
+            ++mx;
+        }
         mvwprintw(win, my, mx, "%s", message), mx += message_length;
         /* two spaces to separate this message from next one if they happen
            to fit on the same line; (FIXME:  it would be better if this was
@@ -290,9 +319,9 @@ curses_last_messages()
     for (j = 0, i = num_messages - 1; i > 0 && j < height; --i, ++j) {
         mesg = get_msg_line(TRUE, i);
         if (mesg && mesg->str && *mesg->str)
-            curses_message_win_puts(mesg->str, TRUE);
+            curses_message_win_puts(mesg->str, mesg->glyph, TRUE);
     }
-    curses_message_win_puts(toplines, TRUE);
+    curses_message_win_puts(toplines, NO_GLYPH, TRUE);
     --last_messages;
 }
 
@@ -568,7 +597,7 @@ curses_message_win_getline(const char *prompt, char *answer, int buffer)
             (void) strncpy(answer, p_answer, buffer);
             answer[buffer - 1] = '\0';
             Strcpy(toplines, tmpbuf);
-            mesg_add_line(tmpbuf);
+            mesg_add_line(NO_GLYPH, tmpbuf);
             free(tmpbuf);
             curs_set(orig_cursor);
             curses_toggle_color_attr(win, NONE, A_BOLD, OFF);
@@ -668,7 +697,7 @@ directional_scroll(winid wid, int nlines)
 /* Add given line to message history */
 
 static void
-mesg_add_line(const char *mline)
+mesg_add_line(int glyph, const char *mline)
 {
     nhprev_mesg *current_mesg;
 
@@ -694,6 +723,7 @@ mesg_add_line(const char *mline)
             current_mesg->str = dupstr(mline);
         }
     }
+    current_mesg->glyph = glyph;
     current_mesg->turn = moves;
 
     if (num_messages == 0) {
@@ -813,7 +843,7 @@ boolean restoring_msghist;
     }
 
     if (msg) {
-        mesg_add_line(msg);
+        mesg_add_line(NO_GLYPH, msg);
         /* treat all saved and restored messages as turn #1 */
         last_mesg->turn = 1L;
     } else if (stash_count) {
@@ -832,7 +862,7 @@ boolean restoring_msghist;
             stash_head = mesg->next_mesg;
             --stash_count;
             mesg_turn = mesg->turn;
-            mesg_add_line(mesg->str);
+            mesg_add_line(NO_GLYPH, mesg->str);
             /* added line became new tail */
             last_mesg->turn = mesg_turn;
             free((genericptr_t) mesg->str);

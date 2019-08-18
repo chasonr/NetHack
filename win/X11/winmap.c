@@ -97,8 +97,8 @@ int bkglyph UNUSED;
         }
     }
     {
-        uchar ch;
-        register unsigned char *ch_ptr;
+        XChar2b ch;
+        XChar2b *ch_ptr;
         int color, och;
         unsigned special;
 #ifdef TEXTCOLOR
@@ -108,7 +108,9 @@ int bkglyph UNUSED;
 
         /* map glyph to character and color */
         (void) mapglyph(glyph, &och, &color, &special, x, y);
-        ch = (uchar) och;
+        if (och > 0xFFFF) och = 0xFFFD;
+        ch.byte1 = och >> 8;
+        ch.byte2 = och & 0xFF;
 
         if (special != map_info->tile_map.glyphs[y][x].special) {
             map_info->tile_map.glyphs[y][x].special = special;
@@ -117,7 +119,7 @@ int bkglyph UNUSED;
 
         /* Only update if we need to. */
         ch_ptr = &map_info->text_map.text[y][x];
-        if (*ch_ptr != ch) {
+        if (ch_ptr->byte1 != ch.byte1 || ch_ptr->byte2 != ch.byte2) {
             *ch_ptr = ch;
             if (!map_info->is_tile)
                 update_bbox = TRUE;
@@ -945,8 +947,14 @@ struct xwindow *wp;
     /* update both tile and text backing store, then update */
 
     map_all_stone(map_info);
-    (void) memset((genericptr_t) map_info->text_map.text, ' ',
-                  sizeof map_info->text_map.text);
+    /* Fill text with spaces, and update */
+    size_t r, c;
+    for (r = 0; r < SIZE(map_info->text_map.text); r++) {
+        for (c = 0; c < SIZE(map_info->text_map.text[0]); c++) {
+            map_info->text_map.text[r][c].byte1 = 0;
+            map_info->text_map.text[r][c].byte2 = ' ';
+        }
+    }
 #ifdef TEXTCOLOR
     (void) memset((genericptr_t) map_info->text_map.colors, NO_COLOR,
                   sizeof map_info->text_map.colors);
@@ -1338,7 +1346,7 @@ boolean inverted;
 #ifdef TEXTCOLOR
         {
             register char *c_ptr;
-            char *t_ptr;
+            XChar2b *t_ptr;
             int cur_col, color, win_ystart;
             boolean cur_inv;
 
@@ -1346,7 +1354,7 @@ boolean inverted;
                 win_ystart =
                     text_map->square_ascent + (row * text_map->square_height);
 
-                t_ptr = (char *) &(text_map->text[row][start_col]);
+                t_ptr = (XChar2b *) &(text_map->text[row][start_col]);
                 c_ptr = (char *) &(text_map->colors[row][start_col]);
                 cur_col = start_col;
                 while (cur_col <= stop_col) {
@@ -1362,7 +1370,7 @@ boolean inverted;
                         cur_inv = !cur_inv;
                     }
 
-                    XDrawImageString(XtDisplay(wp->w), XtWindow(wp->w),
+                    XDrawImageString16(XtDisplay(wp->w), XtWindow(wp->w),
                                      iflags.use_color
                                         ? (cur_inv
                                            ? text_map->inv_color_gcs[color]
@@ -1392,13 +1400,13 @@ boolean inverted;
 
             for (row = start_row, win_row = win_start_row; row <= stop_row;
                  row++, win_row++) {
-                XDrawImageString(XtDisplay(wp->w), XtWindow(wp->w),
+                XDrawImageString16(XtDisplay(wp->w), XtWindow(wp->w),
                                  inverted ? text_map->inv_copy_gc
                                           : text_map->copy_gc,
                                  win_xstart,
                                  text_map->square_ascent
                                     + (win_row * text_map->square_height),
-                                 (char *) &(text_map->text[row][start_col]),
+                                 &(text_map->text[row][start_col]),
                                  count);
             }
         }
@@ -1435,8 +1443,14 @@ struct xwindow *wp;
 {
     struct map_info_t *map_info = wp->map_information;
     struct text_map_info_t *text_map = &map_info->text_map;
+    size_t r, c;
 
-    (void) memset((genericptr_t) text_map->text, ' ', sizeof text_map->text);
+    for (r = 0; r < SIZE(text_map->text); r++) {
+        for (c = 0; c < SIZE(text_map->text[0]); c++) {
+            text_map->text[r][c].byte1 = 0;
+            text_map->text[r][c].byte2 = ' ';
+        }
+    }
 #ifdef TEXTCOLOR
     (void) memset((genericptr_t) text_map->colors, NO_COLOR,
                   sizeof text_map->colors);

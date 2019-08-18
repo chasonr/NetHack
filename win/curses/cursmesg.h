@@ -9,7 +9,7 @@
 
 /* Global declarations */
 
-void curses_message_win_puts(const char *message, boolean recursed);
+void curses_message_win_puts(const char *message, int glyph, boolean recursed);
 void curses_got_input(void);
 int curses_block(boolean require_tab);
 int curses_more(void);

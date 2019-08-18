@@ -212,7 +212,7 @@ extern void curses_cleanup(void);
 
 /* cursmesg.c */
 
-extern void curses_message_win_puts(const char *message, boolean recursed);
+extern void curses_message_win_puts(const char *message, int glyph, boolean recursed);
 extern void curses_got_input(void);
 extern int curses_block(boolean require_tab); /* for MSGTYPE=STOP */
 extern int curses_more(void);

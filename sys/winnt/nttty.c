@@ -20,8 +20,8 @@
 #include "winos.h"
 #include "hack.h"
 #include "wintty.h"
-#include <sys\types.h>
-#include <sys\stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 extern boolean getreturn_enabled; /* from sys/share/pcsys.c */
 extern int redirect_stdout;
@@ -637,7 +637,11 @@ int in_ch;
     cell_t cell;
 
     cell.attribute = console.attr;
-    cell.character = (console.has_unicode ? cp437[ch] : ch);
+    if (SYMHANDLING(H_UNICODE)) {
+        cell.character = in_ch;
+    } else {
+        cell.character = (console.has_unicode ? cp437[ch] : ch);
+    }
 
     buffer_write(console.back_buffer, &cell, console.cursor);
 }

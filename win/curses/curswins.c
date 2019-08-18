@@ -483,7 +483,7 @@ curses_puts(winid wid, int attr, const char *text)
     }
 
     if (wid == MESSAGE_WIN) {
-        curses_message_win_puts(text, FALSE);
+        curses_message_win_puts(text, NO_GLYPH, FALSE);
         return;
     }
 
@@ -579,7 +579,17 @@ write_char(WINDOW * win, int x, int y, nethack_char nch)
 #ifdef PDCURSES
     mvwaddrawch(win, y, x, nch.ch);
 #else
-    mvwaddch(win, y, x, nch.ch);
+#ifndef NO_WIDE_CURSES
+    if (SYMHANDLING(H_IBM) || SYMHANDLING(H_UNICODE)) {
+        wchar_t wch[2];
+        wch[0] = nch.ch;
+        wch[1] = 0;
+        mvwaddwstr(win, y, x, wch);
+    } else
+#endif
+    {
+        mvwaddch(win, y, x, nch.ch);
+    }
 #endif
     curses_toggle_color_attr(win, nch.color, nch.attr, OFF);
 }

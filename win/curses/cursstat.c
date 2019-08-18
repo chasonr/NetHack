@@ -291,8 +291,9 @@ boolean border;
     xchar spacing[MAXBLSTATS], valline[MAXBLSTATS];
     enum statusfields fld, prev_fld;
     char *text, *p, cbuf[BUFSZ], ebuf[STATVAL_WIDTH];
-#ifdef SCORE_ON_BOTL
     char *colon;
+    nhsym goldch;
+#ifdef SCORE_ON_BOTL
     char sbuf[STATVAL_WIDTH];
 #endif
     int i, j, number_of_lines,
@@ -498,6 +499,7 @@ boolean border;
             if (i == 0 && *text == ' ')
                 ++text; /* for first field of line, discard leading space */
 
+            goldch = 0;
             switch (fld) {
             case BL_EXP:
                 /* might be 'active' but suppressed due to lack of room */
@@ -547,6 +549,12 @@ boolean border;
                 if (!sho_score)
                     continue;
                 break;
+            case BL_GOLD:
+                if ((colon = index(text, ':')) != 0) {
+                    goldch = showsyms[COIN_CLASS + SYM_OFF_O];
+                    text = colon;
+                }
+                break;
             default:
                 break;
             }
@@ -580,6 +588,22 @@ boolean border;
                 }
 #endif /* STATUS_HILITES */
 
+                if (goldch) {
+#ifndef NO_WIDE_CURSES
+                    if (SYMHANDLING(H_IBM)) {
+                        goldch = cp437_table[(uchar)goldch];
+                    }
+                    if (SYMHANDLING(H_IBM) || SYMHANDLING(H_UNICODE)) {
+                        wchar_t wch[2];
+                        wch[0] = goldch;
+                        wch[1] = 0;
+                        waddwstr(win, wch);
+                    } else
+#endif
+                    {
+                        waddch(win, goldch);
+                    }
+                }
                 waddstr(win, text);
 
 #ifdef STATUS_HILITES

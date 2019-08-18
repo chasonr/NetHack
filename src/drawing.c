@@ -562,6 +562,7 @@ const char *known_handling[] = {
     "IBM",     /* H_IBM  */
     "DEC",     /* H_DEC  */
     "CURS",    /* H_CURS */
+    "Unicode", /* H_UNICODE */
     (const char *) 0,
 };
 

@@ -448,6 +448,8 @@ struct early_opt {
     boolean valallowed;
 };
 
+extern const unsigned short cp437_table[256];
+
 #undef E
 
 #endif /* DECL_H */

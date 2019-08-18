@@ -540,7 +540,7 @@ static short n_menu_mapped = 0;
 static boolean initial, from_file;
 
 STATIC_DCL void FDECL(nmcpy, (char *, const char *, int));
-STATIC_DCL void FDECL(escapes, (const char *, char *));
+STATIC_DCL int FDECL(escapes, (const char *, nhsym *));
 STATIC_DCL void FDECL(rejectoption, (const char *));
 STATIC_DCL char *FDECL(string_for_opt, (char *, BOOLEAN_P));
 STATIC_DCL char *FDECL(string_for_env_opt, (const char *, char *, BOOLEAN_P));
@@ -926,7 +926,8 @@ int maxlen;
 
 /*
  * escapes(): escape expansion for showsyms.  C-style escapes understood
- * include \n, \b, \t, \r, \xnnn (hex), \onnn (octal), \nnn (decimal).
+ * include \n, \b, \t, \r, \xnnn (hex), \onnn (octal), \nnn (decimal),
+ * \unnnn (hex, 16 bit) and \Unnnnnnnn (hex, 32 bit).
  * (Note: unlike in C, leading digit 0 is not used to indicate octal;
  * the letter o (either upper or lower case) is used for that.
  * The ^-prefix for control characters is also understood, and \[mM]
@@ -946,15 +947,16 @@ int maxlen;
  * an appropriate digit will also fall through to \<other> and yield 'X'
  * or 'O', plus stop if the non-digit is end-of-string.
  */
-STATIC_OVL void
+STATIC_OVL int
 escapes(cp, tp)
 const char *cp;
-char *tp;
+nhsym *tp;
 {
     static NEARDATA const char oct[] = "01234567", dec[] = "0123456789",
                                hex[] = "00112233445566778899aAbBcCdDeEfF";
     const char *dp;
     int cval, meta, dcount;
+    int tpcount = 0;
 
     while (*cp) {
         /* \M has to be followed by something to do meta conversion,
@@ -983,12 +985,13 @@ char *tp;
             do {
                 cval = (cval * 8) + (*cp - '0');
             } while (*++cp && index(oct, *cp) && ++dcount < 3);
-        } else if ((cp[1] == 'x' || cp[1] == 'X') && cp[2]
+        } else if (index("xXuU", cp[1]) != (char *) 0 && cp[2]
                    && (dp = index(hex, cp[2])) != 0) {
+            int limit = (cp[1] == 'U') ? 8 : (cp[1] == 'u') ? 4 : 2;
             cp += 2; /* move past backslash and 'X' */
             do {
                 cval = (cval * 16) + ((int) (dp - hex) / 2);
-            } while (*++cp && (dp = index(hex, *cp)) != 0 && ++dcount < 2);
+            } while (*++cp && (dp = index(hex, *cp)) != 0 && ++dcount < limit);
         } else { /* C-style character escapes */
             switch (*++cp) {
             case '\\':
@@ -1014,9 +1017,11 @@ char *tp;
 
         if (meta)
             cval |= 0x80;
-        *tp++ = (char) cval;
+        *tp++ = cval;
+        ++tpcount;
     }
     *tp = '\0';
+    return tpcount;
 }
 
 STATIC_OVL void
@@ -1154,14 +1159,14 @@ warning_opts(opts, optype)
 register char *opts;
 const char *optype;
 {
-    uchar translate[WARNCOUNT];
+    nhsym op_buf[BUFSZ];
+    nhsym translate[WARNCOUNT];
     int length, i;
 
     if (!(opts = string_for_env_opt(optype, opts, FALSE)))
         return FALSE;
-    escapes(opts, opts);
+    length = escapes(opts, op_buf);
 
-    length = (int) strlen(opts);
     /* match the form obtained from PC configuration files */
     for (i = 0; i < WARNCOUNT; i++)
         translate[i] = (i >= length) ? 0
@@ -1173,7 +1178,7 @@ const char *optype;
 
 void
 assign_warnings(graph_chars)
-register uchar *graph_chars;
+register nhsym *graph_chars;
 {
     int i;
 
@@ -2727,6 +2732,7 @@ boolean tinitial, tfrom_file;
     if (match_optname(opts, fullname, 7, TRUE)) {
 #ifdef BACKWARD_COMPAT
         int clash = 0;
+        nhsym op_buf[BUFSZ];
 
         if (duplicate)
             complain_about_duplicate(opts, 1);
@@ -2738,25 +2744,25 @@ boolean tinitial, tfrom_file;
          */
         if (!(opts = string_for_opt(opts, FALSE)))
             return FALSE;
-        escapes(opts, opts);
+        escapes(opts, op_buf);
         /* note: dummy monclass #0 has symbol value '\0'; we allow that--
            attempting to set bouldersym to '^@'/'\0' will reset to default */
-        if (def_char_to_monclass(opts[0]) != MAXMCLASSES)
-            clash = opts[0] ? 1 : 0;
-        else if (opts[0] >= '1' && opts[0] < WARNCOUNT + '0')
+        if (def_char_to_monclass(op_buf[0]) != MAXMCLASSES)
+            clash = op_buf[0] ? 1 : 0;
+        else if (op_buf[0] >= '1' && op_buf[0] < WARNCOUNT + '0')
             clash = 2;
         if (clash) {
             /* symbol chosen matches a used monster or warning
                symbol which is not good - reject it */
             config_error_add(
-            "Badoption - boulder symbol '%s' would conflict with a %s symbol",
-                             visctrl(opts[0]),
+            "Badoption - boulder symbol '%02lX' would conflict with a %s symbol",
+                             (unsigned long) op_buf[0],
                              (clash == 1) ? "monster" : "warning");
         } else {
             /*
              * Override the default boulder symbol.
              */
-            iflags.bouldersym = (uchar) opts[0];
+            iflags.bouldersym = op_buf[0];
             /* for 'initial', update_bouldersym() is done in
                initoptions_finish(), after all symset options
                have been processed */
@@ -3803,12 +3809,12 @@ boolean tinitial, tfrom_file;
                 bad_negation(fullname, FALSE);
                 return FALSE;
             } else if ((op = string_for_opt(opts, FALSE)) != 0) {
-                char c, op_buf[BUFSZ];
+                nhsym c, op_buf[BUFSZ];
 
                 escapes(op, op_buf);
                 c = *op_buf;
 
-                if (illegal_menu_cmd_key(c))
+                if (c > 0xFF || illegal_menu_cmd_key(c))
                     return FALSE;
 
                 add_menu_cmd_alias(c, default_menu_cmd_info[i].cmd);
@@ -5488,11 +5494,20 @@ char *buf;
                 iflags.altkeyhandler[0] ? iflags.altkeyhandler : "default");
 #endif
 #ifdef BACKWARD_COMPAT
-    else if (!strcmp(optname, "boulder"))
-        Sprintf(buf, "%c",
-                iflags.bouldersym
-                    ? iflags.bouldersym
-                    : showsyms[(int) objects[BOULDER].oc_class + SYM_OFF_O]);
+    else if (!strcmp(optname, "boulder")) {
+        nhsym sym = iflags.bouldersym
+                  ? iflags.bouldersym
+                  : showsyms[(int) objects[BOULDER].oc_class + SYM_OFF_O];
+        if (sym > 0x7F) {
+            if (sym > 0xFFFF) {
+                Sprintf(buf, "\\U%08X", sym);
+            } else {
+                Sprintf(buf, "\\u%04X", sym);
+            }
+        } else {
+            Sprintf(buf, "%c", sym);
+        }
+    }
 #endif
     else if (!strcmp(optname, "catname"))
         Sprintf(buf, "%s", catname[0] ? catname : none);
@@ -6072,23 +6087,23 @@ int
 sym_val(strval)
 const char *strval;
 {
-    char buf[QBUFSZ];
+    nhsym buf[QBUFSZ];
 
     buf[0] = '\0';
     if (!strval[0] || !strval[1]) { /* empty, or single character */
         /* if single char is space or tab, leave buf[0]=='\0' */
         if (!isspace((uchar) strval[0]))
-            buf[0] = strval[0];
+            buf[0] = (uchar) strval[0];
     } else if (strval[0] == '\'') { /* single quote */
         /* simple matching single quote; we know strval[1] isn't '\0' */
         if (strval[2] == '\'' && !strval[3]) {
             /* accepts '\' as backslash and ''' as single quote */
-            buf[0] = strval[1];
+            buf[0] = (uchar) strval[1];
 
         /* if backslash, handle single or double quote or second backslash */
         } else if (strval[1] == '\\' && strval[2] && strval[3] == '\''
             && index("'\"\\", strval[2]) && !strval[4]) {
-            buf[0] = strval[2];
+            buf[0] = (uchar) strval[2];
 
         /* not simple quote or basic backslash;
            strip closing quote and let escapes() deal with it */

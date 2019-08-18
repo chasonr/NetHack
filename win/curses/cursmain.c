@@ -5,6 +5,9 @@
 
 #include "curses.h"
 #include "hack.h"
+#ifndef NO_WIDE_CURSES
+#include <locale.h>
+#endif
 #include "patchlevel.h"
 #include "color.h"
 #include "wincurs.h"
@@ -12,6 +15,8 @@
 extern long curs_mesg_suppress_turn; /* from cursmesg.c */
 
 /* Public functions for curses NetHack interface */
+
+static void curses_putmixed(winid wid, int attr, const char *text);
 
 /* Interface definition, for windows.c */
 struct window_procs curses_procs = {
@@ -38,7 +43,7 @@ struct window_procs curses_procs = {
     curses_destroy_nhwindow,
     curses_curs,
     curses_putstr,
-    genl_putmixed,
+    curses_putmixed,
     curses_display_file,
     curses_start_menu,
     curses_add_menu,
@@ -118,6 +123,10 @@ curses_init_nhwindows(int *argcp UNUSED,
 {
 #ifdef PDCURSES
     char window_title[BUFSZ];
+#endif
+
+#ifndef NO_WIDE_CURSES
+    setlocale(LC_ALL, "");
 #endif
 
 #ifdef XCURSES
@@ -419,6 +428,39 @@ curses_putstr(winid wid, int attr, const char *text)
     }
 }
 
+/* As curses_putstr, but the text may contain a glyph escape */
+static void
+curses_putmixed(winid wid, int attr, const char *text)
+{
+    if (wid != MESSAGE_WIN) {
+        genl_putmixed(wid, attr, text);
+        return;
+    }
+
+    if (text[0] == '\\' && text[1] == 'G' && strlen(text) >= 10) {
+        char rndchk_str[5];
+        char *end;
+
+        strncpy(rndchk_str, text + 2, 4);
+        rndchk_str[4] = '\0';
+        int rndchk = strtol(rndchk_str, &end, 16);
+        if (rndchk == context.rndencode && *end == '\0') {
+            char gv_str[5];
+            int gv;
+
+            strncpy(gv_str, text + 6, 4);
+            gv_str[4] = '\0';
+            gv = strtol(gv_str, &end, 16);
+            if (*end == '\0') {
+                curses_message_win_puts(text + 10, gv, FALSE);
+                return;
+            }
+        }
+    }
+
+    curses_message_win_puts(text, NO_GLYPH, FALSE);
+}
+
 /* Display the file named str.  Complain about missing files
                    iff complain is TRUE.
 */
@@ -632,6 +674,11 @@ curses_print_glyph(winid wid, XCHAR_P x, XCHAR_P y, int glyph,
     if (!symset[PRIMARY].name || !strcmpi(symset[PRIMARY].name, "curses")) {
         ch = curses_convert_glyph(ch, glyph);
     }
+#ifndef NO_WIDE_CURSES
+    else if (SYMHANDLING(H_IBM)) {
+        ch = cp437_table[(uchar)ch];
+    }
+#endif
     if (wid == NHW_MAP) {
 /* hilite stairs not in 3.6, yet
         if ((special & MG_STAIRS) && iflags.hilite_hidden_stairs) {
@@ -664,7 +711,7 @@ curses_raw_print(const char *str)
 #ifdef PDCURSES
     WINDOW *win = curses_get_nhwin(MESSAGE_WIN);
 
-    curses_message_win_puts(str, FALSE);
+    curses_message_win_puts(str, NO_GLYPH, FALSE);
 #else
     puts(str);
 #endif
