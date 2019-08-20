@@ -2,17 +2,19 @@
 /* Copyright (C) 2018 by Bart House 	 */
 /* NetHack may be freely redistributed.  See license for details. */
 
-#ifdef _MSC_VER
 #include "win10.h"
 #include <process.h>
 #include <VersionHelpers.h>
 
 #include "hack.h"
 
+#ifdef _MSC_VER
 Win10 gWin10 = { 0 };
+#endif /* _MSC_VER */
 
 void win10_init()
 {
+#ifdef _MSC_VER
     if (IsWindows10OrGreater())
     {
         HINSTANCE hUser32 = LoadLibraryA("user32.dll");
@@ -43,6 +45,7 @@ void win10_init()
                 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
             panic("Unexpected DpiAwareness state");
     }
+#endif /* _MSC_VER */
 
 }
 
@@ -50,6 +53,7 @@ int win10_monitor_dpi(HWND hWnd)
 {
     UINT monitorDpi = 96;
 
+#ifdef _MSC_VER
     if (gWin10.Valid) {
         monitorDpi = gWin10.GetDpiForWindow(hWnd);
         if (monitorDpi == 0)
@@ -57,6 +61,7 @@ int win10_monitor_dpi(HWND hWnd)
     }
 
     monitorDpi = max(96, monitorDpi);
+#endif /* _MSC_VER */
 
     return monitorDpi;
 }
@@ -80,4 +85,3 @@ void win10_monitor_info(HWND hWnd, MonitorInfo * monitorInfo)
     monitorInfo->left = info.rcMonitor.left;
     monitorInfo->top = info.rcMonitor.top;
 }
-#endif /* _MSC_VER */

@@ -603,6 +603,7 @@ MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         dirty(data, data->xCur, data->yCur);
         break;
 
+#ifdef _MSC_VER
     case WM_DPICHANGED: {
         RECT rt;
         GetWindowRect(hWnd, &rt);
@@ -610,6 +611,7 @@ MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ScreenToClient(GetNHApp()->hMainWnd, ((LPPOINT)&rt) + 1);
         mswin_update_window_placement(NHW_MAP, &rt);
     } break;
+#endif // _MSC_VER
 
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

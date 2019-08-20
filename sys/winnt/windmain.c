@@ -241,10 +241,12 @@ _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);*/
  * It seems you really want to play.
  */
 
+#if 0
     if (argc >= 1
         && !strcmpi(default_window_sys, "mswin")
         && (strstri(argv[0], "nethackw.exe") || GUILaunched))
             iflags.windowtype_locked = TRUE;
+#endif
 
     windowtype = default_window_sys;
     if (!iflags.windowtype_locked) {
