@@ -323,11 +323,11 @@ VOBJ03 = $(O)decl.o     $(O)detect.o  $(O)display.o  $(O)do.o       $(O)do_name.
 VOBJ04 = $(O)do_wear.o  $(O)dog.o     $(O)dogmove.o  $(O)dokick.o   $(O)dothrow.o
 VOBJ05 = $(O)drawing.o  $(O)dungeon.o $(O)eat.o      $(O)end.o      $(O)engrave.o
 VOBJ06 = $(O)exper.o    $(O)explode.o $(O)extralev.o $(O)files.o    $(O)fountain.o
-VOBJ07 = $(O)getline.o  $(O)hack.o    $(O)hacklib.o  $(O)invent.o   $(O)lock.o
-VOBJ08 = $(O)mail.o     $(O)main.o    $(O)makemon.o  $(O)mapglyph.o $(O)mcastu.o $(O)mhitm.o
-VOBJ09 = $(O)mhitu.o    $(O)minion.o  $(O)mkmap.o    $(O)mklev.o    $(O)mkmaze.o
-VOBJ10 = $(O)mkobj.o    $(O)mkroom.o  $(O)mon.o      $(O)mondata.o  $(O)monmove.o
-VOBJ11 = $(O)monst.o    $(O)monstr.o  $(O)mplayer.o  $(O)mthrowu.o  $(O)muse.o
+VOBJ07 = $(O)getline.o  $(O)hack.o    $(O)hacklib.o  $(O)invent.o   $(O)isaac64.o
+VOBJ08 = $(O)lock.o     $(O)mail.o    $(O)main.o     $(O)makemon.o  $(O)mapglyph.o
+VOBJ09 = $(O)mcastu.o   $(O)mhitm.o   $(O)mhitu.o    $(O)minion.o   $(O)mkmap.o
+VOBJ10 = $(O)mklev.o    $(O)mkmaze.o  $(O)mkobj.o    $(O)mkroom.o   $(O)mon.o
+VOBJ11 = $(O)mondata.o  $(O)monmove.o $(O)monst.o    $(O)mplayer.o  $(O)mthrowu.o  $(O)muse.o
 VOBJ12 = $(O)music.o    $(O)o_init.o  $(O)objects.o  $(O)objnam.o   $(O)options.o
 VOBJ13 = $(O)pickup.o   $(O)pline.o   $(O)polyself.o $(O)potion.o   $(O)quest.o
 VOBJ14 = $(O)questpgr.o $(O)pager.o   $(O)pray.o     $(O)priest.o   $(O)read.o
@@ -426,7 +426,7 @@ default: $(GAMEFILE)
 util: $(O)utility.tag
 
 $(O)utility.tag: $(INCL)/date.h $(INCL)/trap.h    $(INCL)/onames.h	       \
-	$(INCL)/pm.h	  monstr.c   vis_tab.c	\
+	$(INCL)/pm.h	  vis_tab.c	\
 	$(U)lev_comp.exe $(U)dgn_comp.exe $(TILEUTIL)
 	$(subst /,\,echo utilities made > $@)
 
@@ -572,7 +572,6 @@ spotless: clean
 	$(subst /,\,if exist $(INCL)/date.h del $(INCL)/date.h)
 	$(subst /,\,if exist $(INCL)/dgn_comp.h del $(INCL)/dgn_comp.h)
 	$(subst /,\,if exist $(INCL)/lev_comp.h del $(INCL)/lev_comp.h)
-	$(subst /,\,if exist $(SRC)/monstr.c del $(SRC)/monstr.c)
 	$(subst /,\,if exist $(SRC)/vis_tab.c del $(SRC)/vis_tab.c)
 	$(subst /,\,if exist $(SRC)/tile.c del $(SRC)/tile.c)
 	$(subst /,\,if exist $(DAT)/options del $(DAT)/options)
@@ -626,9 +625,6 @@ $(INCL)/onames.h: $(U)makedefs.exe
 
 $(INCL)/pm.h: $(U)makedefs.exe
 	-$(subst /,\,$(U)makedefs -p)
-
-monstr.c: $(U)makedefs.exe
-	-$(subst /,\,$(U)makedefs -m)
 
 $(INCL)/vis_tab.h: $(U)makedefs.exe
 	-$(subst /,\,$(U)makedefs -z)
@@ -1210,7 +1206,6 @@ $(O)qt_clust.o: ../win/Qt/qt_clust.cpp $(INCL)/qt_clust.h
 	$(CXX) $(CXXFLAGS) -o$@ ../win/Qt/qt_clust.cpp
 $(O)qttableview.o: ../win/Qt/qttableview.cpp $(INCL)/qttableview.h
 	$(CXX) $(CXXFLAGS) -o$@ ../win/Qt/qttableview.cpp
-$(O)monstr.o: monstr.c $(CONFIG_H)
 $(O)vis_tab.o: vis_tab.c $(CONFIG_H) $(INCL)/vis_tab.h
 $(O)allmain.o: allmain.c $(HACK_H)
 $(O)alloc.o: alloc.c $(CONFIG_H)
@@ -1248,6 +1243,7 @@ $(O)fountain.o: fountain.c $(HACK_H)
 $(O)hack.o: hack.c $(HACK_H)
 $(O)hacklib.o: hacklib.c $(HACK_H)
 $(O)invent.o: invent.c $(HACK_H)
+$(O)isaac64.o: isaac64.c $(CONFIG_H)
 $(O)light.o: light.c $(HACK_H) $(INCL)/lev.h
 $(O)lock.o: lock.c $(HACK_H)
 $(O)mail.o: mail.c $(HACK_H) $(INCL)/mail.h
