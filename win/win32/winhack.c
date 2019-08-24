@@ -29,6 +29,10 @@ typedef struct _DLLVERSIONINFO {
     DWORD dwPlatformID;   // DLLVER_PLATFORM_*
 } DLLVERSIONINFO;
 
+#ifdef __MINGW32__
+extern int mingw_main(int argc, char **argv);
+#endif
+
 //
 // The caller should always GetProcAddress("DllGetVersion"), not
 // implicitly link to it.
@@ -237,7 +241,11 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
     }
     GUILaunched = 1;
     /* let main do the argument processing */
+#ifdef __MINGW32__
+    (void) mingw_main(argc, argv);
+#else
     (void) main(argc, argv);
+#endif
     return 0;
 }
 

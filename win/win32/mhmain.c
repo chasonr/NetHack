@@ -509,9 +509,11 @@ MainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         exit(1);
         break;
 
+#ifdef _MSC_VER
     case WM_DPICHANGED: {
         mswin_layout_main_window(NULL);
     } break;
+#endif // _MSC_VER
 
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

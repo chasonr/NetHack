@@ -7,6 +7,7 @@
 
 #include "win32api.h"
 
+#ifdef _MSC_VER
 typedef DPI_AWARENESS_CONTEXT(WINAPI *GetThreadDpiAwarenessContextProc)(VOID);
 typedef BOOL(WINAPI *AreDpiAwarenessContextsEqualProc)(
     DPI_AWARENESS_CONTEXT dpiContextA, DPI_AWARENESS_CONTEXT dpiContextB);
@@ -18,6 +19,7 @@ typedef struct {
     AreDpiAwarenessContextsEqualProc AreDpiAwarenessContextsEqual;
     GetDpiForWindowProc GetDpiForWindow;
 } Win10;
+#endif // _MSC_VER
 
 typedef struct {
     double  scale;  // dpi of monitor / 96
@@ -27,7 +29,9 @@ typedef struct {
     int     left; // in desktop coordinate pixel space
 } MonitorInfo;
 
+#ifdef _MSC_VER
 extern Win10 gWin10;
+#endif // _MSC_VER
 
 void win10_init();
 int win10_monitor_dpi(HWND hWnd);
