@@ -134,7 +134,7 @@ TARGET_CPU=x86
 #
 #==============================================================================
 
-SKIP_NETHACKW=Y
+SKIP_NETHACKW=N
 
 #==============================================================================
 
@@ -1232,7 +1232,7 @@ $(O)pdcurses.a : $(PDCLIBOBJS) $(PDCOBJS)
 
 spotless: clean
 	if exist o\* del /Q o\*
-	-test -d o && rd o
+	if exist o\nul rmdir o
 	if exist objdir.tag del objdir.tag
 	if exist gamedir.tag del gamedir.tag
 	if exist sp_lev.tag del sp_lev.tag
@@ -1341,7 +1341,6 @@ endif
 	if exist $(W_GAMEDIR)\nh340key.dll del $(W_GAMEDIR)\nh340key.dll
 	if exist $(W_GAMEDIR)\nhdefkey.dll del $(W_GAMEDIR)\nhdefkey.dll
 	if exist $(W_GAMEDIR)\nhraykey.dll del $(W_GAMEDIR)\nhraykey.dll
-	-test -d ..\binary && rd ..\binary
 
 clean:
 	if exist initialchk del initialchk
