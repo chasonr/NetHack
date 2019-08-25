@@ -593,8 +593,10 @@ WCHAR *
 winos_ascii_to_wide_str(const unsigned char * src, WCHAR * dst, size_t dstLength)
 {
     size_t i = 0;
-    while(i < dstLength - 1 && src[i] != 0)
-        dst[i++] = cp437[src[i]];
+    while(i < dstLength - 1 && src[i] != 0) {
+        dst[i] = cp437[src[i]];
+        ++i;
+    }
     dst[i] = 0;
     return dst;
 }
