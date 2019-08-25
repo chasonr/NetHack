@@ -593,16 +593,80 @@ WCHAR *
 winos_ascii_to_wide_str(const unsigned char * src, WCHAR * dst, size_t dstLength)
 {
     size_t i = 0;
-    while(i < dstLength - 1 && src[i] != 0)
-        dst[i++] = cp437[src[i]];
+    if (SYMHANDLING(H_UNICODE)) {
+        size_t j = 0;
+        while(i < dstLength - 1 && src[j] != 0) {
+            /* TODO: Make this a generic UTF-8 to UTF-16 conversion */
+            UINT32 wch;
+            unsigned count = 0;
+            UINT32 min = 0x0000;
+
+            wch = src[j++];
+            if (wch < 0x80) {
+                count = 0;
+                min = 0x0000;
+            } else if (wch < 0xC2) {
+                count = 0;
+                wch = 0xFFFD;
+            } else if (wch < 0xE0) {
+                count = 1;
+                wch &= 0x001F;
+                min = 0x0080;
+            } else if (wch < 0xF0) {
+                count = 2;
+                wch &= 0x000F;
+                min = 0x0800;
+            } else if (wch < 0xF5) {
+                count = 3;
+                wch &= 0x0007;
+                min = 0x10000;
+            } else {
+                count = 0;
+                wch = 0xFFFD;
+            }
+            while (count != 0) {
+                unsigned char byte = src[j++];
+                if (byte < 0x80 || 0xBF < byte) {
+                    wch = 0xFFFD;
+                    break;
+                }
+                wch = (wch << 6) | (byte & 0x3F);
+                --count;
+            }
+            if (wch < min || wch > 0x10FFFF || (wch & ~0x07FF) == 0xD800) {
+                wch = 0xFFFD;
+            }
+            if (wch >= 0x10000 && i >= dstLength - 2) {
+                break;
+            }
+            i += winos_ascii_to_wide(dst + i, wch);
+        }
+    } else {
+        while(i < dstLength - 1 && src[i] != 0) {
+            dst[i] = cp437[src[i]];
+            ++i;
+        }
+    }
     dst[i] = 0;
     return dst;
 }
 
-WCHAR
-winos_ascii_to_wide(const unsigned char c)
+unsigned
+winos_ascii_to_wide(WCHAR wch[2], UINT32 c)
 {
-    return cp437[c];
+    if (SYMHANDLING(H_UNICODE)) {
+        if (c >= 0x10000) {
+            wch[0] = 0xD7C0 + (c >> 10);
+            wch[1] = 0xDC00 + (c & 0x3FF);
+            return 2;
+        } else {
+            wch[0] = (WCHAR) c;
+            return 1;
+        }
+    } else {
+        wch[0] = cp437[(unsigned char) c];
+        return 1;
+    }
 }
 
 BOOL winos_font_support_cp437(HFONT hFont)

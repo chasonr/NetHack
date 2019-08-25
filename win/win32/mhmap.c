@@ -714,8 +714,8 @@ onMSNHCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
                     (void) mapglyph(data->map[col][row], &mgch, &color,
                                     &special, col, row);
                 }
-                msg_data->buffer[index] = mgch;
-                index++;
+                char_to_utf8(msg_data->buffer + index, mgch);
+                index += strlen(msg_data->buffer + index);
             }
             if (index >= msg_data->max_size - 1)
                 break;
@@ -881,8 +881,6 @@ paintGlyph(PNHMapWindow data, int i, int j, RECT * rect)
 {
     if (data->map[i][j] >= 0) {
 
-        char ch;
-        WCHAR wch;
         int color;
         unsigned special;
         int mgch;
@@ -902,7 +900,6 @@ paintGlyph(PNHMapWindow data, int i, int j, RECT * rect)
         /* rely on NetHack core helper routine */
         (void) mapglyph(data->map[i][j], &mgch, &color,
                         &special, i, j);
-        ch = (char) mgch;
         if (((special & MG_PET) && iflags.hilite_pet)
             || ((special & (MG_DETECT | MG_BW_LAVA))
                 && iflags.use_inverse)) {
@@ -925,24 +922,27 @@ paintGlyph(PNHMapWindow data, int i, int j, RECT * rect)
         }
     #endif
         if (data->bUnicodeFont) {
-            wch = winos_ascii_to_wide(ch);
-            if (wch == 0x2591 || wch == 0x2592) {
+            WCHAR wch[2];
+            unsigned wch_len;
+            wch_len = winos_ascii_to_wide(wch, mgch);
+            if (wch[0] == 0x2591 || wch[0] == 0x2592) {
                 int level = 80;
                 HBRUSH brush = CreateSolidBrush(RGB(level, level, level));
                 FillRect(data->backBufferDC, rect, brush);
                 DeleteObject(brush);
-                level = (wch == 0x2591 ? 100 : 200);
+                level = (wch[0] == 0x2591 ? 100 : 200);
                 brush = CreateSolidBrush(RGB(level, level, level));
                 RECT smallRect = { rect->left + 1, rect->top + 1,
                                     rect->right - 1, rect->bottom - 1 };
                 FillRect(data->backBufferDC, &smallRect, brush);
                 DeleteObject(brush);
             } else {
-                DrawTextW(data->backBufferDC, &wch, 1, rect,
+                DrawTextW(data->backBufferDC, &wch, wch_len, rect,
                     DT_CENTER | DT_VCENTER | DT_NOPREFIX
                     | DT_SINGLELINE);
             }
         } else {
+            char ch = (char) mgch;
             DrawTextA(data->backBufferDC, &ch, 1, rect,
                         DT_CENTER | DT_VCENTER | DT_NOPREFIX
                             | DT_SINGLELINE);

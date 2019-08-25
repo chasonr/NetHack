@@ -2041,7 +2041,7 @@ mswin_preference_update(const char *pref)
     }
 }
 
-#define TEXT_BUFFER_SIZE 4096
+#define TEXT_BUFFER_SIZE 16384
 char *
 mswin_getmsghistory(BOOLEAN_P init)
 {
@@ -3084,6 +3084,7 @@ mswin_status_update(int idx, genericptr_t ptr, int chg, int percent, int color, 
         case BL_GOLD: {
             char buf[BUFSZ];
             char *p;
+            unsigned len;
 
             ZeroMemory(buf, sizeof(buf));
             if (iflags.invis_goldsym)
@@ -3091,13 +3092,14 @@ mswin_status_update(int idx, genericptr_t ptr, int chg, int percent, int color, 
             else
                 mapglyph(objnum_to_glyph(GOLD_PIECE),
                          &ochar, &ocolor, &ospecial, 0, 0);
-            buf[0] = ochar;
+            char_to_utf8(buf, ochar);
+            len = strlen(buf);
             p = strchr(text, ':');
             if (p) {
-                strncpy(buf + 1, p, sizeof(buf) - 2);
+                strncpy(buf + len, p, sizeof(buf) - (len + 1));
             } else {
-                buf[1] = ':';
-                strncpy(buf + 2, text, sizeof(buf) - 3);
+                buf[len] = ':';
+                strncpy(buf + len + 1, text, sizeof(buf) - (len + 2));
             }
             buf[sizeof buf - 1] = '\0';
             Sprintf(status_field->string,
