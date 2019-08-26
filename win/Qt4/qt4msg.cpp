@@ -109,14 +109,8 @@ void NetHackQtMessageWindow::PutStr(int attr, const QString& text)
 
     changed=true;
 
-    // If the line is output from the "/" command, map the first character
-    // as a symbol
-    QString text2;
-    if (text.mid(1, 3) == "   ") {
-	text2 = QChar(cp437(text.at(0).unicode())) + text.mid(1);
-    } else {
-	text2 = text;
-    }
+    // qt4bind encoded text with fromLatin1, but we need UTF-8 here
+    QString text2 = QString::fromUtf8(text.toLatin1());
 #if 0
     QListWidgetItem *item = new QListWidgetItem(text2);
 
