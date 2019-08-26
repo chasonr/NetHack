@@ -3,6 +3,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "winMS.h"
+#include "winos.h"
 #include "mhmsgwnd.h"
 #include "mhmsg.h"
 #include "mhfont.h"
@@ -607,7 +608,7 @@ onPaint(HWND hWnd)
     int FirstLine, LastLine;
     int i, y;
     HGDIOBJ oldFont;
-    TCHAR wbuf[MAXWINDOWTEXT + 2];
+    WCHAR wbuf[MAXWINDOWTEXT + 2];
     size_t wlen;
     COLORREF OldBg, OldFg;
 
@@ -646,35 +647,35 @@ onPaint(HWND hWnd)
             /* convert to UNICODE stripping newline */
             strcpy(tmptext, data->window_text[i].text);
             strip_newline(tmptext);
-            NH_A2W(tmptext, wbuf, sizeof(wbuf));
-            wlen = _tcslen(wbuf);
+            winos_ascii_to_wide_str(tmptext, wbuf, sizeof(wbuf));
+            wlen = wcslen(wbuf);
             setMsgTextColor(hdc, i < (MSG_LINES - data->lines_last_turn));
 #ifdef MSG_WRAP_TEXT
             /* Find out how large the bounding rectangle of the text is */
-            DrawText(hdc, wbuf, wlen, &draw_rt,
-                     DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+            DrawTextW(hdc, wbuf, wlen, &draw_rt,
+                      DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
             /* move that rectangle up, so that the bottom remains at the same
              * height */
             draw_rt.top = y - (draw_rt.bottom - draw_rt.top);
             draw_rt.bottom = y;
 
             /* Now really draw it */
-            DrawText(hdc, wbuf, wlen, &draw_rt, DT_NOPREFIX | DT_WORDBREAK);
+            DrawTextW(hdc, wbuf, wlen, &draw_rt, DT_NOPREFIX | DT_WORDBREAK);
 
             /* Find out the cursor (caret) position */
             if (i == MSG_LINES - 1) {
                 int nnum, numfit;
                 SIZE size;
-                TCHAR *nbuf;
+                WCHAR *nbuf;
                 int nlen;
 
                 nbuf = wbuf;
                 nlen = wlen;
                 while (nlen) {
                     /* Get the number of characters that fit on the line */
-                    GetTextExtentExPoint(hdc, nbuf, nlen,
-                                         draw_rt.right - draw_rt.left,
-                                         &numfit, NULL, &size);
+                    GetTextExtentExPointW(hdc, nbuf, nlen,
+                                          draw_rt.right - draw_rt.left,
+                                          &numfit, NULL, &size);
                     /* Search back to a space */
                     nnum = numfit;
                     if (numfit < nlen) {
@@ -701,7 +702,7 @@ onPaint(HWND hWnd)
                             draw_rt.bottom - data->yChar);
             }
 #else
-            DrawText(hdc, wbuf, wlen, &draw_rt, DT_NOPREFIX);
+            DrawTextW(hdc, wbuf, wlen, &draw_rt, DT_NOPREFIX);
             SetCaretPos(draw_rt.left + size.cx, draw_rt.bottom - data->yChar);
 #endif
             SelectObject(hdc, oldFont);
