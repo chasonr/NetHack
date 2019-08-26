@@ -1598,23 +1598,22 @@ check_font_widths()
     boolean isTrueType = (tm.tmPitchAndFamily & TMPF_TRUETYPE) != 0;
 
     /* determine which glyphs are used */
-    boolean used[256];
-    memset(used, 0, sizeof(used));
+    UINT wcUsed[2*SYM_MAX];
     for (int i = 0; i < SYM_MAX; i++) {
-        used[l_syms[i]] = TRUE;
-        used[r_syms[i]] = TRUE;
+        wcUsed[i] = l_syms[i];
+        wcUsed[i+SYM_MAX] = r_syms[i];
     }
 
-    int wcUsedCount = 0;
-    wchar_t wcUsed[256];
-    for (int i = 0; i < sizeof(used); i++)
-        if (used[i])
-            wcUsed[wcUsedCount++] = cp437[i];
+    if (!SYMHANDLING(H_UNICODE)) {
+        for (int i = 0; i < SIZE(wcUsed); i++) {
+            wcUsed[i] = cp437[(unsigned char) wcUsed[i]];
+        }
+    }
 
     /* measure the set of used glyphs to ensure they fit */
     boolean all_glyphs_fit = TRUE;
 
-    for (int i = 0; i < wcUsedCount; i++) {
+    for (int i = 0; i < SIZE(wcUsed); i++) {
         int width;
         if (isTrueType) {
             ABC abc;
