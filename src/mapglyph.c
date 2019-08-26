@@ -283,7 +283,12 @@ const char *str;
                         else
                             break;
                     so = mapglyph(gv, &ch, &oc, &os, 0, 0);
-                    *put++ = showsyms[so];
+                    if (SYMHANDLING(H_UNICODE)) {
+                        char_to_utf8(put, ch);
+                        put += strlen(put);
+                    } else {
+                        *put++ = showsyms[so];
+                    }
                     /* 'str' is ready for the next loop iteration and '*str'
                        should not be copied at the end of this iteration */
                     continue;
