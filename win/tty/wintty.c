@@ -2257,7 +2257,7 @@ struct WinDesc *cw;
                  ) {
                 /* message recall for msg_window:full/combination/reverse
                    might have output from '/' in it (see redotoplin()) */
-                if (linestart && (*cp & 0x80) != 0) {
+                if (linestart && (*cp & 0x80) != 0 && !SYMHANDLING(H_UNICODE)) {
                     g_putch(*cp);
                     end_glyphout();
                     linestart = FALSE;
@@ -3270,7 +3270,12 @@ int in_ch;
 
     HUPSKIP();
 #if defined(ASCIIGRAPH) && !defined(NO_TERMS)
-    if (SYMHANDLING(H_IBM)
+    if (SYMHANDLING(H_UNICODE)) {
+        char utf8[5];
+
+        char_to_utf8(utf8, in_ch);
+        (void) fputs(utf8, stdout);
+    } else if (SYMHANDLING(H_IBM)
         /* for DECgraphics, lower-case letters with high bit set mean
            switch character set and render with high bit clear;
            user might want 8-bits for other characters */
