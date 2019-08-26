@@ -311,6 +311,7 @@ onWMPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
             LONG left = rt.left;
             LONG cy = 0;
             int vlen;
+            int wvlen;
 
             mswin_status_line * status_line = &data->status_lines->lines[line];
 
@@ -351,6 +352,7 @@ onWMPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
                 BOOL useUnicode = fnt->supportsUnicode;
 
                 winos_ascii_to_wide_str(str, wbuf, SIZE(wbuf));
+                wvlen = wcslen(wbuf);
 
                 nFg = (clr == NO_COLOR ? status_fg_color
                     : ((clr >= 0 && clr < CLR_MAX) ? nhcolor_to_RGB(clr)
@@ -391,10 +393,10 @@ onWMPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
                     if (useUnicode) {
                         /* get bounding rectangle */
-                        GetTextExtentPoint32W(hdc, wbuf, vlen, &sz);
+                        GetTextExtentPoint32W(hdc, wbuf, wvlen, &sz);
 
                         /* first draw title normally */
-                        DrawTextW(hdc, wbuf, vlen, &rt, DT_LEFT);
+                        DrawTextW(hdc, wbuf, wvlen, &rt, DT_LEFT);
                     }
                     else {
                         /* get bounding rectangle */
@@ -420,7 +422,7 @@ onWMPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
                         SetTextColor(hdc, nBg);
 
                         if (useUnicode)
-                            DrawTextW(hdc, wbuf, vlen, &barrect, DT_LEFT);
+                            DrawTextW(hdc, wbuf, wvlen, &barrect, DT_LEFT);
                         else
                             DrawTextA(hdc, str, vlen, &barrect, DT_LEFT);
                     }
@@ -441,10 +443,10 @@ onWMPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
                     if (useUnicode) {
                         /* get bounding rectangle */
-                        GetTextExtentPoint32W(hdc, wbuf, vlen, &sz);
+                        GetTextExtentPoint32W(hdc, wbuf, wvlen, &sz);
 
                         /* draw */
-                        DrawTextW(hdc, wbuf, vlen, &rt, DT_LEFT);
+                        DrawTextW(hdc, wbuf, wvlen, &rt, DT_LEFT);
                     }
                     else {
                         /* get bounding rectangle */

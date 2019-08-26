@@ -3083,27 +3083,9 @@ mswin_status_update(int idx, genericptr_t ptr, int chg, int percent, int color, 
         } break;
         case BL_GOLD: {
             char buf[BUFSZ];
-            char *p;
-            unsigned len;
-
-            ZeroMemory(buf, sizeof(buf));
-            if (iflags.invis_goldsym)
-                ochar = GOLD_SYM;
-            else
-                mapglyph(objnum_to_glyph(GOLD_PIECE),
-                         &ochar, &ocolor, &ospecial, 0, 0);
-            char_to_utf8(buf, ochar);
-            len = strlen(buf);
-            p = strchr(text, ':');
-            if (p) {
-                strncpy(buf + len, p, sizeof(buf) - (len + 1));
-            } else {
-                buf[len] = ':';
-                strncpy(buf + len + 1, text, sizeof(buf) - (len + 2));
-            }
-            buf[sizeof buf - 1] = '\0';
-            Sprintf(status_field->string,
-                    status_field->format ? status_field->format : "%s", buf);
+            Sprintf(buf,
+                    status_field->format ? status_field->format : "%s", text);
+            decode_mixed(status_field->string, buf);
             nhassert(status_string->str == status_field->string);
         } break;
         default: {
