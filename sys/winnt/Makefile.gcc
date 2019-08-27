@@ -85,13 +85,17 @@ TARGET_CPU=x86
 #    include curses port support alongside TTY support in your
 #    NetHack.exe binary. 
 #
-#    You'll have to set PDCURSES_H to the correct location of the 
-#    PDCurses header (.h) files and PDCURSES_C to the location
-#    of your PDCurses C files which must already be resident on 
-#    your machine.
+#    You'll have to set PDCURSES_TOP to the correct location of the 
+#    PDCurses source tree, which must already be resident on your
+#    machine.
 #
-#ADD_CURSES=Y
-#PDCURSES_TOP=../../pdcurses
+ADD_CURSES=Y
+PDCURSES_TOP=../../pdcurses
+# If you want the NetHackW binary to support Curses, enable ADD_WCURSES and
+# use the win32a fork of PDCurses. See:
+# https://www.projectpluto.com/win32a.htm
+# https://github.com/Bill-Gray/PDCurses/
+#ADD_WCURSES=Y
 
 #4b Qt
 #
@@ -460,14 +464,22 @@ DATABASE = $(DAT)/data.base
 ifeq "$(ADD_CURSES)" "Y"
 CURSESDEF=-D"CURSES_GRAPHICS" -D"CURSES_BRIEF_INCLUDE" -D"PDC_WIDE"
 else
-CURSDEF=
-CURSESLIB=
+CURSESDEF=
 endif
 
 ifneq  "$(ADD_CURSES)" "Y"
 INCLDIR=-I../include -I../sys/winnt
 else
 INCLDIR=-I../include -I../sys/winnt
+endif
+
+ifeq "$(ADD_WCURSES)" "Y"
+PDCWINGUI = $(PDCURSES_TOP)/wingui
+WPDCOBJS = $(O)pdcclip_w.o $(O)pdcdisp_w.o $(O)pdcgetsc_w.o $(O)pdckbd_w.o \
+           $(O)pdcscrn_w.o $(O)pdcsetsc_w.o $(O)pdcutil_w.o
+WPDCLIB = $(O)wpdcurses.a
+else
+WPDCLIB = $(PDCLIB)
 endif
 
 #==========================================
@@ -824,6 +836,24 @@ $(O)conres.o: $(MSWSYS)/console.rc $(MSWSYS)/NetHack.ico
 	$(rc) -o$@ --include-dir $(MSWSYS) -i $(MSWSYS)/console.rc
 
 #==========================================
+# Rules for PDCurses on Win32
+#==========================================
+$(O)pdcclip_w.o : $(PDCWINGUI)/pdcclip.c
+	$(cc) $(PDCINCL) $(CFLAGS)  -o$@  $<
+$(O)pdcdisp_w.o : $(PDCWINGUI)/pdcdisp.c
+	$(cc) $(PDCINCL) $(CFLAGS)  -o$@  $<
+$(O)pdcgetsc_w.o : $(PDCWINGUI)/pdcgetsc.c
+	$(cc) $(PDCINCL) $(CFLAGS)  -o$@  $<
+$(O)pdckbd_w.o : $(PDCWINGUI)/pdckbd.c
+	$(cc) $(PDCINCL) $(CFLAGS)  -o$@  $<
+$(O)pdcscrn_w.o : $(PDCWINGUI)/pdcscrn.c
+	$(cc) $(PDCINCL) $(CFLAGS)  -o$@  $<
+$(O)pdcsetsc_w.o : $(PDCWINGUI)/pdcsetsc.c
+	$(cc) $(PDCINCL) $(CFLAGS)  -o$@  $<
+$(O)pdcutil_w.o : $(PDCWINGUI)/pdcutil.c
+	$(cc) $(PDCINCL) $(CFLAGS)  -o$@  $<
+
+#==========================================
 #  The game targets.
 #==========================================
 
@@ -848,11 +878,11 @@ $(GAMEDIR)/NetHack.exe : gamedir.tag $(PDCLIB) $(O)tile.o $(O)nttty.o $(O)guistu
 #    objs: $(GAMEOBJ) $(GUIOBJ) $(O)tile.o $(O)ttystub.o
 
 ifneq "$(SKIP_NETHACKW)" "Y"
-$(GAMEDIR)/NetHackW.exe : gamedir.tag $(PDCLIB) $(O)tile.o $(O)ttystub.o \
+$(GAMEDIR)/NetHackW.exe : gamedir.tag $(WPDCLIB) $(O)tile.o $(O)ttystub.o \
 			$(ALLOBJ) $(TTYOBJ) $(GUIOBJ) $(O)winres.o $(KEYDLLS)
 	@echo Linking $@...
 	$(link) $(lflags) -mwindows -o$@ $(ALLOBJ) $(GUIOBJ) $(O)tile.o $(O)ttystub.o \
-		$(O)winres.o $(PDCLIB) $(guilibs) -static -lstdc++
+		$(O)winres.o $(WPDCLIB) $(guilibs) -static -lstdc++
 	$(subst /,\,@if exist install.tag del install.tag)
 endif
 
@@ -1226,6 +1256,9 @@ $(O)til2bm32.o: $(WSHR)/til2bm32.c $(HACK_H) $(TILE_H) $(MSWSYS)/win32api.h
 $(O)pdcurses.a : $(PDCLIBOBJS) $(PDCOBJS)
 	ar rcs $@ $(PDCLIBOBJS) $(PDCOBJS)
 
+$(O)wpdcurses.a : $(PDCLIBOBJS) $(WPDCOBJS)
+	ar rcs $@ $(PDCLIBOBJS) $(WPDCOBJS)
+
 #==========================================
 # Housekeeping
 #==========================================
@@ -1331,7 +1364,8 @@ ifneq "$(W_INCL)" ""
 endif
 ifeq "$(ADD_CURSES)" "Y"
 ifneq "$(W_OBJ)" ""
-	if exist $(W_OBJ)\pdcurses.lib     del $(W_OBJ)\pdcurses.lib
+	if exist $(W_OBJ)\pdcurses.a       del $(W_OBJ)\pdcurses.a
+	if exist $(W_OBJ)\wpdcurses.a      del $(W_OBJ)\wpdcurses.a
 endif
 endif
 ifneq "$(W_QT4)" ""
