@@ -989,39 +989,65 @@ qt4xcmd.o: ../win/Qt4/qt4xcmd.cpp $(HACK_H) ../include/func_tab.h \
 qt4yndlg.o: ../win/Qt4/qt4yndlg.cpp $(HACK_H) ../win/Qt4/qt4yndlg.h \
 		qt4yndlg.moc ../win/Qt4/qt4str.h
 	$(CXX) $(CXXFLAGS) -c -o $@ ../win/Qt4/qt4yndlg.cpp
-sdl2font_mac.o: ../win/sdl2/sdl2font_mac.c $(HACK_H)
+sdl2font_mac.o: ../win/sdl2/sdl2font_mac.c $(HACK_H) \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2font_mac.c
-sdl2font_pango.o: ../win/sdl2/sdl2font_pango.c $(HACK_H)
+sdl2font_pango.o: ../win/sdl2/sdl2font_pango.c $(HACK_H) \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2font_pango.c
-sdl2getlin.o: ../win/sdl2/sdl2getlin.c $(HACK_H)
+sdl2getlin.o: ../win/sdl2/sdl2getlin.c $(HACK_H) \
+		../include/func_tab.h ../win/sdl2/sdl2.h ../win/sdl2/sdl2getlin.h \
+		../win/sdl2/sdl2window.h ../win/sdl2/sdl2font.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2getlin.c
-sdl2map.o: ../win/sdl2/sdl2map.c $(HACK_H)
+sdl2map.o: ../win/sdl2/sdl2map.c $(HACK_H) \
+		../include/tileset.h ../win/sdl2/sdl2.h ../win/sdl2/sdl2window.h \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2map.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2map.c
-sdl2menu.o: ../win/sdl2/sdl2menu.c $(HACK_H)
+sdl2menu.o: ../win/sdl2/sdl2menu.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2map.h ../win/sdl2/sdl2window.h \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2menu.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2menu.c
-sdl2message.o: ../win/sdl2/sdl2message.c $(HACK_H)
+sdl2message.o: ../win/sdl2/sdl2message.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2message.h ../win/sdl2/sdl2window.h \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2map.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2message.c
-sdl2plsel.o: ../win/sdl2/sdl2plsel.c $(HACK_H)
+sdl2plsel.o: ../win/sdl2/sdl2plsel.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2plsel.h ../win/sdl2/sdl2menu.h \
+		../win/sdl2/sdl2window.h ../win/sdl2/sdl2font.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2plsel.c
-sdl2posbar.o: ../win/sdl2/sdl2posbar.c $(HACK_H)
+sdl2posbar.o: ../win/sdl2/sdl2posbar.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2posbar.h ../win/sdl2/sdl2window.h \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2map.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2posbar.c
-sdl2status.o: ../win/sdl2/sdl2status.c $(HACK_H)
+sdl2status.o: ../win/sdl2/sdl2status.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2status.h ../win/sdl2/sdl2window.h \
+		../win/sdl2/sdl2font.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2status.c
-sdl2text.o: ../win/sdl2/sdl2text.c $(HACK_H)
+sdl2text.o: ../win/sdl2/sdl2text.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2text.h ../win/sdl2/sdl2window.h \
+		../win/sdl2/sdl2font.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2text.c
-sdl2unicode.o: ../win/sdl2/sdl2unicode.c $(HACK_H)
+sdl2unicode.o: ../win/sdl2/sdl2unicode.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2unicode.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2unicode.c
-sdl2window.o: ../win/sdl2/sdl2window.c $(HACK_H)
+sdl2window.o: ../win/sdl2/sdl2window.c $(HACK_H) \
+		../include/dlb.h ../win/sdl2/sdl2.h ../win/sdl2/sdl2font.h \
+		../win/sdl2/sdl2window.h ../win/sdl2/sdl2getlin.h \
+		../win/sdl2/sdl2map.h ../win/sdl2/sdl2menu.h \
+		../win/sdl2/sdl2message.h ../win/sdl2/sdl2plsel.h \
+		../win/sdl2/sdl2posbar.h ../win/sdl2/sdl2status.h \
+		../win/sdl2/sdl2text.h ../win/sdl2/sdl2unicode.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2window.c
-tileset.o: ../win/share/tileset.c $(HACK_H)
+tileset.o: ../win/share/tileset.c $(HACK_H) ../include/tileset.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/share/tileset.c
-bmptiles.o: ../win/share/bmptiles.c $(HACK_H)
+bmptiles.o: ../win/share/bmptiles.c $(CONFIG_H) ../include/tileset.h \
+		../include/integer.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/share/bmptiles.c
-giftiles.o: ../win/share/giftiles.c $(HACK_H)
+giftiles.o: ../win/share/giftiles.c $(CONFIG_H) ../include/tileset.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/share/giftiles.c
-pngtiles.o: ../win/share/pngtiles.c $(HACK_H)
+pngtiles.o: ../win/share/pngtiles.c $(CONFIG_H) ../include/tileset.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/share/pngtiles.c
-xpmtiles.o: ../win/share/xpmtiles.c $(HACK_H)
+xpmtiles.o: ../win/share/xpmtiles.c $(CONFIG_H) ../include/tileset.h
 	$(CC) $(CFLAGS) -c -o $@ ../win/share/xpmtiles.c
 wc_chainin.o: ../win/chain/wc_chainin.c $(HACK_H)
 	$(CC) $(CFLAGS) -c -o $@ ../win/chain/wc_chainin.c
