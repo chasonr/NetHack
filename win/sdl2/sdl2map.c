@@ -934,7 +934,7 @@ sdl2_map_update_cursor(struct SDL2Window *window,
     struct MapPrivate *data = (struct MapPrivate *) window->data;
 
     if (index == BL_HP) {
-        data->cursor_color = color;
+        data->cursor_color = color & 0x0F;
     }
 }
 
