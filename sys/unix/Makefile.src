@@ -242,6 +242,22 @@ WINQT4OBJ = qt4bind.o qt4click.o qt4clust.o qt4delay.o qt4glyph.o qt4icon.o \
 	qt4plsel.o qt4rip.o qt4set.o qt4stat.o qt4str.o qt4streq.o qt4svsel.o \
 	qt4win.o qt4xcmd.o qt4yndlg.o tile.o
 #
+# Files for an SDL2 port
+#
+WINSDL2SRC = ../win/sdl2/sdl2font_mac.c ../win/sdl2/sdl2font_pango.c \
+	../win/sdl2/sdl2getlin.c ../win/sdl2/sdl2map.c ../win/sdl2/sdl2menu.c \
+	../win/sdl2/sdl2message.c ../win/sdl2/sdl2plsel.c \
+	../win/sdl2/sdl2posbar.c ../win/sdl2/sdl2status.c \
+	../win/sdl2/sdl2text.c ../win/sdl2/sdl2unicode.c ../win/sdl2/sdl2window.c \
+	../win/share/bmptiles.c ../win/share/giftiles.c ../win/share/pngtiles.c \
+	../win/share/xpmtiles.c \
+	../win/share/tileset.c \
+	tile.c
+WINSDL2OBJ = sdl2getlin.o sdl2map.o sdl2menu.o sdl2message.o sdl2plsel.o \
+	sdl2posbar.o sdl2status.o sdl2text.o sdl2unicode.o sdl2window.o \
+	bmptiles.o giftiles.o pngtiles.o xpmtiles.o tileset.o \
+	$(SDL2FONT) $(WINTILEOBJ)
+#
 # Files for a Gnome port
 #
 WINGNOMESRC = ../win/gnome/gnaskstr.c ../win/gnome/gnbind.c \
@@ -306,6 +322,9 @@ WINQT4LIB = `pkg-config QtGui --libs`
 #
 # libraries for Qt 5 (use with WINQT4SRC and WINQT4OBJ)
 WINQT5LIB = `pkg-config Qt5Gui Qt5Widgets Qt5Multimedia --libs`
+#
+# libraries for SDL2
+WINSDL2LIB =
 #
 # libraries for KDE (with Qt)
 WINKDELIB = -lkdecore -lkdeui -lXext
@@ -970,6 +989,40 @@ qt4xcmd.o: ../win/Qt4/qt4xcmd.cpp $(HACK_H) ../include/func_tab.h \
 qt4yndlg.o: ../win/Qt4/qt4yndlg.cpp $(HACK_H) ../win/Qt4/qt4yndlg.h \
 		qt4yndlg.moc ../win/Qt4/qt4str.h
 	$(CXX) $(CXXFLAGS) -c -o $@ ../win/Qt4/qt4yndlg.cpp
+sdl2font_mac.o: ../win/sdl2/sdl2font_mac.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2font_mac.c
+sdl2font_pango.o: ../win/sdl2/sdl2font_pango.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2font_pango.c
+sdl2getlin.o: ../win/sdl2/sdl2getlin.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2getlin.c
+sdl2map.o: ../win/sdl2/sdl2map.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2map.c
+sdl2menu.o: ../win/sdl2/sdl2menu.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2menu.c
+sdl2message.o: ../win/sdl2/sdl2message.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2message.c
+sdl2plsel.o: ../win/sdl2/sdl2plsel.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2plsel.c
+sdl2posbar.o: ../win/sdl2/sdl2posbar.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2posbar.c
+sdl2status.o: ../win/sdl2/sdl2status.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2status.c
+sdl2text.o: ../win/sdl2/sdl2text.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2text.c
+sdl2unicode.o: ../win/sdl2/sdl2unicode.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2unicode.c
+sdl2window.o: ../win/sdl2/sdl2window.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/sdl2/sdl2window.c
+tileset.o: ../win/share/tileset.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/share/tileset.c
+bmptiles.o: ../win/share/bmptiles.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/share/bmptiles.c
+giftiles.o: ../win/share/giftiles.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/share/giftiles.c
+pngtiles.o: ../win/share/pngtiles.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/share/pngtiles.c
+xpmtiles.o: ../win/share/xpmtiles.c $(HACK_H)
+	$(CC) $(CFLAGS) -c -o $@ ../win/share/xpmtiles.c
 wc_chainin.o: ../win/chain/wc_chainin.c $(HACK_H)
 	$(CC) $(CFLAGS) -c -o $@ ../win/chain/wc_chainin.c
 wc_chainout.o: ../win/chain/wc_chainout.c $(HACK_H)
