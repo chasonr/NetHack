@@ -39,6 +39,7 @@
 #       4. Do you want to include any optional interfaces in the port?
 #          4a) curses
 #          4b) Qt
+#          4c) SDL2
 #-----------------------------------------------------------------------------------------
 #=========================================================================================
 
@@ -114,6 +115,10 @@ PDCURSES_TOP=../../pdcurses
 #QT4_DIRECTORY = c:/Qt/4.8.6
 #HAVE_QT5 = N
 
+# 4c SDL2
+#WANT_WIN_SDL2 = Y
+#SDL2_DIRECTORY = $(USERPROFILE)/SDL2-2.0.3
+
 #
 # Note that additional GUI interfaces may require external libraries.
 # Qt is placed where the official installer places it.
@@ -170,6 +175,7 @@ MSWIN   =../win/win32
 WCURSES =../win/curses
 WSHR    =../win/share
 QT4     =../win/Qt4
+SDL2    =../win/sdl2
 
 #
 #  Object directory.
@@ -189,6 +195,9 @@ BCRYPT=-lbcrypt
 WINPFLAG   = -DTILES -DMSWIN_GRAPHICS -DWIN32CON -D_WIN32_IE=0x0400 -D_WIN32_WINNT=0x0501
 ifeq "$(WANT_WIN_QT4)" "Y"
     WINPFLAG += -DQT_GRAPHICS -DPIXMAPDIR='"."'
+endif
+ifeq "$(WANT_WIN_SDL2)" "Y"
+    WINPFLAG += -DSDL2_GRAPHICS -DPIXMAPDIR='"."' -DPOSITIONBAR
 endif
 # To store all the level files,
 # help files, etc. in a single library file.
@@ -342,7 +351,9 @@ ifneq "$(SKIP_NETHACKW)" "Y"
 GUIOBJ  = $(O)mhaskyn.o $(O)mhdlg.o \
 	$(O)mhfont.o $(O)mhinput.o $(O)mhmain.o $(O)mhmap.o \
 	$(O)mhmenu.o $(O)mhmsgwnd.o $(O)mhrip.o $(O)mhsplash.o \
-	$(O)mhstatus.o $(O)mhtext.o $(O)mswproc.o $(O)winhack.o
+	$(O)mhstatus.o $(O)mhtext.o $(O)mswproc.o $(O)winhack.o \
+	$(O)tileset.o $(O)bmptiles.o $(O)giftiles.o $(O)pngtiles.o \
+	$(O)xpmtiles.o
 
 endif
 
@@ -352,6 +363,12 @@ ifeq "$(WANT_WIN_QT4)" "Y"
 	$(O)qt4main.o $(O)qt4map.o $(O)qt4menu.o $(O)qt4msg.o $(O)qt4plsel.o \
 	$(O)qt4rip.o $(O)qt4set.o $(O)qt4stat.o $(O)qt4str.o $(O)qt4streq.o \
 	$(O)qt4svsel.o $(O)qt4win.o $(O)qt4xcmd.o $(O)qt4yndlg.o
+endif
+
+ifeq "$(WANT_WIN_SDL2)" "Y"
+GUIOBJ += $(O)sdl2font_windows.o $(O)sdl2getlin.o $(O)sdl2map.o \
+	$(O)sdl2menu.o $(O)sdl2message.o $(O)sdl2plsel.o $(O)sdl2posbar.o \
+	$(O)sdl2status.o $(O)sdl2text.o $(O)sdl2unicode.o $(O)sdl2window.o
 endif
 
 ifneq "$(SKIP_NETHACKW)" "Y"
@@ -370,6 +387,13 @@ ifeq "$(WANT_WIN_QT4)" "Y"
 	$(QT4)/qt4rip.h $(QT4)/qt4set.h $(QT4)/qt4stat.h $(QT4)/qt4str.h \
 	$(QT4)/qt4streq.h $(QT4)/qt4svsel.h $(QT4)/qt4win.h $(QT4)/qt4xcmd.h \
 	$(QT4)/qt4yndlg.h
+endif
+
+ifeq "$(WANT_WIN_SDL2)" "Y"
+GUIHDR += $(SDL2)/sdl2.h $(SDL2)/sdl2font.h $(SDL2)/sdl2getlin.h \
+	$(SDL2)/sdl2map.h $(SDL2)/sdl2menu.h $(SDL2)/sdl2message.h \
+	$(SDL2)/sdl2plsel.h $(SDL2)/sdl2posbar.h $(SDL2)/sdl2status.h \
+	$(SDL2)/sdl2text.h $(SDL2)/sdl2unicode.h $(SDL2)/sdl2window.h
 endif
 
 COMCTRL = comctl32.lib
@@ -490,15 +514,16 @@ endif
 #==========================================
 
 ifeq "$(TARGET_CPU)" "x64"
-cc     = x86_64-w64-mingw32-gcc.exe
+PREFIX = x86_64-w64-mingw32
 else
-cc     = i686-w64-mingw32-gcc.exe
+PREFIX = i686-w64-mingw32
 endif
-cxx    = g++
+cc     = $(PREFIX)-gcc
+cxx    = $(PREFIX)-g++
 rc     = windres
 link   = $(cc)
 ifeq "$(WANT_WIN_QT4)" "Y"
-    link = g++
+    link = $(cxx)
 endif
 
 cflags = -mms-bitfields $(INCLDIR)
@@ -529,6 +554,10 @@ ifeq "$(WANT_WIN_QT4)" "Y"
 	guilibs += $(QT4_DIRECTORY)/lib/libQtGui4.a
 	conlibs += $(QT4_DIRECTORY)/lib/libQtCore4.a
     endif
+endif
+ifeq "$(WANT_WIN_SDL2)" "Y"
+    guilibs += $(SDL2_DIRECTORY)/$(PREFIX)/lib/libSDL2.a
+    guilibs += -lwinmm -limm32 -lole32 -loleaut32 -lversion
 endif
 
 #==========================================
@@ -644,6 +673,13 @@ $(OBJ)/%.o : $(MSWIN)/%.c
 
 $(OBJ)/%.o : $(WCURSES)/%.c
 	$(cc) $(PDCINCL) $(CFLAGS)  -o$@  $<
+
+#==========================================
+# Rules for files in win\sdl2
+#==========================================
+
+$(OBJ)/%.o : $(SDL2)/%.c
+	$(cc) -I$(SDL2_DIRECTORY)/include $(CFLAGS) -o$@  $<
 
 #==========================================
 # Rules for files in PDCurses
@@ -1540,6 +1576,20 @@ $(OBJ)/qt4xcmd.o : $(QT4)/qt4xcmd.cpp $(QT4)/qt4xcmd.moc
 $(OBJ)/qt4yndlg.o : $(QT4)/qt4yndlg.cpp $(QT4)/qt4yndlg.moc
 endif
 
+ifeq "$(WANT_WIN_SDL2)" "Y"
+$(OBJ)/sdl2font_windows.o : $(SDL2)/sdl2font_windows.c
+$(OBJ)/sdl2getlin.o : $(SDL2)/sdl2getlin.c
+$(OBJ)/sdl2map.o : $(SDL2)/sdl2map.c
+$(OBJ)/sdl2menu.o : $(SDL2)/sdl2menu.c
+$(OBJ)/sdl2message.o : $(SDL2)/sdl2message.c
+$(OBJ)/sdl2plsel.o : $(SDL2)/sdl2plsel.c
+$(OBJ)/sdl2posbar.o : $(SDL2)/sdl2posbar.c
+$(OBJ)/sdl2status.o : $(SDL2)/sdl2status.c
+$(OBJ)/sdl2text.o : $(SDL2)/sdl2text.c
+$(OBJ)/sdl2unicode.o : $(SDL2)/sdl2unicode.c
+$(OBJ)/sdl2window.o : $(SDL2)/sdl2window.c
+endif
+
 #
 # The rest are stolen from sys/unix/Makefile.src,
 # with the following changes:
@@ -1784,5 +1834,11 @@ $(O)worm.o: worm.c $(HACK_H) $(INCL)/lev.h
 $(O)worn.o: worn.c $(HACK_H)
 $(O)write.o: write.c $(HACK_H)
 $(O)zap.o: zap.c $(HACK_H)
+$(O)tileset.o: $(WSHR)/tileset.c $(HACK_H) $(MSWIN)/winMS.h $(MSWIN)/resource.h
+	$(cc) $(CFLAGS) -I$(MSWIN) -c $< -o $@
+$(O)bmptiles.o: $(WSHR)/bmptiles.c
+$(O)giftiles.o: $(WSHR)/giftiles.c
+$(O)pngtiles.o: $(WSHR)/pngtiles.c
+$(O)xpmtiles.o: $(WSHR)/xpmtiles.c
 
 # end of file
