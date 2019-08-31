@@ -107,7 +107,7 @@ PDCURSES_TOP=../../pdcurses
 # Earlier versions of Qt are not compatible with Windows
 # For Qt 5, use:
 #
-#QT4_DIRECTORY = c:/Qt/Qt5.9.2/5.9.2/mingw53_32
+#QT4_DIRECTORY = C:/qt/Qt5.13.0/5.13.0/mingw73_32
 #HAVE_QT5 = Y
 
 # For Qt 4, comment out the above two lines and use:
@@ -116,8 +116,11 @@ PDCURSES_TOP=../../pdcurses
 #HAVE_QT5 = N
 
 # 4c SDL2
+# The directory assumes that the SDL2 development tarball is unpacked under
+# your home directory; this is available at
+# https://www.libsdl.org/release/SDL2-devel-2.0.10-mingw.tar.gz
 #WANT_WIN_SDL2 = Y
-#SDL2_DIRECTORY = $(USERPROFILE)/SDL2-2.0.3
+#SDL2_DIRECTORY = $(USERPROFILE)/SDL2-2.0.10
 
 #
 # Note that additional GUI interfaces may require external libraries.
@@ -557,7 +560,7 @@ ifeq "$(WANT_WIN_QT4)" "Y"
 endif
 ifeq "$(WANT_WIN_SDL2)" "Y"
     guilibs += $(SDL2_DIRECTORY)/$(PREFIX)/lib/libSDL2.a
-    guilibs += -lwinmm -limm32 -lole32 -loleaut32 -lversion
+    guilibs += -lsetupapi -lwinmm -limm32 -lole32 -loleaut32 -lversion
 endif
 
 #==========================================
@@ -679,7 +682,7 @@ $(OBJ)/%.o : $(WCURSES)/%.c
 #==========================================
 
 $(OBJ)/%.o : $(SDL2)/%.c
-	$(cc) -I$(SDL2_DIRECTORY)/include $(CFLAGS) -o$@  $<
+	$(cc) -I$(SDL2_DIRECTORY)/$(PREFIX)/include/SDL2 $(CFLAGS) -o$@  $<
 
 #==========================================
 # Rules for files in PDCurses
