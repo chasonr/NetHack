@@ -165,7 +165,7 @@ clear_screen()
 #endif
 #ifdef SCREEN_VESA
     } else if (iflags.usevesa) {
-        vesa_clear_screen(BACKGROUND_VGA_COLOR);
+        vesa_clear_screen(BACKGROUND_VESA_COLOR);
 #endif
     }
 }
@@ -571,8 +571,16 @@ const char *s;
     }
 }
 
-void xputc(ch) /* write out character (and attribute) */
+void
+xputc(ch) /* write out character (and attribute) */
 char ch;
+{
+    g_putch((unsigned char)ch);
+}
+
+void
+g_putch(ch)
+int ch;
 {
     int i;
     char attribute;
@@ -975,9 +983,11 @@ char *sopt;
          * Auto-detect Priorities (arbitrary for now):
          *	VESA, VGA
          */
-        if (iflags.hasvesa) iflags.usevesa = 1;
-        else if (iflags.hasvga) {
+        if (iflags.hasvesa)
+            iflags.usevesa = 1;
+        else if (iflags.hasvga)
             iflags.usevga = 1;
+        if (iflags.hasvesa || iflags.hasvga) {
             /* VGA depends on BIOS to enable function keys*/
             iflags.BIOS = 1;
             iflags.rawio = 1;

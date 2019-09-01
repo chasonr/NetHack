@@ -22,7 +22,7 @@
 #endif
 
 #ifdef SCREEN_DJGPPFAST
-/*# define MONO_CHECK 		/* djgpp should be able to do check  */
+/*# define MONO_CHECK*/ 		/* djgpp should be able to do check  */
 #endif
 
 /*
@@ -66,14 +66,14 @@
  * VGA Specific Stuff
  */
 #ifdef SCREEN_VGA
-/* #define HW_PANNING		/* Hardware panning enabled */
+/* #define HW_PANNING*/		/* Hardware panning enabled */
 #define USHORT unsigned short
 #define MODE640x480 0x0012 /* Switch to VGA 640 x 480 Graphics mode */
 #define MODETEXT 0x0003    /* Switch to Text mode 3 */
 
 #ifdef HW_PANNING
 #define PIXELINC 16 /* How much to increment by when panning */
-/*#define PIXELINC 1	/* How much to increment by when panning */
+/*#define PIXELINC 1*/	/* How much to increment by when panning */
 #define SCREENBYTES 128
 #define CharRows 30
 #define VERT_RETRACE                          \
@@ -181,6 +181,10 @@ struct overview_planar_cell_struct {
 #define ATTRIB_VGA_INTENSE 14      /* Intense White 94/06/07 palette chg*/
 #endif                             /*SCREEN_VGA || SCREEN_8514*/
 
+#if defined(SCREEN_VESA)
+#define BACKGROUND_VESA_COLOR 240
+#endif                             /*SCREEN_VESA*/
+
 #if defined(PC9800)
 static unsigned char attr98[CLR_MAX] = {
     0xe1, /*  0 white            */
@@ -234,12 +238,13 @@ E void NDECL(HideCursor);
 
 /* ### vidtxt.c ### */
 
+E void NDECL(txt_get_scr_size);
+
 #ifdef NO_TERMS
 E void NDECL(txt_backsp);
 E void NDECL(txt_clear_screen);
 E void FDECL(txt_cl_end, (int, int));
 E void NDECL(txt_cl_eos);
-E void NDECL(txt_get_scr_size);
 E void FDECL(txt_gotoxy, (int, int));
 E int NDECL(txt_monoadapt_check);
 E void NDECL(txt_nhbell);
@@ -249,6 +254,7 @@ E void FDECL(txt_xputc, (CHAR_P, int));
 
 /* ### vidvga.c ### */
 
+enum vga_pan_direction { pan_left, pan_up, pan_right, pan_down };
 #ifdef SCREEN_VGA
 E void NDECL(vga_backsp);
 E void FDECL(vga_clear_screen, (int));
@@ -274,7 +280,7 @@ E void FDECL(vga_tty_startup, (int *, int *));
 E void FDECL(vga_xputs, (const char *, int, int));
 E void FDECL(vga_xputc, (CHAR_P, int));
 E void FDECL(vga_xputg, (int, int, unsigned));
-E void FDECL(vga_userpan, (BOOLEAN_P));
+E void FDECL(vga_userpan, (enum vga_pan_direction));
 E void FDECL(vga_overview, (BOOLEAN_P));
 E void FDECL(vga_traditional, (BOOLEAN_P));
 E void NDECL(vga_refresh);
@@ -301,12 +307,13 @@ E void NDECL(vesa_Init);
 E void NDECL(vesa_tty_end_screen);
 E void FDECL(vesa_tty_startup, (int *, int *));
 E void FDECL(vesa_xputs, (const char *, int, int));
-E void FDECL(vesa_xputc, (CHAR_P, int));
+E void FDECL(vesa_xputc, (int, int));
 E void FDECL(vesa_xputg, (int, int, unsigned));
-E void FDECL(vesa_userpan, (BOOLEAN_P));
+E void FDECL(vesa_userpan, (enum vga_pan_direction));
 E void FDECL(vesa_overview, (BOOLEAN_P));
 E void FDECL(vesa_traditional, (BOOLEAN_P));
 E void NDECL(vesa_refresh);
+E void NDECL(vesa_flush_text);
 #endif /* SCREEN_VESA */
 #endif /* NO_TERMS   */
 

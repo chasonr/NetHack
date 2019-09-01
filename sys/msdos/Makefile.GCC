@@ -39,6 +39,7 @@ SSHR = ../sys/share
 UTIL = ../util
 WIN  = ../win/tty
 WSHR = ../win/share
+WCUR = ../win/curses
 
 #
 #  Executables.
@@ -98,6 +99,12 @@ LEXYYC = lexyy~1.c
 
 USE_DLB = Y
 
+# Enable this to support tiles in PNG format; this requires the png1621b and
+# zlib128br2.zip (or later) packages from DJGPP.
+# If your DOS supports long file names (FreeDOS does, "real" MS-DOS doesn't),
+# then you'll need to rename djgpp\include\pnglibco.h to pnglibconf.h.
+#WANT_PNG = Y
+
 # djgpp includes ls.exe and touch.exe in fil41b.zip from the v2gnu 
 # folder so be sure to include that when downloading djgpp. Doing
 # so will make changing this unnecessary.
@@ -125,6 +132,10 @@ SUPPRESS_GRAPHICS =
 # If you defined ZLIB_COMP in include/config.h to build in support
 # for ZLIB compression, you need to uncomment the line below.
 #ZLIB= -lz
+
+# To enable the Curses interface, uncomment WANT_CURSES and install the
+# pdcur38a.zip (or later) package in DJGPP.
+#WANT_CURSES = Y
 
 #===============================================
 #======= End of Modification Section ===========
@@ -167,6 +178,11 @@ else
 #    Normal
 cflags = -c -O -I../include $(DLBFLG) -DUSE_TILES
 LFLAGS =
+endif
+
+ifeq ($(WANT_PNG),Y)
+cflags += -DHAVE_PNG
+LIBRARIES += -lpng -lz
 endif
 
 #==========================================
@@ -221,6 +237,13 @@ $(OBJ)/%.o : $(WSHR)/%.c
 #==========================================
 
 $(OBJ)/%.o : $(TTY)/%.c
+	$(CC) $(cflags) -o$@ $<
+
+#==========================================
+# Rules for files in win/curses
+#==========================================
+
+$(OBJ)/%.o : $(WCUR)/%.c
 	$(CC) $(cflags) -o$@ $<
 
 #==========================================
@@ -283,7 +306,8 @@ else
 
 TILOBJ      = $(O)tile.o $(VGAOBJ)
 
-TILOBJ2     = $(O)tileset.o $(O)bmptiles.o $(O)giftiles.o
+TILOBJ2     = $(O)tileset.o $(O)bmptiles.o $(O)giftiles.o $(O)pngtiles.o \
+              $(O)xpmtiles.o $(O)font.o
 
 TEXTIO      = $(O)tiletext.o $(O)tiletxt.o $(O)drawing.o $(O)decl.o $(O)monst.o \
 		$(O)objects.o $(O)stubvid.o
@@ -352,7 +376,17 @@ VOBJ  = $(VOBJ01) $(VOBJ02) $(VOBJ03) $(VOBJ04) $(VOBJ05) \
 	$(VOBJ16) $(VOBJ17) $(VOBJ18) $(VOBJ19) $(VOBJ20) \
 	$(VOBJ21) $(VOBJ22) $(VOBJ23)
 
-ALLOBJ = $(VOBJ) $(SOBJ) $(TILOBJ) $(TILOBJ2) $(VVOBJ)
+ifeq ($(WANT_CURSES),Y)
+cflags += -DCURSES_GRAPHICS -DNO_WIDE_CURSES
+CURSESOBJ = $(O)cursdial.o $(O)cursinit.o $(O)cursinvt.o $(O)cursmain.o \
+            $(O)cursmesg.o $(O)cursmisc.o $(O)cursstat.o $(O)curswins.o
+CURSESLIB = -lpdc~1
+else
+CURSESOBJ =
+CURSESLIB =
+endif
+
+ALLOBJ = $(VOBJ) $(SOBJ) $(TILOBJ) $(TILOBJ2) $(VVOBJ) $(CURSESOBJ)
 
 #==========================================
 # Header file macros
@@ -458,6 +492,7 @@ endif
 	@$(subst /,\,copy $(DOC)/guidebo*.txt  $(GAMEDIR))
 	@$(subst /,\,copy ../sys/winnt/sysconf  $(GAMEDIR))
 	@$(subst /,\,if exist $(DOC)/nethack.txt copy $(DOC)/nethack.txt $(GAMEDIR))
+	@$(subst /,\,copy ../win/share/*.psf $(GAMEDIR))
 ifdef CWSDPMI
 	@$(subst /,\,if exist $(CWSDPMI) copy $(CWSDPMI) $(GAMEDIR))
 else
@@ -498,8 +533,11 @@ $(GAMEFILE): $(O)obj.tag $(PATCHLEV_H) $(O)utility.tag $(ALLOBJ)
 	 @ar ruS temp.a $(TILOBJ)
 	 @ar ruS temp.a $(TILOBJ2)
 	 @ar ruS temp.a $(VVOBJ)
+ifeq ($(WANT_CURSES),Y)
+	 @ar ruS temp.a $(CURSESOBJ)
+endif
 	 @ranlib temp.a
-	$(LINK) $(LFLAGS) -o$(GAME).exe temp.a $(LIBRARIES) $(ZLIB)
+	$(LINK) $(LFLAGS) -o$(GAME).exe temp.a $(LIBRARIES) $(ZLIB) $(CURSESLIB)
 	@$(subst /,\,stubedit $(GAME).exe minstack=2048K)
 	@$(subst /,\,copy $(GAME).exe $(GAMEFILE))
 	@$(subst /,\,del $(GAME).exe)
@@ -1293,8 +1331,22 @@ $(O)write.o: write.c $(HACK_H)
 $(O)zap.o: zap.c $(HACK_H)
 $(O)pmatchre.o: $(SSHR)/pmatchre.c $(HACK_H)
 $(O)tileset.o: $(WSHR)/tileset.c $(HACK_H)
+$(O)font.o: $(WSHR)/font.c $(HACK_H) $(INCL)/font.h $(INCL)/integer.h
 $(O)bmptiles.o: $(WSHR)/bmptiles.c $(INCL)/config.h $(INCL)/tileset.h $(INCL)/integer.h
 $(O)giftiles.o: $(WSHR)/giftiles.c $(INCL)/config.h $(INCL)/tileset.h $(INCL)/integer.h
+$(O)pngtiles.o: $(WSHR)/pngtiles.c $(INCL)/config.h $(INCL)/tileset.h $(INCL)/integer.h
+$(O)xpmtiles.o: $(WSHR)/xpmtiles.c $(INCL)/config.h $(INCL)/tileset.h $(INCL)/integer.h
+$(O)cursdial.o: $(WCUR)/cursdial.c $(HACK_H) $(INCL)/wincurs.h $(WCUR)/cursdial.h \
+		$(INCL)/func_tab.h
+$(O)cursinit.o: $(WCUR)/cursinit.c $(HACK_H) $(INCL)/wincurs.h $(WCUR)/cursinit.h
+$(O)cursinvt.o: $(WCUR)/cursinvt.c $(HACK_H) $(INCL)/wincurs.h $(WCUR)/cursinvt.h
+$(O)cursmain.o: $(WCUR)/cursmain.c $(HACK_H) $(INCL)/wincurs.h \
+		$(INCL)/color.h $(INCL)/patchlev.h
+$(O)cursmesg.o: $(WCUR)/cursmesg.c $(HACK_H) $(INCL)/wincurs.h $(WCUR)/cursmesg.h
+$(O)cursmisc.o: $(WCUR)/cursmisc.c $(HACK_H) $(INCL)/wincurs.h $(WCUR)/cursmisc.h \
+		$(INCL)/dlb.h $(INCL)/func_tab.h
+$(O)cursstat.o: $(WCUR)/cursstat.c $(HACK_H) $(INCL)/wincurs.h $(WCUR)/cursstat.h
+$(O)curswins.o: $(WCUR)/curswins.c $(HACK_H) $(INCL)/wincurs.h $(WCUR)/curswins.h
 
 # end of file
 

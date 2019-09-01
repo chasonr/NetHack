@@ -153,11 +153,12 @@ char defmorestr[] = "--More--";
 #if defined(USE_TILES) && defined(MSDOS)
 boolean clipping = FALSE; /* clipping on? */
 int clipx = 0, clipxmax = 0;
+int clipy = 0, clipymax = 0;
 #else
 static boolean clipping = FALSE; /* clipping on? */
 static int clipx = 0, clipxmax = 0;
-#endif
 static int clipy = 0, clipymax = 0;
+#endif
 #endif /* CLIPPING */
 
 #if defined(USE_TILES) && defined(MSDOS)
@@ -3266,7 +3267,7 @@ end_glyphout()
 #endif
 }
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(MSDOS)
 void
 g_putch(in_ch)
 int in_ch;

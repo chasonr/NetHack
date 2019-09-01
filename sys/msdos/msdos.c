@@ -64,6 +64,11 @@ tgetch()
 {
     char ch;
 
+#ifdef SCREEN_VESA
+    if (iflags.usevesa) {
+        vesa_flush_text();
+    }
+#endif /*SCREEN_VESA*/
 /* BIOSgetch can use the numeric key pad on IBM compatibles. */
 #ifdef SIMULATE_CURSOR
     if (iflags.grmode && cursor_flag)
@@ -254,13 +259,13 @@ BIOSgetch()
         /* Get scan code.
          */
         regs.h.ah = READCHAR;
-        int86(KEYBRD_BIOS, &regs, &regs);
+        INT86(KEYBRD_BIOS, &regs, &regs);
         ch = regs.h.al;
         scan = regs.h.ah;
         /* Get shift status.
          */
         regs.h.ah = GETKEYFLAGS;
-        int86(KEYBRD_BIOS, &regs, &regs);
+        INT86(KEYBRD_BIOS, &regs, &regs);
         shift = regs.h.al;
 
         /* Translate keypad keys */
@@ -347,7 +352,7 @@ switchar()
 {
     union REGS regs;
 
-    regs.x.ax = GETSWITCHAR;
+    regs.R16(ax) = GETSWITCHAR;
     intdos(&regs, &regs);
     return regs.h.dl;
 }
@@ -364,10 +369,10 @@ char *path;
     else
         regs.h.dl = 0;
     intdos(&regs, &regs);
-    if (regs.x.ax == 0xFFFF)
+    if (regs.R16(ax) == 0xFFFF)
         return -1L; /* bad drive number */
     else
-        return ((long) regs.x.bx * regs.x.cx * regs.x.ax);
+        return ((long) regs.R16(bx) * regs.R16(cx) * regs.R16(ax));
 }
 
 #ifndef __GO32__
@@ -382,8 +387,8 @@ char *path;
     struct SREGS sregs;
 
     regs.h.ah = FINDFIRST;
-    regs.x.cx = 0; /* attribute: normal files */
-    regs.x.dx = FP_OFF(path);
+    regs.R16(cx) = 0; /* attribute: normal files */
+    regs.R16(dx) = FP_OFF(path);
     sregs.ds = FP_SEG(path);
     intdosx(&regs, &regs, &sregs);
     return !regs.x.cflag;
@@ -416,9 +421,9 @@ getdta()
     regs.h.ah = GETDTA;
     intdosx(&regs, &regs, &sregs);
 #ifdef MK_FP
-    ret = (char *) MK_FP(sregs.es, regs.x.bx);
+    ret = (char *) MK_FP(sregs.es, regs.R16(bx));
 #else
-    FP_OFF(ret) = regs.x.bx;
+    FP_OFF(ret) = regs.R16(bx);
     FP_SEG(ret) = sregs.es;
 #endif
     return ret;
@@ -512,11 +517,11 @@ unsigned setvalue;
 
     regs.h.ah = IOCTL;
     regs.h.al = mode;
-    regs.x.bx = handle;
+    regs.R16(bx) = handle;
     regs.h.dl = setvalue;
     regs.h.dh = 0; /* Zero out dh */
     intdos(&regs, &regs);
-    return (regs.x.dx);
+    return (regs.R16(dx));
 }
 
 unsigned long

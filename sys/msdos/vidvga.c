@@ -232,24 +232,21 @@ vga_clear_screen(colour)
 int colour;
 {
     char __far *pch;
-    int y, j;
-    char volatile a;
+    unsigned j;
 
-    outportb(0x3ce, 5);
-    outportb(0x3cf, 2);
-
-    for (y = 0; y < SCREENHEIGHT; ++y) {
-        pch = screentable[y];
-        for (j = 0; j < SCREENBYTES; ++j) {
-            outportb(0x3ce, 8);
-            outportb(0x3cf, 255);
-            a = READ_ABSOLUTE(pch); /* Must read , then write */
-            WRITE_ABSOLUTE(pch, (char) colour);
-            ++pch;
-        }
+    egawriteplane(colour);
+    pch = screentable[0];
+    for (j = 0; j < SCREENHEIGHT * SCREENBYTES; j += 4) {
+        WRITE_ABSOLUTE_DWORD(pch, 0xFFFFFFFF);
+        pch += 4;
     }
-    outportb(0x3ce, 5);
-    outportb(0x3cf, 0);
+    egawriteplane(~colour);
+    pch = screentable[0];
+    for (j = 0; j < SCREENHEIGHT * SCREENBYTES; j += 4) {
+        WRITE_ABSOLUTE_DWORD(pch, 0x00000000);
+        pch += 4;
+    }
+    egawriteplane(15);
     if (iflags.tile_view)
         vga_clearmap();
     vga_gotoloc(0, 0); /* is this needed? */
@@ -459,28 +456,22 @@ STATIC_OVL void
 vga_redrawmap(clearfirst)
 boolean clearfirst;
 {
-    int j, x, y, t;
+    int x, y, t;
     char __far *pch;
-    char volatile a;
 
     if (clearfirst) {
-        /* y here is in pixel rows */
-        outportb(0x3ce, 5);
-        outportb(0x3cf, 2);
+        unsigned j;
         t = TOP_MAP_ROW * ROWS_PER_CELL;
-        for (y = t; y < (ROWNO * ROWS_PER_CELL) + t; ++y) {
-            pch = screentable[y];
-            for (j = 0; j < SCREENBYTES; ++j) {
-                outportb(0x3ce, 8);
-                outportb(0x3cf, 255);
-                /* On VGA mode2, must read first, then write */
-                a = READ_ABSOLUTE(pch);
-                WRITE_ABSOLUTE(pch, (char) BACKGROUND_VGA_COLOR);
-                ++pch;
-            }
+        pch = screentable[t];
+        egawriteplane(BACKGROUND_VGA_COLOR);
+        for (j = 0; j < ROWNO * ROWS_PER_CELL * SCREENBYTES; j += 4) {
+            WRITE_ABSOLUTE_DWORD(pch + j, 0xFFFFFFFF);
         }
-        outportb(0x3ce, 5);
-        outportb(0x3cf, 0);
+        egawriteplane(~BACKGROUND_VGA_COLOR);
+        for (j = 0; j < ROWNO * ROWS_PER_CELL * SCREENBYTES; j += 4) {
+            WRITE_ABSOLUTE_DWORD(pch + j, 0x00000000);
+        }
+        egawriteplane(15);
     }
 /* y here is in screen rows*/
 #ifdef ROW_BY_ROW
@@ -513,18 +504,20 @@ boolean clearfirst;
 #endif /* USE_TILES && CLIPPING */
 
 void
-vga_userpan(left)
-boolean left;
+vga_userpan(pan)
+enum vga_pan_direction pan;
 {
     int x;
 
     /*	pline("Into userpan"); */
     if (iflags.over_view || iflags.traditional_view)
         return;
-    if (left)
+    if (pan == pan_left)
         x = min(COLNO - 1, clipxmax + 10);
-    else
+    else if (pan == pan_right)
         x = max(0, clipx - 10);
+    else
+        return;
     vga_cliparound(x, 10); /* y value is irrelevant on VGA clipping */
     positionbar();
     vga_DrawCursor();
@@ -823,12 +816,12 @@ vga_SwitchMode(unsigned int mode)
         } else {
             iflags.grmode = 0;
         }
-        regs.x.ax = mode;
-        (void) int86(VIDEO_BIOS, &regs, &regs);
+        regs.R16(ax) = mode;
+        (void) INT86(VIDEO_BIOS, &regs, &regs);
     } else {
         iflags.grmode = 0; /* force text mode for error msg */
-        regs.x.ax = MODETEXT;
-        (void) int86(VIDEO_BIOS, &regs, &regs);
+        regs.R16(ax) = MODETEXT;
+        (void) INT86(VIDEO_BIOS, &regs, &regs);
         g_attribute = attrib_text_normal;
         impossible("vga_SwitchMode: Bad video mode requested 0x%X", mode);
     }
@@ -867,7 +860,7 @@ vga_NoBorder(int bc)
 	regs.h.al = (char)0x01;
 	regs.h.bh = (char)bc;
 	regs.h.bl = 0;
-	(void) int86(VIDEO_BIOS, &regs, &regs);	
+	(void) INT86(VIDEO_BIOS, &regs, &regs);	
 }
 #endif
 
@@ -913,7 +906,7 @@ vga_detect()
 
     regs.h.al = 0;
     regs.h.ah = 0x1a;
-    (void) int86(VIDEO_BIOS, &regs, &regs);
+    (void) INT86(VIDEO_BIOS, &regs, &regs);
     /*
      * debug
      *
@@ -941,36 +934,52 @@ int chr, col, row, colour;
     int i;
     int x, pixy;
 
-    char volatile tc;
     char __far *cp;
     unsigned char __far *fp = font;
     unsigned char fnt;
     int actual_colour = vgacmap[colour];
+    int vplane;
 
     x = min(col, (CO - 1));         /* min() used protection from callers */
     pixy = min(row, (LI - 1)) * 16; /* assumes 8 x 16 char set */
     /*	if (chr < ' ') chr = ' ';  */ /* assumes ASCII set */
 
-    outportb(0x3ce, 5);
-    outportb(0x3cf, 2);
-
     chr = chr << 4;
-    for (i = 0; i < MAX_ROWS_PER_CELL; ++i) {
-        cp = screentable[pixy + i] + x;
-        fnt = READ_ABSOLUTE((fp + chr + i));
-        outportb(0x3ce, 8);
-        outportb(0x3cf, fnt);
-        tc = READ_ABSOLUTE(cp); /* wrt mode 2, must read, then write */
-        WRITE_ABSOLUTE(cp, (char) actual_colour);
-        outportb(0x3ce, 8);
-        outportb(0x3cf, ~fnt);
-        tc = READ_ABSOLUTE(cp); /* wrt mode 2, must read, then write */
-        WRITE_ABSOLUTE(cp, (char) BACKGROUND_VGA_COLOR);
+    vplane = ~actual_colour & ~BACKGROUND_VGA_COLOR & 0xF;
+    if (vplane != 0) {
+        egawriteplane(vplane);
+        for (i = 0; i < MAX_ROWS_PER_CELL; ++i) {
+            cp = screentable[pixy + i] + x;
+            WRITE_ABSOLUTE(cp, (char) 0x00);
+        }
     }
-    outportb(0x3ce, 5);
-    outportb(0x3cf, 0);
-    outportb(0x3ce, 8);
-    outportb(0x3cf, 255);
+    vplane =  actual_colour & ~BACKGROUND_VGA_COLOR & 0xF;
+    if (vplane != 0) {
+        egawriteplane(vplane);
+        for (i = 0; i < MAX_ROWS_PER_CELL; ++i) {
+            cp = screentable[pixy + i] + x;
+            fnt =  READ_ABSOLUTE((fp + chr + i));
+            WRITE_ABSOLUTE(cp, (char) fnt);
+        }
+    }
+    vplane = ~actual_colour &  BACKGROUND_VGA_COLOR & 0xF;
+    if (vplane != 0) {
+        egawriteplane(vplane);
+        for (i = 0; i < MAX_ROWS_PER_CELL; ++i) {
+            cp = screentable[pixy + i] + x;
+            fnt = ~READ_ABSOLUTE((fp + chr + i));
+            WRITE_ABSOLUTE(cp, (char) fnt);
+        }
+    }
+    vplane =  actual_colour &  BACKGROUND_VGA_COLOR & 0xF;
+    if (vplane != 0) {
+        egawriteplane(vplane);
+        for (i = 0; i < MAX_ROWS_PER_CELL; ++i) {
+            cp = screentable[pixy + i] + x;
+            WRITE_ABSOLUTE(cp, (char) 0xFF);
+        }
+    }
+    egawriteplane(15);
 }
 
 /*
@@ -1089,11 +1098,11 @@ const struct Pixel *p;
         outportb(0x3c9, color.g >> 2);
         outportb(0x3c9, color.b >> 2);
     }
-    regs.x.bx = 0x0000;
+    regs.R16(bx) = 0x0000;
     for (i = 0; i < COLORDEPTH; ++i) {
-        regs.x.ax = 0x1000;
-        (void) int86(VIDEO_BIOS, &regs, &regs);
-        regs.x.bx += 0x0101;
+        regs.R16(ax) = 0x1000;
+        (void) INT86(VIDEO_BIOS, &regs, &regs);
+        regs.R16(bx) += 0x0101;
     }
 }
 

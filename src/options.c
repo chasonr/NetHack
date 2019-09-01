@@ -3349,7 +3349,7 @@ boolean tinitial, tfrom_file;
         return retval;
     }
 #endif /* VIDEOSHADES */
-#if defined(SDL2_GRAPHICS)
+#if defined(MSDOS) || defined(SDL2_GRAPHICS)
     fullname = "video_width";
     if (match_optname(opts, fullname, 7, TRUE)) {
         if (duplicate)
@@ -3374,7 +3374,7 @@ boolean tinitial, tfrom_file;
         iflags.wc_video_height = strtol(op, NULL, 10);
         return FALSE;
     }
-#endif /* SDL2_GRAPHICS */
+#endif /* MSDOS || SDL2_GRAPHICS */
 
 #ifdef MSDOS
 #ifdef NO_TERMS

@@ -9,6 +9,12 @@
 
 #include <stdint.h>
 
+#ifdef __GNUC__
+#pragma pack(push, 1)
+#endif
+#ifdef __WATCOMC__
+#pragma pack(__push, 1)
+#endif
 struct VbeInfoBlock {
     uint8_t  VbeSignature[4];   /* VBE Signature */
     uint16_t VbeVersion;        /* VBE Version */
@@ -23,7 +29,7 @@ struct VbeInfoBlock {
     uint32_t OemProductRevPtr;  /* VbeFarPtr to Product Revision String */
     uint8_t  Reserved[222];     /* Reserved for VBE implementation scratch area */
     uint8_t  OemData[256];      /* Data Area for OEM Strings */
-} __attribute__((packed));
+};
 
 struct ModeInfoBlock {
     /* Mandatory information for all VBE revisions */
@@ -76,6 +82,12 @@ struct ModeInfoBlock {
     uint8_t  LinRsvdFieldPosition;  /* bit position of lsb of reserved mask (linear modes) */
     uint32_t MaxPixelClock;         /* maximum pixel clock (in Hz) for graphics mode */
     uint8_t  Reserved4[189];        /* remainder of ModeInfoBlock */
-} __attribute__((packed));
+};
+#ifdef __GNUC__
+#pragma pack(pop)
+#endif
+#ifdef __WATCOMC__
+#pragma pack(__pop)
+#endif
 
 #endif
