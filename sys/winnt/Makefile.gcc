@@ -122,12 +122,27 @@ PDCURSES_TOP=../../pdcurses
 #WANT_WIN_SDL2 = Y
 #SDL2_DIRECTORY = $(USERPROFILE)/SDL2-2.0.10
 
+# For Win32, uncomment this to enable PNG support
+#WANT_PNG = Y
+
 #
-# Note that additional GUI interfaces may require external libraries.
-# Qt is placed where the official installer places it.
-# Other libraries are placed in a subdirectory of your home directory, either
+# WANT_PNG requires the LIBPNG and ZLIB libraries.
+# These libraries are placed in a subdirectory of your home directory, either
 # x86libs or x64libs depending on whether you're building for 64 bits.
 #
+# To build zlib, use "mingw32-make -f win32/Makefile.gcc" from the top of the
+# zlib source tree.
+#
+# To build libpng, modify the file "scripts/Makefile.gcc" so that ZLIBINC and
+# ZLIBLIB point to the top of the ZLIB source tree.  Then use:
+#     copy scripts\pnglibconf.h.prebuilt pnglibconf.h
+#     mingw32-make -f scripts/Makefile.gcc"
+#
+LIBRARIES = $(subst \,/,$(USERPROFILE))/$(TARGET_CPU)libs
+
+# WANT_PNG requires libpng and zlib
+LIBPNG_DIRECTORY = $(LIBRARIES)/libpng-1.6.37
+ZLIB_DIRECTORY = $(LIBRARIES)/zlib-1.2.11
 
 #
 #==============================================================================
@@ -201,6 +216,9 @@ ifeq "$(WANT_WIN_QT4)" "Y"
 endif
 ifeq "$(WANT_WIN_SDL2)" "Y"
     WINPFLAG += -DSDL2_GRAPHICS -DPIXMAPDIR='"."' -DPOSITIONBAR
+endif
+ifeq "$(WANT_PNG)" "Y"
+    WINPFLAG += -DHAVE_PNG -I$(LIBPNG_DIRECTORY)
 endif
 # To store all the level files,
 # help files, etc. in a single library file.
@@ -561,6 +579,9 @@ endif
 ifeq "$(WANT_WIN_SDL2)" "Y"
     guilibs += $(SDL2_DIRECTORY)/$(PREFIX)/lib/libSDL2.a
     guilibs += -lsetupapi -lwinmm -limm32 -lole32 -loleaut32 -lversion
+endif
+ifeq "$(WANT_PNG)" "Y"
+    guilibs += $(LIBPNG_DIRECTORY)/libpng.a $(ZLIB_DIRECTORY)/libz.a
 endif
 
 #==========================================
