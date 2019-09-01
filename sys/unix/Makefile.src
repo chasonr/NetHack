@@ -197,7 +197,14 @@ REGEXOBJ = posixregex.o
 # Set the WINSRC, WINOBJ, and WINLIB lines to correspond to your desired
 # combination of windowing systems.  Also set windowing systems in config.h.
 # Note that if you are including multiple tiled window systems, you don't
-# want two copies of tile.o, so comment out all but the first.
+# want two copies of WINTILEOBJ or tiles.o, so comment out all but one.
+#
+# files for all tiled interfaces
+# (tile.c is a generated source file)
+WINTILESRC = ../win/share/bmptiles.c ../win/share/giftiles.c \
+			 ../win/share/pngtiles.c ../win/share/xpmtiles.c \
+			 ../win/share/tileset.c tile.c
+WINTILEOBJ = bmptiles.o giftiles.o pngtiles.o xpmtiles.o tileset.o tile.o
 #
 # files for a straight tty port using no native windowing system
 WINTTYSRC = ../win/tty/getline.c ../win/tty/termcap.c ../win/tty/topl.c \
@@ -217,9 +224,9 @@ WINCURSESOBJ = cursmain.o curswins.o cursmisc.o cursdial.o cursstat.o \
 WINX11SRC = ../win/X11/Window.c ../win/X11/dialogs.c ../win/X11/winX.c \
 	../win/X11/winmap.c  ../win/X11/winmenu.c ../win/X11/winmesg.c \
 	../win/X11/winmisc.c ../win/X11/winstat.c ../win/X11/wintext.c \
-	../win/X11/winval.c tile.c
+	../win/X11/winval.c $(WINTILESRC)
 WINX11OBJ = Window.o dialogs.o winX.o winmap.o winmenu.o winmesg.o \
-	winmisc.o winstat.o wintext.o winval.o tile.o
+	winmisc.o winstat.o wintext.o winval.o $(WINTILEOBJ)
 #
 # Files for a Qt port
 #
@@ -250,12 +257,9 @@ WINSDL2SRC = ../win/sdl2/sdl2font_mac.c ../win/sdl2/sdl2font_pango.c \
 	../win/sdl2/sdl2posbar.c ../win/sdl2/sdl2status.c \
 	../win/sdl2/sdl2text.c ../win/sdl2/sdl2unicode.c ../win/sdl2/sdl2window.c \
 	../win/share/bmptiles.c ../win/share/giftiles.c ../win/share/pngtiles.c \
-	../win/share/xpmtiles.c \
-	../win/share/tileset.c \
-	tile.c
+	../win/share/xpmtiles.c $(WINTILESRC)
 WINSDL2OBJ = sdl2getlin.o sdl2map.o sdl2menu.o sdl2message.o sdl2plsel.o \
 	sdl2posbar.o sdl2status.o sdl2text.o sdl2unicode.o sdl2window.o \
-	bmptiles.o giftiles.o pngtiles.o xpmtiles.o tileset.o \
 	$(SDL2FONT) $(WINTILEOBJ)
 #
 # Files for a Gnome port

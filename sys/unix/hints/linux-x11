@@ -8,6 +8,8 @@
 # This hints file provides a single-user x11 build for Linux, specifically
 # for Ubuntu dapper.
 
+# Uncomment this to enable PNG support
+WANT_PNG = Y
 
 #PREFIX=/usr
 PREFIX=$(wildcard ~)/nh/install
@@ -31,11 +33,16 @@ LINK=$(CC)
 
 WINSRC = $(WINX11SRC)
 WINOBJ = $(WINX11OBJ)
-WINLIB = $(WINX11LIB)
+WINLIB = $(WINX11LIB) -lXpm
 
 VARDATND = x11tiles NetHack.ad pet_mark.xbm pilemark.xbm
 
 WINX11LIB = -lXaw -lXmu -lXext -lXt -lX11
+
+ifeq ($(WANT_PNG),Y)
+CFLAGS+=-DHAVE_PNG
+WINX11LIB+=-lpng
+endif
 
 CHOWN=true
 CHGRP=true
@@ -44,8 +51,7 @@ VARFILEPERM = 0600
 GAMEPERM = 0755
 
 # Use XPM format tile file
-CFLAGS+=-DUSE_XPM
-WINX11LIB+=-lXpm
+CFLAGS+=-DUSE_XPM -DHAVE_XPM
 VARDATND+=rip.xpm
 
 # note: needs libxt-dev libxaw7-dev libx11-dev bdftopcf
