@@ -1508,7 +1508,7 @@ int type;
                                 (unsigned) (newwin->maxrow * sizeof (short)));
         for (i = 0; i < newwin->maxrow; i++) {
             if (newwin->maxcol) { /* WIN_STATUS */
-                newwin->data[i] = (char *) alloc((unsigned) newwin->maxcol);
+                newwin->data[i] = (char *) alloc((unsigned) newwin->maxcol * 4);
                 newwin->datlen[i] = (short) newwin->maxcol;
             } else {
                 newwin->data[i] = (char *) 0;
@@ -2257,8 +2257,13 @@ struct WinDesc *cw;
                  ) {
                 /* message recall for msg_window:full/combination/reverse
                    might have output from '/' in it (see redotoplin()) */
-                if (linestart && (*cp & 0x80) != 0 && !SYMHANDLING(H_UNICODE)) {
-                    g_putch(*cp);
+                if (linestart && (*cp & 0x80) != 0) {
+                    if (SYMHANDLING(H_UNICODE)) {
+                        g_putch(utf8_to_char(cp));
+                        cp += utf8_next(cp) - 1;
+                    } else {
+                        g_putch(*cp);
+                    }
                     end_glyphout();
                     linestart = FALSE;
                 } else {

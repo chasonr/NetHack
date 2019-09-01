@@ -901,6 +901,8 @@ E char *FDECL(eos, (char *));
 E boolean FDECL(str_end_is, (const char *, const char *));
 E char *FDECL(strkitten, (char *, CHAR_P));
 E void FDECL(char_to_utf8, (char utf8[5], uint32 wch));
+E uint32 FDECL(utf8_to_char, (const char *utf8));
+E unsigned FDECL(utf8_next, (const char *utf8));
 E void FDECL(copynchars, (char *, const char *, int));
 E char FDECL(chrcasecpy, (int, int));
 E char *FDECL(strcasecpy, (char *, const char *));

@@ -270,6 +270,64 @@ uint32 wchr;
     }
 }
 
+/* Convert UTF-8 to a code point */
+uint32
+utf8_to_char(utf8)
+const char *utf8;
+{
+    uint32 ch, min;
+    unsigned char byte;
+    unsigned count;
+
+    byte = *(utf8++);
+    if (byte < 0x80) {
+        return byte;
+    } else if (byte < 0xC2) {
+        return 0xFFFD;
+    } else if (byte < 0xE0) {
+        ch = byte & 0x1F;
+        count = 1;
+        min = 0x80;
+    } else if (byte < 0xF0) {
+        ch = byte & 0x0F;
+        count = 2;
+        min = 0x800;
+    } else if (byte < 0xF5) {
+        ch = byte & 0x07;
+        count = 3;
+        min = 0x10000;
+    } else {
+        return 0xFFFD;
+    }
+    while (count != 0) {
+        byte = *(utf8++);
+        if ((byte & 0xC0) != 0x80) {
+            return 0xFFFD;
+        }
+        ch = (ch << 6) | (byte & 0x3F);
+        --count;
+    }
+    if (ch < min || ch > 0x10FFFF || (0xD800 <= ch && ch <= 0xDFFF)) {
+        return 0xFFFD;
+    }
+    return ch;
+}
+
+/* Advance to next UTF-8 character */
+unsigned
+utf8_next(utf8)
+const char *utf8;
+{
+    unsigned len = 1;
+    if (*utf8 == 0) {
+        return 0;
+    }
+    while ((utf8[len] & 0xC0) == 0x80) {
+        ++len;
+    }
+    return len;
+}
+
 /* truncating string copy */
 void
 copynchars(dst, src, n)
