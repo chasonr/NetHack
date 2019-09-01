@@ -579,7 +579,7 @@ XtPointer widget_data; /* expose event from Window widget */
         XFontStruct *font = WindowFontStruct(w);
         int width = XTextWidth(font, rip_line[i], len);
 
-        XDrawString(dpy, XtWindow(w), gc, x - width / 2, y, rip_line[i], len);
+        X11_DrawUTF8String(dpy, XtWindow(w), gc, x - width / 2, y, rip_line[i], len);
         x += appResources.tombtext_dx;
         y += appResources.tombtext_dy;
     }

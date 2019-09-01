@@ -456,4 +456,7 @@ E void FDECL(genl_outrip, (winid, int, time_t));
 
 E void FDECL(X11_preference_update, (const char *));
 
+E int FDECL(X11_DrawUTF8String, (Display *, Drawable, GC, int, int,
+        const char *, int));
+
 #endif /* WINX_H */

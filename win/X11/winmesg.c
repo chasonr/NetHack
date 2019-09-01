@@ -483,7 +483,7 @@ struct xwindow *wp;
     /* For now, just update the whole shootn' match. */
     for (y_base = row = 0, curr = mesg_info->head; row < mesg_info->num_lines;
          row++, y_base += mesg_info->char_height, curr = curr->next) {
-        XDrawString(XtDisplay(wp->w), XtWindow(wp->w), mesg_info->gc,
+        X11_DrawUTF8String(XtDisplay(wp->w), XtWindow(wp->w), mesg_info->gc,
                     mesg_info->char_lbearing, mesg_info->char_ascent + y_base,
                     curr->line, curr->str_length);
         /*

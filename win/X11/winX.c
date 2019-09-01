@@ -2734,4 +2734,51 @@ Cardinal *num_params;
     }
 }
 
+int
+X11_DrawUTF8String(display, d, gc, x, y, string, length)
+Display *display;
+Drawable d;
+GC gc;
+int x, y;
+const char *string;
+int length;
+{
+    int length16;
+    int i, j;
+    XChar2b *str16;
+    int rc;
+
+    /* Determine the length of the converted string */
+    i = 0;
+    length16 = 0;
+    while (i < length && string[i] != 0) {
+        ++length16;
+        i += utf8_next(string + i);
+    }
+
+    /* Allocate the converted string */
+    str16 = (XChar2b *) alloc(length16 * sizeof(XChar2b));
+
+    /* Convert */
+    i = 0;
+    j = 0;
+    while (i < length && string[i] != 0) {
+        uint32 ch32 = utf8_to_char(string + i);
+        if (ch32 > 0xFFFF) {
+            ch32 = 0xFFFD;
+        }
+        str16[j].byte1 = ch32 >> 8;
+        str16[j].byte2 = ch32 & 0xFF;
+        ++j;
+        i += utf8_next(string + i);
+    }
+
+    /* Draw */
+    rc = XDrawString16(display, d, gc, x, y, str16, length16);
+
+    /* Free memory and return */
+    free(str16);
+    return rc;
+}
+
 /*winX.c*/
