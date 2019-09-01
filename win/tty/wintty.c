@@ -205,7 +205,7 @@ STATIC_DCL boolean NDECL(reset_role_filtering);
 #ifdef STATUS_HILITES
 STATIC_DCL boolean FDECL(check_fields, (BOOLEAN_P, int *));
 STATIC_DCL void NDECL(render_status);
-STATIC_DCL void FDECL(tty_putstatusfield, (const char *, int, int));
+STATIC_DCL void FDECL(tty_putstatusfield, (const char *, int, int, BOOLEAN_P));
 STATIC_DCL boolean NDECL(check_windowdata);
 STATIC_DCL int NDECL(condition_size);
 STATIC_DCL int FDECL(make_things_fit, (BOOLEAN_P));
@@ -3874,7 +3874,15 @@ unsigned long *colormasks;
         truncation_expected = FALSE;
         break;
     case BL_GOLD:
-        text = decode_mixed(goldbuf, text);
+        /* If this begins with a glyph, substitute a $; we'll print the
+         * coin glyph later on */
+        if (strncmp(text, "\\G", 2) == 0) {
+            char *colon = index(text, ':');
+            if (colon) {
+                Sprintf(goldbuf, "$%s", colon);
+                text = goldbuf;
+            }
+        }
         /*FALLTHRU*/
     default:
         attrmask = (color >> 8) & 0x00FF;
@@ -4125,9 +4133,10 @@ int sz[3];
  * This is what places a field on the tty display.
  */
 STATIC_OVL void
-tty_putstatusfield(text, x, y)
+tty_putstatusfield(text, x, y, gold)
 const char *text;
 int x, y;
+boolean gold;
 {
     int i, n, ncols, nrows, lth = 0;
     struct WinDesc *cw = 0;
@@ -4148,7 +4157,11 @@ int x, y;
         for (i = 0; i < lth; ++i) {
             n = i + x;
             if (n < ncols && *text) {
-                (void) putchar(*text);
+                if (gold && *text == '$') {
+                    g_putch(showsyms[COIN_CLASS + SYM_OFF_O]);
+                } else {
+                    (void) putchar(*text);
+                }
                 ttyDisplay->curx++;
                 cw->curx++;
                 cw->data[y][n - 1] = *text;
@@ -4379,7 +4392,7 @@ render_status(VOID_ARGS)
                             k = x;
                         while (x < k) {
                             if (dat[x - 1] != ' ')
-                                tty_putstatusfield(" ", x, y);
+                                tty_putstatusfield(" ", x, y, FALSE);
                             ++x;
                         }
                         tty_status[NOW][BL_CONDITION].x = x;
@@ -4391,7 +4404,7 @@ render_status(VOID_ARGS)
                         if (bits & mask) {
                             const char *condtext;
 
-                            tty_putstatusfield(" ", x++, y);
+                            tty_putstatusfield(" ", x++, y, FALSE);
                             if (iflags.hilite_delta) {
                                 attrmask = condattr(mask, tty_colormasks);
                                 Begin_Attr(attrmask);
@@ -4405,7 +4418,7 @@ render_status(VOID_ARGS)
                                    "Unexpected condition placement overflow");
                                 condtext = "";
                             }
-                            tty_putstatusfield(condtext, x, y);
+                            tty_putstatusfield(condtext, x, y, FALSE);
                             x += (int) strlen(condtext);
                             if (iflags.hilite_delta) {
                                 if (coloridx != NO_COLOR)
@@ -4462,12 +4475,12 @@ render_status(VOID_ARGS)
                         savedch = *bar2;
                         *bar2 = '\0';
                     }
-                    tty_putstatusfield("[", x++, y);
+                    tty_putstatusfield("[", x++, y, FALSE);
                     if (*bar) { /* always True, unless twoparts+dead (0 HP) */
                         term_start_attr(ATR_INVERSE);
                         if (iflags.hilite_delta && hpbar_color != NO_COLOR)
                             term_start_color(hpbar_color);
-                        tty_putstatusfield(bar, x, y);
+                        tty_putstatusfield(bar, x, y, FALSE);
                         x += (int) strlen(bar);
                         if (iflags.hilite_delta && hpbar_color != NO_COLOR)
                             term_end_color();
@@ -4475,10 +4488,10 @@ render_status(VOID_ARGS)
                     }
                     if (twoparts) { /* no highlighting for second part */
                         *bar2 = savedch;
-                        tty_putstatusfield(bar2, x, y);
+                        tty_putstatusfield(bar2, x, y, FALSE);
                         x += (int) strlen(bar2);
                     }
-                    tty_putstatusfield("]", x++, y);
+                    tty_putstatusfield("]", x++, y, FALSE);
                 } else {
                     /*
                      * +-----------------------------+
@@ -4488,11 +4501,11 @@ render_status(VOID_ARGS)
                      */
                     if (iflags.hilite_delta) {
                         while (*text == ' ') {
-                            tty_putstatusfield(" ", x++, y);
+                            tty_putstatusfield(" ", x++, y, idx == BL_GOLD);
                             text++;
                         }
                         if (*text == '/' && idx == BL_EXP) {
-                            tty_putstatusfield("/", x++, y);
+                            tty_putstatusfield("/", x++, y, FALSE);
                             text++;
                         }
                         attrmask = tty_status[NOW][idx].attr;
@@ -4501,7 +4514,7 @@ render_status(VOID_ARGS)
                         if (coloridx != NO_COLOR)
                             term_start_color(coloridx);
                     }
-                    tty_putstatusfield(text, x, y);
+                    tty_putstatusfield(text, x, y, idx == BL_GOLD);
                     x += (int) strlen(text);
                     if (iflags.hilite_delta) {
                         if (coloridx != NO_COLOR)
