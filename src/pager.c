@@ -1026,7 +1026,8 @@ struct permonst **for_supplement;
     }
 
     /* handle optional boulder symbol as a special case */
-    if (iflags.bouldersym && sym == iflags.bouldersym) {
+    if ((iflags.bouldersym && sym == iflags.bouldersym) ||
+        (sym == showsyms[SYM_BOULDER + SYM_OFF_X] && sym != showsyms[ROCK_CLASS + SYM_OFF_O])) {
         if (!found) {
             *firstmatch = "boulder";
             Sprintf(out_str, "%s%s", prefix, an(*firstmatch));
@@ -1035,7 +1036,19 @@ struct permonst **for_supplement;
             found += append_str(out_str, "boulder");
         }
     }
-
+    /* If S_invisible is set, handle it here */
+    if (sym == showsyms[SYM_INVISIBLE + SYM_OFF_X] &&
+        sym != (looked ? showsyms[S_invisible + SYM_OFF_M] : def_monsyms[S_invisible].sym)) {
+        need_to_look = TRUE;
+        if (!found) {
+            Sprintf(out_str, "%s%s",
+                    prefix, an(def_monsyms[S_invisible].explain));
+            *firstmatch = def_monsyms[S_invisible].explain;
+            found++;
+        } else {
+            found += append_str(out_str, an(def_monsyms[S_invisible].explain));
+        }
+    }
     /*
      * If we are looking at the screen, follow multiple possibilities or
      * an ambiguous explanation by something more detailed.
