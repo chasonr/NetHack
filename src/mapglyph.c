@@ -48,10 +48,10 @@ static const int explcolors[] = {
 
 #if defined(USE_TILES) && defined(MSDOS)
 #define HAS_ROGUE_IBM_GRAPHICS \
-    (currentgraphics == ROGUESET && SYMHANDLING(H_IBM) && !iflags.grmode)
+    (currentgraphics == ROGUESET && (SYMHANDLING(H_UNICODE) || SYMHANDLING(H_IBM)) && !iflags.grmode)
 #else
 #define HAS_ROGUE_IBM_GRAPHICS \
-    (currentgraphics == ROGUESET && SYMHANDLING(H_IBM))
+    (currentgraphics == ROGUESET && (SYMHANDLING(H_UNICODE) || SYMHANDLING(H_IBM)))
 #endif
 
 #define is_objpile(x,y) (!Hallucination && level.objects[(x)][(y)] \
