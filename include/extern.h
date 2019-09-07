@@ -2026,7 +2026,7 @@ E void NDECL(deliver_splev_message);
 
 /* ### random.c ### */
 
-#if defined(RANDOM) && !defined(__GO32__) /* djgpp has its own random */
+#if defined(RANDOM) && !defined(__GO32__) && !defined(OS2) /* djgpp has its own random */
 E void FDECL(srandom, (unsigned));
 E char *FDECL(initstate, (unsigned, char *, int));
 E char *FDECL(setstate, (char *));

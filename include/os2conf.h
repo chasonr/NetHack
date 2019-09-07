@@ -13,18 +13,18 @@
  * selected either here or in Makefile.os2.
  */
 
-/* #define OS2_MSC		/* Microsoft C 5.1 and 6.0 */
+/* #define OS2_MSC */		/* Microsoft C 5.1 and 6.0 */
 #define OS2_GCC /* GCC emx 0.8f */
-                /* #define OS2_CSET2		/* IBM C Set/2 (courtesy Jeff Urlwin) */
-                /* #define OS2_CSET2_VER_1	/* CSet/2 version selection */
-                /* #define OS2_CSET2_VER_2	/* - " - */
+/* #define OS2_CSET2 */		/* IBM C Set/2 (courtesy Jeff Urlwin) */
+/* #define OS2_CSET2_VER_1 */	/* CSet/2 version selection */
+/* #define OS2_CSET2_VER_2 */	/* - " - */
 
 /*
  * System configuration.
  */
 
 #define OS2_USESYSHEADERS /* use compiler's own system headers */
-/* #define OS2_HPFS		/* use OS/2 High Performance File System */
+/* #define OS2_HPFS */		/* use OS/2 High Performance File System */
 
 #if defined(OS2_GCC) || defined(OS2_CSET2)
 #define OS2_32BITAPI /* enable for compilation in OS/2 2.0 */
@@ -35,16 +35,24 @@
  * reason to touch the defaults, I think.
  */
 
-/*#define MFLOPPY			/* floppy and ramdisk support */
+/*#define MFLOPPY */			/* floppy and ramdisk support */
 #define RANDOM /* Berkeley random(3) */
 #define SHELL  /* shell escape */
-/* #define TERMLIB		/* use termcap file */
+/* #define TERMLIB */		/* use termcap file */
 #define ANSI_DEFAULT /* allows NetHack to run without termcap file */
 #define TEXTCOLOR    /* allow color */
+#define NOCWD_ASSUMPTIONS /* Allow paths to be specified for HACKDIR,      \
+                             LEVELDIR, SAVEDIR, BONESDIR, DATADIR,         \
+                             SCOREDIR, LOCKDIR, CONFIGDIR, and TROUBLEDIR. \
+                             */
 
 /*
  * The remaining code shouldn't need modification.
  */
+
+#include <stdlib.h>
+#include <string.h>
+#include <io.h>
 
 #ifdef MSDOS
 #undef MSDOS /* MSC autodefines this but we don't want it */
@@ -88,8 +96,8 @@
 
 /* file creation mask */
 
-#include <sys\types.h>
-#include <sys\stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #define FCMASK (S_IREAD | S_IWRITE)
 
@@ -101,5 +109,6 @@
 #endif
 
 void hangup(int i);
+int kbhit(void);
 #endif /* OS2CONF_H */
 #endif /* OS2 */

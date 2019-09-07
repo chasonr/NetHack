@@ -370,6 +370,18 @@ int *lan_username_size;
 {
     return (char *) 0;
 }
+
+unsigned long
+sys_random_seed(VOID_ARGS)
+{
+    unsigned long ourseed = 0UL;
+    time_t datetime = 0;
+
+    (void) time(&datetime);
+    ourseed = (unsigned long) datetime;
+    return ourseed;
+}
+
 #ifdef X11_GRAPHICS
 int errno;
 #endif

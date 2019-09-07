@@ -73,7 +73,7 @@ typedef long off_t;
 #define SIG_RET_TYPE int (*)()
 #endif
 
-#if !defined(__cplusplus) && !defined(__GO32__)
+#if !defined(__cplusplus) && !defined(__GO32__) && !defined(OS2)
 
 #if defined(BSD) || defined(ULTRIX) || defined(RANDOM)
 #ifdef random
@@ -566,6 +566,6 @@ E int FDECL(atoi, (const char *));
 
 #undef E
 
-#endif /*  !__cplusplus && !__GO32__ */
+#endif /*  !__cplusplus && !__GO32__ && !OS2 */
 
 #endif /* SYSTEM_H */
