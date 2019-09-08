@@ -12,3 +12,5 @@ graphicschk
 nhdat
 o
 *.tag
+*.map
+*.err
