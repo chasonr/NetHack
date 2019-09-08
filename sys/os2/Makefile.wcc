@@ -44,7 +44,7 @@ MAKE_COBJ = @if not exist $(COBJ) mkdir $(COBJ)
 all : &
 $(GAMEDIR)\nethack.exe &
 $(GAMEDIR)\nhdat &
-$(GAMEDIR)\defaults.nh &
+$(GAMEDIR)\NetHack.cnf &
 $(GAMEDIR)\guidebk.txt &
 $(GAMEDIR)\keyhelp &
 $(GAMEDIR)\license &
@@ -279,11 +279,11 @@ $(GAMEDIR)\nhdat : $(NHDAT_DEPS) $(OBJ)\dlb.exe $(GAMEDIR)\license
 #                          Copied and created files                          #
 ##############################################################################
 
-$(GAMEDIR)\defaults.nh : $(SSHR)\NetHack.cnf $(GAMEDIR)\license
-	copy $(SSHR)\NetHack.cnf $(GAMEDIR)\defaults.nh
+$(GAMEDIR)\NetHack.cnf : $(SSHR)\NetHack.cnf $(GAMEDIR)\license
+	copy $(SSHR)\NetHack.cnf $(GAMEDIR)\NetHack.cnf
 
 $(GAMEDIR)\guidebk.txt : $(DOC)\guidebook.txt $(GAMEDIR)\license
-	copy $(DOC)\guidebk.txt $(GAMEDIR)
+	copy $(DOC)\guidebook.txt $(GAMEDIR)\guidebk.txt
 
 $(GAMEDIR)\keyhelp : $(DAT)\keyhelp $(GAMEDIR)\license
 	copy $(DAT)\keyhelp $(GAMEDIR)
