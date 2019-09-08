@@ -14,8 +14,8 @@
 
 # To include the Curses interface, enable USE_CURSES and set PDCURSES_TOP to
 # the path to the root of your PDCurses source.
-#USE_CURSES = Y
-#PDCURSES_TOP = c:\home\os2dev\pdcurses
+USE_CURSES = Y
+PDCURSES_TOP = c:/home/os2dev/pdcurses
 
 ##############################################################################
 #                         Some definitions and rules                         #
@@ -25,18 +25,18 @@
 SHELL = bash
 
 # Directories
-GAMEDIR = ..\binary
+GAMEDIR = ../binary
 SRC = .
-INC = ..\include
-DAT = ..\dat
-DOC = ..\doc
-UTIL = ..\util
-SSHR = ..\sys\share
-SOS2 = ..\sys\os2
-WCUR = ..\win\curses
-WTTY = ..\win\tty
+INC = ../include
+DAT = ../dat
+DOC = ../doc
+UTIL = ../util
+SSHR = ../sys/share
+SOS2 = ../sys/os2
+WCUR = ../win/curses
+WTTY = ../win/tty
 OBJ = o
-COBJ = o\curses
+COBJ = o/curses
 
 # The compiler
 CC = gcc
@@ -46,48 +46,48 @@ CFLAGS += -DCURSES_GRAPHICS
 endif
 
 # Useful stuff
-MAKE_GAMEDIR = cmd /c if not exist $(GAMEDIR); mkdir $(GAMEDIR)
-MAKE_OBJ = cmd /c if not exist $(OBJ); mkdir $(OBJ)
-MAKE_COBJ = cmd /c if not exist $(COBJ); mkdir $(COBJ)
+MAKE_GAMEDIR = if [ ! -d $(GAMEDIR) ]; then mkdir $(GAMEDIR); fi
+MAKE_OBJ = if [ ! -d $(OBJ) ]; then mkdir $(OBJ); fi
+MAKE_COBJ = if [ ! -d $(COBJ) ]; then mkdir $(COBJ); fi
 
 # Build this
-default: $(GAMEDIR)\nethack.exe $(GAMEDIR)\license $(GAMEDIR)\nhdat \
-         $(GAMEDIR)\symbols $(GAMEDIR)\NetHack.cnf $(GAMEDIR)\record \
-         $(GAMEDIR)\sysconf $(GAMEDIR)\nethack.txt $(GAMEDIR)\guidebk.txt
+default: $(GAMEDIR)/nethack.exe $(GAMEDIR)/license $(GAMEDIR)/nhdat \
+         $(GAMEDIR)/symbols $(GAMEDIR)/NetHack.cnf $(GAMEDIR)/record \
+         $(GAMEDIR)/sysconf $(GAMEDIR)/nethack.txt $(GAMEDIR)/guidebk.txt
 
 # Rules for compiling
 .SUFFIXES: .c .o
 
-$(OBJ)\%.o : $(SRC)\%.c
+$(OBJ)/%.o : $(SRC)/%.c
 	@$(MAKE_OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ)\%.o : $(UTIL)\%.c
+$(OBJ)/%.o : $(UTIL)/%.c
 	@$(MAKE_OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ)\%.o : $(SSHR)\%.c
+$(OBJ)/%.o : $(SSHR)/%.c
 	@$(MAKE_OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ)\%.o : $(SOS2)\%.c
+$(OBJ)/%.o : $(SOS2)/%.c
 	@$(MAKE_OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ)\%.o : $(WCUR)\%.c
+$(OBJ)/%.o : $(WCUR)/%.c
 	@$(MAKE_OBJ)
 	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) -c $< -o $@
 
-$(OBJ)\%.o : $(WTTY)\%.c
+$(OBJ)/%.o : $(WTTY)/%.c
 	@$(MAKE_OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(COBJ)\%.o : $(PDCURSES_TOP)\pdcurses\%.c
+$(COBJ)/%.o : $(PDCURSES_TOP)/pdcurses/%.c
 	@$(MAKE_OBJ)
 	@$(MAKE_COBJ)
 	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) -c $< -o $@
 
-$(COBJ)\%.o : $(PDCURSES_TOP)\os2\%.c
+$(COBJ)/%.o : $(PDCURSES_TOP)/os2/%.c
 	@$(MAKE_OBJ)
 	@$(MAKE_COBJ)
 	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) -c $< -o $@
@@ -98,59 +98,59 @@ $(COBJ)\%.o : $(PDCURSES_TOP)\os2\%.c
 
 ifeq "$(USE_CURSES)" "Y"
 CURSES_OBJS = \
-$(OBJ)\cursdial.o  $(OBJ)\cursinit.o  $(OBJ)\cursinvt.o $(OBJ)\cursmain.o \
-$(OBJ)\cursmesg.o  $(OBJ)\cursmisc.o  $(OBJ)\cursstat.o $(OBJ)\curswins.o \
-$(COBJ)\addch.o    $(COBJ)\addchstr.o $(COBJ)\addstr.o   $(COBJ)\attr.o     \
-$(COBJ)\beep.o     $(COBJ)\bkgd.o     $(COBJ)\border.o   $(COBJ)\clear.o    \
-$(COBJ)\color.o    $(COBJ)\debug.o    $(COBJ)\delch.o    $(COBJ)\deleteln.o \
-$(COBJ)\getch.o    $(COBJ)\getstr.o   $(COBJ)\getyx.o    $(COBJ)\inch.o     \
-$(COBJ)\inchstr.o  $(COBJ)\initscr.o  $(COBJ)\inopts.o   $(COBJ)\insch.o    \
-$(COBJ)\insstr.o   $(COBJ)\instr.o    $(COBJ)\kernel.o   $(COBJ)\keyname.o  \
-$(COBJ)\mouse.o    $(COBJ)\move.o     $(COBJ)\outopts.o  $(COBJ)\overlay.o  \
-$(COBJ)\pad.o      $(COBJ)\panel.o    $(COBJ)\printw.o   $(COBJ)\refresh.o  \
-$(COBJ)\scanw.o    $(COBJ)\scr_dump.o $(COBJ)\scroll.o   $(COBJ)\slk.o      \
-$(COBJ)\termattr.o $(COBJ)\touch.o    $(COBJ)\util.o     $(COBJ)\window.o   \
-$(COBJ)\pdcclip.o  $(COBJ)\pdcdisp.o  $(COBJ)\pdcgetsc.o $(COBJ)\pdckbd.o   \
-$(COBJ)\pdcscrn.o  $(COBJ)\pdcsetsc.o $(COBJ)\pdcutil.o
+$(OBJ)/cursdial.o  $(OBJ)/cursinit.o  $(OBJ)/cursinvt.o $(OBJ)/cursmain.o \
+$(OBJ)/cursmesg.o  $(OBJ)/cursmisc.o  $(OBJ)/cursstat.o $(OBJ)/curswins.o \
+$(COBJ)/addch.o    $(COBJ)/addchstr.o $(COBJ)/addstr.o   $(COBJ)/attr.o     \
+$(COBJ)/beep.o     $(COBJ)/bkgd.o     $(COBJ)/border.o   $(COBJ)/clear.o    \
+$(COBJ)/color.o    $(COBJ)/debug.o    $(COBJ)/delch.o    $(COBJ)/deleteln.o \
+$(COBJ)/getch.o    $(COBJ)/getstr.o   $(COBJ)/getyx.o    $(COBJ)/inch.o     \
+$(COBJ)/inchstr.o  $(COBJ)/initscr.o  $(COBJ)/inopts.o   $(COBJ)/insch.o    \
+$(COBJ)/insstr.o   $(COBJ)/instr.o    $(COBJ)/kernel.o   $(COBJ)/keyname.o  \
+$(COBJ)/mouse.o    $(COBJ)/move.o     $(COBJ)/outopts.o  $(COBJ)/overlay.o  \
+$(COBJ)/pad.o      $(COBJ)/panel.o    $(COBJ)/printw.o   $(COBJ)/refresh.o  \
+$(COBJ)/scanw.o    $(COBJ)/scr_dump.o $(COBJ)/scroll.o   $(COBJ)/slk.o      \
+$(COBJ)/termattr.o $(COBJ)/touch.o    $(COBJ)/util.o     $(COBJ)/window.o   \
+$(COBJ)/pdcclip.o  $(COBJ)/pdcdisp.o  $(COBJ)/pdcgetsc.o $(COBJ)/pdckbd.o   \
+$(COBJ)/pdcscrn.o  $(COBJ)/pdcsetsc.o $(COBJ)/pdcutil.o
 else
 CURSES_OBJS =
 endif
 
 NH_OBJS = \
-$(OBJ)\allmain.o  $(OBJ)\alloc.o    $(OBJ)\apply.o    $(OBJ)\artifact.o \
-$(OBJ)\attrib.o   $(OBJ)\ball.o     $(OBJ)\bones.o    $(OBJ)\botl.o     \
-$(OBJ)\cmd.o      $(OBJ)\dbridge.o  $(OBJ)\decl.o     $(OBJ)\detect.o   \
-$(OBJ)\dig.o      $(OBJ)\display.o  $(OBJ)\dlb.o      $(OBJ)\do_name.o  \
-$(OBJ)\do_wear.o  $(OBJ)\do.o       $(OBJ)\dog.o      $(OBJ)\dogmove.o  \
-$(OBJ)\dokick.o   $(OBJ)\dothrow.o  $(OBJ)\drawing.o  $(OBJ)\dungeon.o  \
-$(OBJ)\eat.o      $(OBJ)\end.o      $(OBJ)\engrave.o  $(OBJ)\exper.o    \
-$(OBJ)\explode.o  $(OBJ)\extralev.o $(OBJ)\files.o    $(OBJ)\fountain.o \
-$(OBJ)\hack.o     $(OBJ)\hacklib.o  $(OBJ)\invent.o   $(OBJ)\isaac64.o  \
-$(OBJ)\light.o    $(OBJ)\lock.o     $(OBJ)\mail.o     $(OBJ)\makemon.o  \
-$(OBJ)\mapglyph.o $(OBJ)\mcastu.o   $(OBJ)\mhitm.o    $(OBJ)\mhitu.o    \
-$(OBJ)\minion.o   $(OBJ)\mklev.o    $(OBJ)\mkmap.o    $(OBJ)\mkmaze.o   \
-$(OBJ)\mkobj.o    $(OBJ)\mkroom.o   $(OBJ)\mon.o      $(OBJ)\mondata.o  \
-$(OBJ)\monmove.o  $(OBJ)\monst.o    $(OBJ)\mplayer.o  $(OBJ)\mthrowu.o  \
-$(OBJ)\muse.o     $(OBJ)\music.o    $(OBJ)\o_init.o   $(OBJ)\objects.o  \
-$(OBJ)\objnam.o   $(OBJ)\options.o  $(OBJ)\pager.o    $(OBJ)\pickup.o   \
-$(OBJ)\pline.o    $(OBJ)\polyself.o $(OBJ)\potion.o   $(OBJ)\pray.o     \
-$(OBJ)\priest.o   $(OBJ)\quest.o    $(OBJ)\questpgr.o $(OBJ)\read.o     \
-$(OBJ)\rect.o     $(OBJ)\region.o   $(OBJ)\restore.o  $(OBJ)\rip.o      \
-$(OBJ)\rnd.o      $(OBJ)\role.o     $(OBJ)\rumors.o   $(OBJ)\save.o     \
-$(OBJ)\shk.o      $(OBJ)\shknam.o   $(OBJ)\sit.o      $(OBJ)\sounds.o   \
-$(OBJ)\sp_lev.o   $(OBJ)\spell.o    $(OBJ)\steal.o    $(OBJ)\steed.o    \
-$(OBJ)\sys.o      $(OBJ)\teleport.o $(OBJ)\timeout.o  $(OBJ)\topten.o   \
-$(OBJ)\track.o    $(OBJ)\trap.o     $(OBJ)\u_init.o   $(OBJ)\uhitm.o    \
-$(OBJ)\vault.o    $(OBJ)\version.o  $(OBJ)\vision.o   $(OBJ)\weapon.o   \
-$(OBJ)\were.o     $(OBJ)\wield.o    $(OBJ)\windows.o  $(OBJ)\wizard.o   \
-$(OBJ)\worm.o     $(OBJ)\worn.o     $(OBJ)\write.o    $(OBJ)\zap.o      \
-$(OBJ)\pcmain.o   $(OBJ)\pcsys.o    $(OBJ)\pctty.o    $(OBJ)\pcunix.o   \
-$(OBJ)\posixregex.o \
-$(OBJ)\getline.o  $(OBJ)\termcap.o  $(OBJ)\topl.o     $(OBJ)\wintty.o \
-$(OBJ)\os2.o \
+$(OBJ)/allmain.o  $(OBJ)/alloc.o    $(OBJ)/apply.o    $(OBJ)/artifact.o \
+$(OBJ)/attrib.o   $(OBJ)/ball.o     $(OBJ)/bones.o    $(OBJ)/botl.o     \
+$(OBJ)/cmd.o      $(OBJ)/dbridge.o  $(OBJ)/decl.o     $(OBJ)/detect.o   \
+$(OBJ)/dig.o      $(OBJ)/display.o  $(OBJ)/dlb.o      $(OBJ)/do_name.o  \
+$(OBJ)/do_wear.o  $(OBJ)/do.o       $(OBJ)/dog.o      $(OBJ)/dogmove.o  \
+$(OBJ)/dokick.o   $(OBJ)/dothrow.o  $(OBJ)/drawing.o  $(OBJ)/dungeon.o  \
+$(OBJ)/eat.o      $(OBJ)/end.o      $(OBJ)/engrave.o  $(OBJ)/exper.o    \
+$(OBJ)/explode.o  $(OBJ)/extralev.o $(OBJ)/files.o    $(OBJ)/fountain.o \
+$(OBJ)/hack.o     $(OBJ)/hacklib.o  $(OBJ)/invent.o   $(OBJ)/isaac64.o  \
+$(OBJ)/light.o    $(OBJ)/lock.o     $(OBJ)/mail.o     $(OBJ)/makemon.o  \
+$(OBJ)/mapglyph.o $(OBJ)/mcastu.o   $(OBJ)/mhitm.o    $(OBJ)/mhitu.o    \
+$(OBJ)/minion.o   $(OBJ)/mklev.o    $(OBJ)/mkmap.o    $(OBJ)/mkmaze.o   \
+$(OBJ)/mkobj.o    $(OBJ)/mkroom.o   $(OBJ)/mon.o      $(OBJ)/mondata.o  \
+$(OBJ)/monmove.o  $(OBJ)/monst.o    $(OBJ)/mplayer.o  $(OBJ)/mthrowu.o  \
+$(OBJ)/muse.o     $(OBJ)/music.o    $(OBJ)/o_init.o   $(OBJ)/objects.o  \
+$(OBJ)/objnam.o   $(OBJ)/options.o  $(OBJ)/pager.o    $(OBJ)/pickup.o   \
+$(OBJ)/pline.o    $(OBJ)/polyself.o $(OBJ)/potion.o   $(OBJ)/pray.o     \
+$(OBJ)/priest.o   $(OBJ)/quest.o    $(OBJ)/questpgr.o $(OBJ)/read.o     \
+$(OBJ)/rect.o     $(OBJ)/region.o   $(OBJ)/restore.o  $(OBJ)/rip.o      \
+$(OBJ)/rnd.o      $(OBJ)/role.o     $(OBJ)/rumors.o   $(OBJ)/save.o     \
+$(OBJ)/shk.o      $(OBJ)/shknam.o   $(OBJ)/sit.o      $(OBJ)/sounds.o   \
+$(OBJ)/sp_lev.o   $(OBJ)/spell.o    $(OBJ)/steal.o    $(OBJ)/steed.o    \
+$(OBJ)/sys.o      $(OBJ)/teleport.o $(OBJ)/timeout.o  $(OBJ)/topten.o   \
+$(OBJ)/track.o    $(OBJ)/trap.o     $(OBJ)/u_init.o   $(OBJ)/uhitm.o    \
+$(OBJ)/vault.o    $(OBJ)/version.o  $(OBJ)/vision.o   $(OBJ)/weapon.o   \
+$(OBJ)/were.o     $(OBJ)/wield.o    $(OBJ)/windows.o  $(OBJ)/wizard.o   \
+$(OBJ)/worm.o     $(OBJ)/worn.o     $(OBJ)/write.o    $(OBJ)/zap.o      \
+$(OBJ)/pcmain.o   $(OBJ)/pcsys.o    $(OBJ)/pctty.o    $(OBJ)/pcunix.o   \
+$(OBJ)/posixregex.o \
+$(OBJ)/getline.o  $(OBJ)/termcap.o  $(OBJ)/topl.o     $(OBJ)/wintty.o \
+$(OBJ)/os2.o \
 $(CURSES_OBJS)
 
-$(GAMEDIR)\nethack.exe: $(NH_OBJS)
+$(GAMEDIR)/nethack.exe: $(NH_OBJS)
 	@$(MAKE_GAMEDIR)
 	$(CC) -o $@ $(NH_OBJS)
 
@@ -158,31 +158,31 @@ $(GAMEDIR)\nethack.exe: $(NH_OBJS)
 #                      Files to be copied to the output                      #
 ##############################################################################
 
-$(GAMEDIR)\license: $(DAT)\license
+$(GAMEDIR)/license: $(DAT)/license
 	@$(MAKE_GAMEDIR)
 	cp $< $@
 
-$(GAMEDIR)\symbols: $(DAT)\symbols
+$(GAMEDIR)/symbols: $(DAT)/symbols
 	@$(MAKE_GAMEDIR)
 	cp $< $@
 
-$(GAMEDIR)\NetHack.cnf: $(SSHR)\NetHack.cnf
+$(GAMEDIR)/NetHack.cnf: $(SSHR)/NetHack.cnf
 	@$(MAKE_GAMEDIR)
 	cp $< $@
 
-$(GAMEDIR)\record:
+$(GAMEDIR)/record:
 	@$(MAKE_GAMEDIR)
 	@touch $@
 
-$(GAMEDIR)\sysconf: ..\sys\winnt\sysconf
+$(GAMEDIR)/sysconf: ../sys/winnt/sysconf
 	@$(MAKE_GAMEDIR)
 	cp $< $@
 
-$(GAMEDIR)\nethack.txt: $(DOC)\nethack.txt
+$(GAMEDIR)/nethack.txt: $(DOC)/nethack.txt
 	@$(MAKE_GAMEDIR)
 	cp $< $@
 
-$(GAMEDIR)\guidebk.txt: $(DOC)\guidebook.txt
+$(GAMEDIR)/guidebk.txt: $(DOC)/guidebook.txt
 	@$(MAKE_GAMEDIR)
 	cp $< $@
 
@@ -190,194 +190,194 @@ $(GAMEDIR)\guidebk.txt: $(DOC)\guidebook.txt
 #                          dlb.exe and its products                          #
 ##############################################################################
 
-DLB_OBJS = $(OBJ)\dlb_main.o $(OBJ)\alloc.o $(OBJ)\dlb.o $(OBJ)\panic.o
+DLB_OBJS = $(OBJ)/dlb_main.o $(OBJ)/alloc.o $(OBJ)/dlb.o $(OBJ)/panic.o
 
-$(UTIL)\dlb.exe : $(DLB_OBJS)
+$(UTIL)/dlb.exe : $(DLB_OBJS)
 	$(CC) -o $@ $(DLB_OBJS)
 
 NHDAT_DEPS1 = \
-$(DAT)\cmdhelp  $(DAT)\help     $(DAT)\hh       $(DAT)\history   \
-$(DAT)\keyhelp  $(DAT)\opthelp  $(DAT)\tribute  $(DAT)\wizhelp   \
-$(DAT)\dungeon  $(DAT)\bogusmon $(DAT)\engrave  $(DAT)\epitaph   \
-$(DAT)\data     $(DAT)\oracles  $(DAT)\options  $(DAT)\quest.dat \
-$(DAT)\rumors
+$(DAT)/cmdhelp  $(DAT)/help     $(DAT)/hh       $(DAT)/history   \
+$(DAT)/keyhelp  $(DAT)/opthelp  $(DAT)/tribute  $(DAT)/wizhelp   \
+$(DAT)/dungeon  $(DAT)/bogusmon $(DAT)/engrave  $(DAT)/epitaph   \
+$(DAT)/data     $(DAT)/oracles  $(DAT)/options  $(DAT)/quest.dat \
+$(DAT)/rumors
 NHDAT_DEPS2 = \
-$(OBJ)\Arch.tag     $(OBJ)\Barb.tag    $(OBJ)\Caveman.tag $(OBJ)\Healer.tag   \
-$(OBJ)\Knight.tag   $(OBJ)\Monk.tag    $(OBJ)\Priest.tag  $(OBJ)\Ranger.tag   \
-$(OBJ)\Rogue.tag    $(OBJ)\Samurai.tag $(OBJ)\Tourist.tag $(OBJ)\Valkyrie.tag \
-$(OBJ)\Wizard.tag   $(OBJ)\bigroom.tag $(OBJ)\castle.tag  $(OBJ)\endgame.tag  \
-$(OBJ)\gehennom.tag $(OBJ)\knox.tag    $(OBJ)\medusa.tag  $(OBJ)\mines.tag    \
-$(OBJ)\oracle.tag   $(OBJ)\sokoban.tag $(OBJ)\tower.tag   $(OBJ)\yendor.tag
+$(OBJ)/Arch.tag     $(OBJ)/Barb.tag    $(OBJ)/Caveman.tag $(OBJ)/Healer.tag   \
+$(OBJ)/Knight.tag   $(OBJ)/Monk.tag    $(OBJ)/Priest.tag  $(OBJ)/Ranger.tag   \
+$(OBJ)/Rogue.tag    $(OBJ)/Samurai.tag $(OBJ)/Tourist.tag $(OBJ)/Valkyrie.tag \
+$(OBJ)/Wizard.tag   $(OBJ)/bigroom.tag $(OBJ)/castle.tag  $(OBJ)/endgame.tag  \
+$(OBJ)/gehennom.tag $(OBJ)/knox.tag    $(OBJ)/medusa.tag  $(OBJ)/mines.tag    \
+$(OBJ)/oracle.tag   $(OBJ)/sokoban.tag $(OBJ)/tower.tag   $(OBJ)/yendor.tag
 
-$(GAMEDIR)\nhdat: $(NHDAT_DEPS1) $(NHDAT_DEPS2) $(UTIL)\dlb.exe
+$(GAMEDIR)/nhdat: $(NHDAT_DEPS1) $(NHDAT_DEPS2) $(UTIL)/dlb.exe
 	@$(MAKE_GAMEDIR)
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)/dlb.exe cvf $@ cmdhelp help hh history keyhelp opthelp tribute wizhelp dungeon bogusmon engrave epitaph data oracles options quest.dat rumors *.lev")
+	cd $(DAT) && $(UTIL)/dlb.exe cvf $@ cmdhelp help hh history keyhelp opthelp tribute wizhelp dungeon bogusmon engrave epitaph data oracles options quest.dat rumors *.lev
 
 ##############################################################################
 #                       makedefs.exe and its products                        #
 ##############################################################################
 
-MAKEDEFS_OBJS = $(OBJ)\makedefs.o $(OBJ)\monst.o $(OBJ)\objects.o
+MAKEDEFS_OBJS = $(OBJ)/makedefs.o $(OBJ)/monst.o $(OBJ)/objects.o
 
-$(UTIL)\makedefs.exe : $(MAKEDEFS_OBJS)
+$(UTIL)/makedefs.exe : $(MAKEDEFS_OBJS)
 	$(CC) -o $@ $(MAKEDEFS_OBJS)
 
-$(INC)\pm.h : $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -p
+$(INC)/pm.h : $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -p
 
-$(INC)\onames.h : $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -o
+$(INC)/onames.h : $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -o
 
-$(INC)\date.h : $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -v
+$(INC)/date.h : $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -v
 
-$(DAT)\bogusmon : $(DAT)\bogusmon.txt $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -s
+$(DAT)/bogusmon : $(DAT)/bogusmon.txt $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -s
 
-$(DAT)\engrave : $(DAT)\engrave.txt $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -s
+$(DAT)/engrave : $(DAT)/engrave.txt $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -s
 
-$(DAT)\epitaph : $(DAT)\epitaph.txt $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -s
+$(DAT)/epitaph : $(DAT)/epitaph.txt $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -s
 
-$(DAT)\data : $(DAT)\data.base $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -d
+$(DAT)/data : $(DAT)/data.base $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -d
 
-$(DAT)\oracles : $(DAT)\oracles.txt $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -h
+$(DAT)/oracles : $(DAT)/oracles.txt $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -h
 
-$(DAT)\options : $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -v
+$(DAT)/options : $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -v
 
-$(DAT)\quest.dat : $(DAT)\quest.txt $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -q
+$(DAT)/quest.dat : $(DAT)/quest.txt $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -q
 
-$(DAT)\rumors : $(DAT)\rumors.tru $(DAT)\rumors.fal $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -r
+$(DAT)/rumors : $(DAT)/rumors.tru $(DAT)/rumors.fal $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -r
 
-$(DAT)\dungeon.pdf : $(DAT)\dungeon.def $(UTIL)\makedefs.exe
-	$(UTIL)\makedefs.exe -e
+$(DAT)/dungeon.pdf : $(DAT)/dungeon.def $(UTIL)/makedefs.exe
+	$(UTIL)/makedefs.exe -e
 
 ##############################################################################
 #                       dgn_comp.exe and its products                        #
 ##############################################################################
 
 DGN_COMP_OBJS = \
-$(OBJ)\dgn_main.o $(OBJ)\dgn_lex.o  $(OBJ)\dgn_yacc.o $(OBJ)\alloc.o     \
-$(OBJ)\panic.o
+$(OBJ)/dgn_main.o $(OBJ)/dgn_lex.o  $(OBJ)/dgn_yacc.o $(OBJ)/alloc.o     \
+$(OBJ)/panic.o
 
-$(UTIL)\dgn_comp.exe : $(DGN_COMP_OBJS)
+$(UTIL)/dgn_comp.exe : $(DGN_COMP_OBJS)
 	$(CC) -o $@ $(DGN_COMP_OBJS)
 
-$(DAT)\dungeon : $(DAT)\dungeon.pdf $(UTIL)\dgn_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)/dgn_comp dungeon.pdf")
+$(DAT)/dungeon : $(DAT)/dungeon.pdf $(UTIL)/dgn_comp.exe
+	cd $(DAT) && $(UTIL)/dgn_comp dungeon.pdf
 
 ##############################################################################
 #                       lev_comp.exe and its products                        #
 ##############################################################################
 
 LEV_COMP_OBJS = \
-$(OBJ)\lev_main.o $(OBJ)\lev_lex.o  $(OBJ)\lev_yacc.o $(OBJ)\alloc.o    \
-$(OBJ)\decl.o     $(OBJ)\drawing.o  $(OBJ)\monst.o    $(OBJ)\objects.o  \
-$(OBJ)\panic.o
+$(OBJ)/lev_main.o $(OBJ)/lev_lex.o  $(OBJ)/lev_yacc.o $(OBJ)/alloc.o    \
+$(OBJ)/decl.o     $(OBJ)/drawing.o  $(OBJ)/monst.o    $(OBJ)/objects.o  \
+$(OBJ)/panic.o
 
-$(UTIL)\lev_comp.exe : $(LEV_COMP_OBJS)
+$(UTIL)/lev_comp.exe : $(LEV_COMP_OBJS)
 	$(CC) -o $@ $(LEV_COMP_OBJS)
 
-$(OBJ)\Arch.tag : $(DAT)\Arch.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Arch.des")
+$(OBJ)/Arch.tag : $(DAT)/Arch.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Arch.des
 	@touch $@
 
-$(OBJ)\Barb.tag : $(DAT)\Barb.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Barb.des")
+$(OBJ)/Barb.tag : $(DAT)/Barb.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Barb.des
 	@touch $@
 
-$(OBJ)\Caveman.tag : $(DAT)\Caveman.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Caveman.des")
+$(OBJ)/Caveman.tag : $(DAT)/Caveman.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Caveman.des
 	@touch $@
 
-$(OBJ)\Healer.tag : $(DAT)\Healer.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Healer.des")
+$(OBJ)/Healer.tag : $(DAT)/Healer.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Healer.des
 	@touch $@
 
-$(OBJ)\Knight.tag : $(DAT)\Knight.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Knight.des")
+$(OBJ)/Knight.tag : $(DAT)/Knight.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Knight.des
 	@touch $@
 
-$(OBJ)\Monk.tag : $(DAT)\Monk.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Monk.des")
+$(OBJ)/Monk.tag : $(DAT)/Monk.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Monk.des
 	@touch $@
 
-$(OBJ)\Priest.tag : $(DAT)\Priest.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Priest.des")
+$(OBJ)/Priest.tag : $(DAT)/Priest.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Priest.des
 	@touch $@
 
-$(OBJ)\Ranger.tag : $(DAT)\Ranger.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Ranger.des")
+$(OBJ)/Ranger.tag : $(DAT)/Ranger.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Ranger.des
 	@touch $@
 
-$(OBJ)\Rogue.tag : $(DAT)\Rogue.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Rogue.des")
+$(OBJ)/Rogue.tag : $(DAT)/Rogue.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Rogue.des
 	@touch $@
 
-$(OBJ)\Samurai.tag : $(DAT)\Samurai.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Samurai.des")
+$(OBJ)/Samurai.tag : $(DAT)/Samurai.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Samurai.des
 	@touch $@
 
-$(OBJ)\Tourist.tag : $(DAT)\Tourist.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Tourist.des")
+$(OBJ)/Tourist.tag : $(DAT)/Tourist.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Tourist.des
 	@touch $@
 
-$(OBJ)\Valkyrie.tag : $(DAT)\Valkyrie.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Valkyrie.des")
+$(OBJ)/Valkyrie.tag : $(DAT)/Valkyrie.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Valkyrie.des
 	@touch $@
 
-$(OBJ)\Wizard.tag : $(DAT)\Wizard.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\Wizard.des")
+$(OBJ)/Wizard.tag : $(DAT)/Wizard.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/Wizard.des
 	@touch $@
 
-$(OBJ)\bigroom.tag : $(DAT)\bigroom.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\bigroom.des")
+$(OBJ)/bigroom.tag : $(DAT)/bigroom.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/bigroom.des
 	@touch $@
 
-$(OBJ)\castle.tag : $(DAT)\castle.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\castle.des")
+$(OBJ)/castle.tag : $(DAT)/castle.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/castle.des
 	@touch $@
 
-$(OBJ)\endgame.tag : $(DAT)\endgame.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\endgame.des")
+$(OBJ)/endgame.tag : $(DAT)/endgame.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/endgame.des
 	@touch $@
 
-$(OBJ)\gehennom.tag : $(DAT)\gehennom.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\gehennom.des")
+$(OBJ)/gehennom.tag : $(DAT)/gehennom.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/gehennom.des
 	@touch $@
 
-$(OBJ)\knox.tag : $(DAT)\knox.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\knox.des")
+$(OBJ)/knox.tag : $(DAT)/knox.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/knox.des
 	@touch $@
 
-$(OBJ)\medusa.tag : $(DAT)\medusa.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\medusa.des")
+$(OBJ)/medusa.tag : $(DAT)/medusa.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/medusa.des
 	@touch $@
 
-$(OBJ)\mines.tag : $(DAT)\mines.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\mines.des")
+$(OBJ)/mines.tag : $(DAT)/mines.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/mines.des
 	@touch $@
 
-$(OBJ)\oracle.tag : $(DAT)\oracle.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\oracle.des")
+$(OBJ)/oracle.tag : $(DAT)/oracle.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/oracle.des
 	@touch $@
 
-$(OBJ)\sokoban.tag : $(DAT)\sokoban.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\sokoban.des")
+$(OBJ)/sokoban.tag : $(DAT)/sokoban.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/sokoban.des
 	@touch $@
 
-$(OBJ)\tower.tag : $(DAT)\tower.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\tower.des")
+$(OBJ)/tower.tag : $(DAT)/tower.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/tower.des
 	@touch $@
 
-$(OBJ)\yendor.tag : $(DAT)\yendor.des $(UTIL)\lev_comp.exe
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)\lev_comp.exe $(DAT)\yendor.des")
+$(OBJ)/yendor.tag : $(DAT)/yendor.des $(UTIL)/lev_comp.exe
+	cd $(DAT) && $(UTIL)/lev_comp.exe $(DAT)/yendor.des
 	@touch $@
 
 ##############################################################################
@@ -385,294 +385,290 @@ $(OBJ)\yendor.tag : $(DAT)\yendor.des $(UTIL)\lev_comp.exe
 ##############################################################################
 
 CONFIG_H = \
-$(INC)\config.h   $(INC)\config1.h $(INC)\tradstdc.h $(INC)\global.h \
-$(INC)\coord.h    $(INC)\os2conf.h $(INC)\micro.h $(INC)\system.h
+$(INC)/config.h   $(INC)/config1.h $(INC)/tradstdc.h $(INC)/global.h \
+$(INC)/coord.h    $(INC)/os2conf.h $(INC)/micro.h $(INC)/system.h
 HACK_H = $(CONFIG_H) \
-$(INC)\hack.h     $(INC)\lint.h     $(INC)\align.h    $(INC)\dungeon.h \
-$(INC)\monsym.h   $(INC)\mkroom.h   $(INC)\objclass.h $(INC)\youprop.h \
-$(INC)\prop.h     $(INC)\permonst.h $(INC)\monattk.h  $(INC)\monflag.h \
-$(INC)\mondata.h  $(INC)\pm.h       $(INC)\wintype.h  $(INC)\context.h \
-$(INC)\decl.h     $(INC)\quest.h    $(INC)\spell.h    $(INC)\color.h \
-$(INC)\obj.h      $(INC)\you.h      $(INC)\attrib.h   $(INC)\monst.h \
-$(INC)\mextra.h   $(INC)\skills.h   $(INC)\onames.h   $(INC)\timeout.h \
-$(INC)\trap.h     $(INC)\flag.h     $(INC)\rm.h       $(INC)\vision.h \
-$(INC)\display.h  $(INC)\engrave.h  $(INC)\rect.h     $(INC)\region.h \
-$(INC)\extern.h   $(INC)\winprocs.h $(INC)\botl.h     $(INC)\sys.h
+$(INC)/hack.h     $(INC)/lint.h     $(INC)/align.h    $(INC)/dungeon.h \
+$(INC)/monsym.h   $(INC)/mkroom.h   $(INC)/objclass.h $(INC)/youprop.h \
+$(INC)/prop.h     $(INC)/permonst.h $(INC)/monattk.h  $(INC)/monflag.h \
+$(INC)/mondata.h  $(INC)/pm.h       $(INC)/wintype.h  $(INC)/context.h \
+$(INC)/decl.h     $(INC)/quest.h    $(INC)/spell.h    $(INC)/color.h \
+$(INC)/obj.h      $(INC)/you.h      $(INC)/attrib.h   $(INC)/monst.h \
+$(INC)/mextra.h   $(INC)/skills.h   $(INC)/onames.h   $(INC)/timeout.h \
+$(INC)/trap.h     $(INC)/flag.h     $(INC)/rm.h       $(INC)/vision.h \
+$(INC)/display.h  $(INC)/engrave.h  $(INC)/rect.h     $(INC)/region.h \
+$(INC)/extern.h   $(INC)/winprocs.h $(INC)/botl.h     $(INC)/sys.h
 
 # Source files in src
 
-$(OBJ)\allmain.o:  allmain.c  $(HACK_H)
-$(OBJ)\alloc.o:    alloc.c    $(CONFIG_H)
-$(OBJ)\apply.o:    apply.c    $(HACK_H)
-$(OBJ)\artifact.o: artifact.c $(HACK_H) $(INC)\artifact.h $(INC)\artilist.h
-$(OBJ)\attrib.o:   attrib.c   $(HACK_H)
-$(OBJ)\ball.o:     ball.c     $(HACK_H)
-$(OBJ)\bones.o:    bones.c    $(HACK_H) $(INC)\lev.h
-$(OBJ)\botl.o:     botl.c     $(HACK_H)
-$(OBJ)\cmd.o:      cmd.c      $(HACK_H) $(INC)\lev.h $(INC)\func_tab.h
-$(OBJ)\dbridge.o:  dbridge.c  $(HACK_H)
-$(OBJ)\decl.o:     decl.c     $(HACK_H)
-$(OBJ)\detect.o:   detect.c   $(HACK_H) $(INC)\artifact.h
-$(OBJ)\dig.o:      dig.c      $(HACK_H)
-$(OBJ)\display.o:  display.c  $(HACK_H)
-$(OBJ)\dlb.o:      dlb.c      $(CONFIG_H) $(INC)\dlb.h
-$(OBJ)\do.o:       do.c       $(HACK_H) $(INC)\lev.h
-$(OBJ)\dog.o:      dog.c      $(HACK_H)
-$(OBJ)\dogmove.o:  dogmove.c  $(HACK_H) $(INC)\mfndpos.h
-$(OBJ)\dokick.o:   dokick.c   $(HACK_H)
-$(OBJ)\dothrow.o:  dothrow.c  $(HACK_H)
-$(OBJ)\do_name.o:  do_name.c  $(HACK_H)
-$(OBJ)\do_wear.o:  do_wear.c  $(HACK_H)
-$(OBJ)\drawing.o:  drawing.c  $(HACK_H) $(INC)\tcap.h
-$(OBJ)\dungeon.o:  dungeon.c  $(HACK_H) $(INC)\dgn_file.h $(INC)\dlb.h \
-                              $(INC)\lev.h
-$(OBJ)\eat.o:      eat.c      $(HACK_H)
-$(OBJ)\end.o:      end.c      $(HACK_H) $(INC)\lev.h $(INC)\dlb.h
-$(OBJ)\engrave.o:  engrave.c  $(HACK_H) $(INC)\lev.h
-$(OBJ)\exper.o:    exper.c    $(HACK_H)
-$(OBJ)\explode.o:  explode.c  $(HACK_H)
-$(OBJ)\extralev.o: extralev.c $(HACK_H)
-$(OBJ)\files.o:    files.c    $(HACK_H) $(INC)\dlb.h $(INC)\wintty.h
-$(OBJ)\fountain.o: fountain.c $(HACK_H)
-$(OBJ)\hack.o:     hack.c     $(HACK_H)
-$(OBJ)\hacklib.o:  hacklib.c  $(HACK_H)
-$(OBJ)\invent.o:   invent.c   $(HACK_H)
-$(OBJ)\isaac64.o:  isaac64.c  $(CONFIG_H) $(INC)\isaac64.h $(INC)\integer.h
-$(OBJ)\light.o:    light.c    $(HACK_H) $(INC)\lev.h
-$(OBJ)\lock.o:     lock.c     $(HACK_H)
-$(OBJ)\mail.o:     mail.c     $(HACK_H)
-$(OBJ)\makemon.o:  makemon.c  $(HACK_H)
-$(OBJ)\mapglyph.o: mapglyph.c $(HACK_H) $(INC)\wintty.h $(INC)\color.h
-$(OBJ)\mcastu.o:   mcastu.c   $(HACK_H)
-$(OBJ)\mhitm.o:    mhitm.c    $(HACK_H) $(INC)\artifact.h
-$(OBJ)\mhitu.o:    mhitu.c    $(HACK_H) $(INC)\artifact.h
-$(OBJ)\minion.o:   minion.c   $(HACK_H)
-$(OBJ)\mklev.o:    mklev.c    $(HACK_H)
-$(OBJ)\mkmap.o:    mkmap.c    $(HACK_H) $(INC)\sp_lev.h
-$(OBJ)\mkmaze.o:   mkmaze.c   $(HACK_H) $(INC)\sp_lev.h $(INC)\lev.h
-$(OBJ)\mkobj.o:    mkobj.c    $(HACK_H)
-$(OBJ)\mkroom.o:   mkroom.c   $(HACK_H)
-$(OBJ)\mon.o:      mon.c      $(HACK_H) $(INC)\mfndpos.h
-$(OBJ)\mondata.o:  mondata.c  $(HACK_H)
-$(OBJ)\monmove.o:  monmove.c  $(HACK_H) $(INC)\mfndpos.h $(INC)\artifact.h
-$(OBJ)\monst.o:    monst.c    $(CONFIG_H) $(INC)\permonst.h $(INC)\align.h \
-                              $(INC)\monattk.h $(INC)\monflag.h \
-                              $(INC)\monsym.h $(INC)\color.h
-$(OBJ)\mplayer.o:  mplayer.c  $(HACK_H)
-$(OBJ)\mthrowu.o:  mthrowu.c  $(HACK_H)
-$(OBJ)\muse.o:     muse.c     $(HACK_H)
-$(OBJ)\music.o:    music.c    $(HACK_H)
-$(OBJ)\objects.o:  objects.c  $(CONFIG_H) $(INC)\obj.h $(INC)\objclass.h \
-                              $(INC)\prop.h $(INC)\skills.h $(INC)\color.h
-$(OBJ)\objnam.o:   objnam.c   $(HACK_H)
-$(OBJ)\options.o:  options.c  $(HACK_H) $(INC)\tcap.h
-$(OBJ)\o_init.o:   o_init.c   $(HACK_H) $(INC)\lev.h
-$(OBJ)\pager.o:    pager.c    $(HACK_H) $(INC)\dlb.h
-$(OBJ)\pickup.o:   pickup.c   $(HACK_H)
-$(OBJ)\pline.o:    pline.c    $(HACK_H)
-$(OBJ)\polyself.o: polyself.c $(HACK_H)
-$(OBJ)\potion.o:   potion.c   $(HACK_H)
-$(OBJ)\pray.o:     pray.c     $(HACK_H)
-$(OBJ)\priest.o:   priest.c   $(HACK_H) $(INC)\mfndpos.h
-$(OBJ)\quest.o:    quest.c    $(HACK_H) $(INC)\quest.h $(INC)\qtext.h
-$(OBJ)\questpgr.o: questpgr.c $(HACK_H) $(INC)\dlb.h $(INC)\qtext.h \
-                              $(INC)\wintty.h
-$(OBJ)\read.o:     read.c     $(HACK_H)
-$(OBJ)\rect.o:     rect.c     $(HACK_H)
-$(OBJ)\region.o:   region.c   $(HACK_H) $(INC)\lev.h
-$(OBJ)\restore.o:  restore.c  $(HACK_H) $(INC)\lev.h $(INC)\tcap.h \
-                              $(INC)\display.h
-$(OBJ)\rip.o:      rip.c      $(HACK_H)
-$(OBJ)\rnd.o:      rnd.c      $(HACK_H) $(INC)\isaac64.h $(INC)\integer.h
-$(OBJ)\role.o:     role.c     $(HACK_H)
-$(OBJ)\rumors.o:   rumors.c   $(HACK_H) $(INC)\lev.h $(INC)\dlb.h
-$(OBJ)\save.o:     save.c     $(HACK_H) $(INC)\lev.h
-$(OBJ)\shk.o:      shk.c      $(HACK_H)
-$(OBJ)\shknam.o:   shknam.c   $(HACK_H)
-$(OBJ)\sit.o:      sit.c      $(HACK_H) $(INC)\artifact.h
-$(OBJ)\sounds.o:   sounds.c   $(HACK_H)
-$(OBJ)\spell.o:    spell.c    $(HACK_H)
-$(OBJ)\sp_lev.o:   sp_lev.c   $(HACK_H) $(INC)\dlb.h $(INC)\sp_lev.h
-$(OBJ)\steal.o:    steal.c    $(HACK_H)
-$(OBJ)\steed.o:    steed.c    $(HACK_H)
-$(OBJ)\sys.o:      sys.c      $(HACK_H)
-$(OBJ)\teleport.o: teleport.c $(HACK_H)
-$(OBJ)\timeout.o:  timeout.c  $(HACK_H) $(INC)\lev.h
-$(OBJ)\topten.o:   topten.c   $(HACK_H) $(INC)\dlb.h $(INC)\patchlevel.h
-$(OBJ)\track.o:    track.c    $(HACK_H)
-$(OBJ)\trap.o:     trap.c     $(HACK_H)
-$(OBJ)\uhitm.o:    uhitm.c    $(HACK_H)
-$(OBJ)\u_init.o:   u_init.c   $(HACK_H)
-$(OBJ)\vault.o:    vault.c    $(HACK_H)
-$(OBJ)\version.o:  version.c  $(HACK_H) $(INC)\dlb.h $(INC)\date.h \
-                              $(INC)\patchlevel.h
-$(OBJ)\vision.o:   vision.c   $(HACK_H)
-$(OBJ)\weapon.o:   weapon.c   $(HACK_H)
-$(OBJ)\were.o:     were.c     $(HACK_H)
-$(OBJ)\wield.o:    wield.c    $(HACK_H)
-$(OBJ)\windows.o:  windows.c  $(HACK_H) $(INC)\wintty.h
-$(OBJ)\wizard.o:   wizard.c   $(HACK_H) $(INC)\qtext.h
-$(OBJ)\worm.o:     worm.c     $(HACK_H) $(INC)\lev.h
-$(OBJ)\worn.o:     worn.c     $(HACK_H)
-$(OBJ)\write.o:    write.c    $(HACK_H)
-$(OBJ)\zap.o:      zap.c      $(HACK_H)
+$(OBJ)/allmain.o:  allmain.c  $(HACK_H)
+$(OBJ)/alloc.o:    alloc.c    $(CONFIG_H)
+$(OBJ)/apply.o:    apply.c    $(HACK_H)
+$(OBJ)/artifact.o: artifact.c $(HACK_H) $(INC)/artifact.h $(INC)/artilist.h
+$(OBJ)/attrib.o:   attrib.c   $(HACK_H)
+$(OBJ)/ball.o:     ball.c     $(HACK_H)
+$(OBJ)/bones.o:    bones.c    $(HACK_H) $(INC)/lev.h
+$(OBJ)/botl.o:     botl.c     $(HACK_H)
+$(OBJ)/cmd.o:      cmd.c      $(HACK_H) $(INC)/lev.h $(INC)/func_tab.h
+$(OBJ)/dbridge.o:  dbridge.c  $(HACK_H)
+$(OBJ)/decl.o:     decl.c     $(HACK_H)
+$(OBJ)/detect.o:   detect.c   $(HACK_H) $(INC)/artifact.h
+$(OBJ)/dig.o:      dig.c      $(HACK_H)
+$(OBJ)/display.o:  display.c  $(HACK_H)
+$(OBJ)/dlb.o:      dlb.c      $(CONFIG_H) $(INC)/dlb.h
+$(OBJ)/do.o:       do.c       $(HACK_H) $(INC)/lev.h
+$(OBJ)/dog.o:      dog.c      $(HACK_H)
+$(OBJ)/dogmove.o:  dogmove.c  $(HACK_H) $(INC)/mfndpos.h
+$(OBJ)/dokick.o:   dokick.c   $(HACK_H)
+$(OBJ)/dothrow.o:  dothrow.c  $(HACK_H)
+$(OBJ)/do_name.o:  do_name.c  $(HACK_H)
+$(OBJ)/do_wear.o:  do_wear.c  $(HACK_H)
+$(OBJ)/drawing.o:  drawing.c  $(HACK_H) $(INC)/tcap.h
+$(OBJ)/dungeon.o:  dungeon.c  $(HACK_H) $(INC)/dgn_file.h $(INC)/dlb.h \
+                              $(INC)/lev.h
+$(OBJ)/eat.o:      eat.c      $(HACK_H)
+$(OBJ)/end.o:      end.c      $(HACK_H) $(INC)/lev.h $(INC)/dlb.h
+$(OBJ)/engrave.o:  engrave.c  $(HACK_H) $(INC)/lev.h
+$(OBJ)/exper.o:    exper.c    $(HACK_H)
+$(OBJ)/explode.o:  explode.c  $(HACK_H)
+$(OBJ)/extralev.o: extralev.c $(HACK_H)
+$(OBJ)/files.o:    files.c    $(HACK_H) $(INC)/dlb.h $(INC)/wintty.h
+$(OBJ)/fountain.o: fountain.c $(HACK_H)
+$(OBJ)/hack.o:     hack.c     $(HACK_H)
+$(OBJ)/hacklib.o:  hacklib.c  $(HACK_H)
+$(OBJ)/invent.o:   invent.c   $(HACK_H)
+$(OBJ)/isaac64.o:  isaac64.c  $(CONFIG_H) $(INC)/isaac64.h $(INC)/integer.h
+$(OBJ)/light.o:    light.c    $(HACK_H) $(INC)/lev.h
+$(OBJ)/lock.o:     lock.c     $(HACK_H)
+$(OBJ)/mail.o:     mail.c     $(HACK_H)
+$(OBJ)/makemon.o:  makemon.c  $(HACK_H)
+$(OBJ)/mapglyph.o: mapglyph.c $(HACK_H) $(INC)/wintty.h $(INC)/color.h
+$(OBJ)/mcastu.o:   mcastu.c   $(HACK_H)
+$(OBJ)/mhitm.o:    mhitm.c    $(HACK_H) $(INC)/artifact.h
+$(OBJ)/mhitu.o:    mhitu.c    $(HACK_H) $(INC)/artifact.h
+$(OBJ)/minion.o:   minion.c   $(HACK_H)
+$(OBJ)/mklev.o:    mklev.c    $(HACK_H)
+$(OBJ)/mkmap.o:    mkmap.c    $(HACK_H) $(INC)/sp_lev.h
+$(OBJ)/mkmaze.o:   mkmaze.c   $(HACK_H) $(INC)/sp_lev.h $(INC)/lev.h
+$(OBJ)/mkobj.o:    mkobj.c    $(HACK_H)
+$(OBJ)/mkroom.o:   mkroom.c   $(HACK_H)
+$(OBJ)/mon.o:      mon.c      $(HACK_H) $(INC)/mfndpos.h
+$(OBJ)/mondata.o:  mondata.c  $(HACK_H)
+$(OBJ)/monmove.o:  monmove.c  $(HACK_H) $(INC)/mfndpos.h $(INC)/artifact.h
+$(OBJ)/monst.o:    monst.c    $(CONFIG_H) $(INC)/permonst.h $(INC)/align.h \
+                              $(INC)/monattk.h $(INC)/monflag.h \
+                              $(INC)/monsym.h $(INC)/color.h
+$(OBJ)/mplayer.o:  mplayer.c  $(HACK_H)
+$(OBJ)/mthrowu.o:  mthrowu.c  $(HACK_H)
+$(OBJ)/muse.o:     muse.c     $(HACK_H)
+$(OBJ)/music.o:    music.c    $(HACK_H)
+$(OBJ)/objects.o:  objects.c  $(CONFIG_H) $(INC)/obj.h $(INC)/objclass.h \
+                              $(INC)/prop.h $(INC)/skills.h $(INC)/color.h
+$(OBJ)/objnam.o:   objnam.c   $(HACK_H)
+$(OBJ)/options.o:  options.c  $(HACK_H) $(INC)/tcap.h
+$(OBJ)/o_init.o:   o_init.c   $(HACK_H) $(INC)/lev.h
+$(OBJ)/pager.o:    pager.c    $(HACK_H) $(INC)/dlb.h
+$(OBJ)/pickup.o:   pickup.c   $(HACK_H)
+$(OBJ)/pline.o:    pline.c    $(HACK_H)
+$(OBJ)/polyself.o: polyself.c $(HACK_H)
+$(OBJ)/potion.o:   potion.c   $(HACK_H)
+$(OBJ)/pray.o:     pray.c     $(HACK_H)
+$(OBJ)/priest.o:   priest.c   $(HACK_H) $(INC)/mfndpos.h
+$(OBJ)/quest.o:    quest.c    $(HACK_H) $(INC)/quest.h $(INC)/qtext.h
+$(OBJ)/questpgr.o: questpgr.c $(HACK_H) $(INC)/dlb.h $(INC)/qtext.h \
+                              $(INC)/wintty.h
+$(OBJ)/read.o:     read.c     $(HACK_H)
+$(OBJ)/rect.o:     rect.c     $(HACK_H)
+$(OBJ)/region.o:   region.c   $(HACK_H) $(INC)/lev.h
+$(OBJ)/restore.o:  restore.c  $(HACK_H) $(INC)/lev.h $(INC)/tcap.h \
+                              $(INC)/display.h
+$(OBJ)/rip.o:      rip.c      $(HACK_H)
+$(OBJ)/rnd.o:      rnd.c      $(HACK_H) $(INC)/isaac64.h $(INC)/integer.h
+$(OBJ)/role.o:     role.c     $(HACK_H)
+$(OBJ)/rumors.o:   rumors.c   $(HACK_H) $(INC)/lev.h $(INC)/dlb.h
+$(OBJ)/save.o:     save.c     $(HACK_H) $(INC)/lev.h
+$(OBJ)/shk.o:      shk.c      $(HACK_H)
+$(OBJ)/shknam.o:   shknam.c   $(HACK_H)
+$(OBJ)/sit.o:      sit.c      $(HACK_H) $(INC)/artifact.h
+$(OBJ)/sounds.o:   sounds.c   $(HACK_H)
+$(OBJ)/spell.o:    spell.c    $(HACK_H)
+$(OBJ)/sp_lev.o:   sp_lev.c   $(HACK_H) $(INC)/dlb.h $(INC)/sp_lev.h
+$(OBJ)/steal.o:    steal.c    $(HACK_H)
+$(OBJ)/steed.o:    steed.c    $(HACK_H)
+$(OBJ)/sys.o:      sys.c      $(HACK_H)
+$(OBJ)/teleport.o: teleport.c $(HACK_H)
+$(OBJ)/timeout.o:  timeout.c  $(HACK_H) $(INC)/lev.h
+$(OBJ)/topten.o:   topten.c   $(HACK_H) $(INC)/dlb.h $(INC)/patchlevel.h
+$(OBJ)/track.o:    track.c    $(HACK_H)
+$(OBJ)/trap.o:     trap.c     $(HACK_H)
+$(OBJ)/uhitm.o:    uhitm.c    $(HACK_H)
+$(OBJ)/u_init.o:   u_init.c   $(HACK_H)
+$(OBJ)/vault.o:    vault.c    $(HACK_H)
+$(OBJ)/version.o:  version.c  $(HACK_H) $(INC)/dlb.h $(INC)/date.h \
+                              $(INC)/patchlevel.h
+$(OBJ)/vision.o:   vision.c   $(HACK_H)
+$(OBJ)/weapon.o:   weapon.c   $(HACK_H)
+$(OBJ)/were.o:     were.c     $(HACK_H)
+$(OBJ)/wield.o:    wield.c    $(HACK_H)
+$(OBJ)/windows.o:  windows.c  $(HACK_H) $(INC)/wintty.h
+$(OBJ)/wizard.o:   wizard.c   $(HACK_H) $(INC)/qtext.h
+$(OBJ)/worm.o:     worm.c     $(HACK_H) $(INC)/lev.h
+$(OBJ)/worn.o:     worn.c     $(HACK_H)
+$(OBJ)/write.o:    write.c    $(HACK_H)
+$(OBJ)/zap.o:      zap.c      $(HACK_H)
 
 # Source files in util
 
-$(OBJ)\lev_main.o: $(UTIL)\lev_main.c $(HACK_H) $(INC)\date.h $(INC)\sp_lev.h
-$(OBJ)\dgn_main.o: $(UTIL)\dgn_main.c $(CONFIG_H) $(INC)\dlb.h
-$(OBJ)\dlb_main.o: $(UTIL)\dlb_main.c $(CONFIG_H) $(INC)\dlb.h
-$(OBJ)\makedefs.o: $(UTIL)\makedefs.c $(CONFIG_H) $(INC)\permonst.h \
-                                      $(INC)\align.h $(INC)\monattk.h \
-                                      $(INC)\monflag.h $(INC)\objclass.h \
-                                      $(INC)\monsym.h $(INC)\artilist.h \
-                                      $(INC)\dungeon.h $(INC)\obj.h \
-                                      $(INC)\monst.h $(INC)\mextra.h \
-                                      $(INC)\you.h $(INC)\attrib.h \
-                                      $(INC)\monst.h $(INC)\prop.h \
-                                      $(INC)\skills.h $(INC)\context.h \
-                                      $(INC)\flag.h $(INC)\dlb.h \
-                                      $(INC)\patchlevel.h $(UTIL)\mdgrep.h \
-                                      $(INC)\qtext.h
-$(OBJ)\panic.o:    $(UTIL)\panic.c    $(CONFIG_H)
-$(OBJ)\recover.o:  $(UTIL)\recover.c  $(CONFIG_H)
+$(OBJ)/lev_main.o: $(UTIL)/lev_main.c $(HACK_H) $(INC)/date.h $(INC)/sp_lev.h
+$(OBJ)/dgn_main.o: $(UTIL)/dgn_main.c $(CONFIG_H) $(INC)/dlb.h
+$(OBJ)/dlb_main.o: $(UTIL)/dlb_main.c $(CONFIG_H) $(INC)/dlb.h
+$(OBJ)/makedefs.o: $(UTIL)/makedefs.c $(CONFIG_H) $(INC)/permonst.h \
+                                      $(INC)/align.h $(INC)/monattk.h \
+                                      $(INC)/monflag.h $(INC)/objclass.h \
+                                      $(INC)/monsym.h $(INC)/artilist.h \
+                                      $(INC)/dungeon.h $(INC)/obj.h \
+                                      $(INC)/monst.h $(INC)/mextra.h \
+                                      $(INC)/you.h $(INC)/attrib.h \
+                                      $(INC)/monst.h $(INC)/prop.h \
+                                      $(INC)/skills.h $(INC)/context.h \
+                                      $(INC)/flag.h $(INC)/dlb.h \
+                                      $(INC)/patchlevel.h $(UTIL)/mdgrep.h \
+                                      $(INC)/qtext.h
+$(OBJ)/panic.o:    $(UTIL)/panic.c    $(CONFIG_H)
+$(OBJ)/recover.o:  $(UTIL)/recover.c  $(CONFIG_H)
 
-# Source files in win\curses
-$(OBJ)\cursdial.o: $(WCUR)\cursdial.c $(HACK_H) $(INC)\wincurs.h \
-                                      $(WCUR)\cursdial.h $(INC)\func_tab.h
-$(OBJ)\cursinit.o: $(WCUR)\cursinit.c $(HACK_H) $(INC)\wincurs.h \
-                                      $(WCUR)\cursinit.h
-$(OBJ)\cursinvt.o: $(WCUR)\cursinvt.c $(HACK_H) $(INC)\wincurs.h \
-                                      $(WCUR)\cursinvt.h
-$(OBJ)\cursmain.o: $(WCUR)\cursmain.c $(HACK_H) $(INC)\patchlevel.h \
-                                      $(INC)\color.h $(INC)\wincurs.h
-$(OBJ)\cursmesg.o: $(WCUR)\cursmesg.c $(HACK_H) $(INC)\wincurs.h \
-                                      $(WCUR)\cursmesg.h
-$(OBJ)\cursmisc.o: $(WCUR)\cursmisc.c $(HACK_H) $(INC)\wincurs.h \
-                                      $(WCUR)\cursmisc.h $(INC)\func_tab.h \
-                                      $(INC)\dlb.h
-$(OBJ)\cursstat.o: $(WCUR)\cursstat.c $(HACK_H) $(INC)\wincurs.h \
-                                      $(WCUR)\cursstat.h
-$(OBJ)\curswins.o: $(WCUR)\curswins.c $(HACK_H) $(INC)\wincurs.h \
-                                      $(WCUR)\curswins.h
+# Source files in win/curses
+$(OBJ)/cursdial.o: $(WCUR)/cursdial.c $(HACK_H) $(INC)/wincurs.h \
+                                      $(WCUR)/cursdial.h $(INC)/func_tab.h
+$(OBJ)/cursinit.o: $(WCUR)/cursinit.c $(HACK_H) $(INC)/wincurs.h \
+                                      $(WCUR)/cursinit.h
+$(OBJ)/cursinvt.o: $(WCUR)/cursinvt.c $(HACK_H) $(INC)/wincurs.h \
+                                      $(WCUR)/cursinvt.h
+$(OBJ)/cursmain.o: $(WCUR)/cursmain.c $(HACK_H) $(INC)/patchlevel.h \
+                                      $(INC)/color.h $(INC)/wincurs.h
+$(OBJ)/cursmesg.o: $(WCUR)/cursmesg.c $(HACK_H) $(INC)/wincurs.h \
+                                      $(WCUR)/cursmesg.h
+$(OBJ)/cursmisc.o: $(WCUR)/cursmisc.c $(HACK_H) $(INC)/wincurs.h \
+                                      $(WCUR)/cursmisc.h $(INC)/func_tab.h \
+                                      $(INC)/dlb.h
+$(OBJ)/cursstat.o: $(WCUR)/cursstat.c $(HACK_H) $(INC)/wincurs.h \
+                                      $(WCUR)/cursstat.h
+$(OBJ)/curswins.o: $(WCUR)/curswins.c $(HACK_H) $(INC)/wincurs.h \
+                                      $(WCUR)/curswins.h
 
-# Source files in win\tty
+# Source files in win/tty
 
-$(OBJ)\getline.o: $(WTTY)\getline.c $(HACK_H) $(INC)\wintty.h $(INC)\func_tab.h
-$(OBJ)\termcap.o: $(WTTY)\termcap.c $(HACK_H) $(INC)\wintty.h $(INC)\tcap.h
-$(OBJ)\topl.o:    $(WTTY)\topl.c    $(HACK_H) $(INC)\tcap.h $(INC)\wintty.h
-$(OBJ)\wintty.o:  $(WTTY)\wintty.c  $(HACK_H) $(INC)\dlb.h $(INC)\tcap.h \
-                                    $(INC)\wintty.h
+$(OBJ)/getline.o: $(WTTY)/getline.c $(HACK_H) $(INC)/wintty.h $(INC)/func_tab.h
+$(OBJ)/termcap.o: $(WTTY)/termcap.c $(HACK_H) $(INC)/wintty.h $(INC)/tcap.h
+$(OBJ)/topl.o:    $(WTTY)/topl.c    $(HACK_H) $(INC)/tcap.h $(INC)/wintty.h
+$(OBJ)/wintty.o:  $(WTTY)/wintty.c  $(HACK_H) $(INC)/dlb.h $(INC)/tcap.h \
+                                    $(INC)/wintty.h
 
-# Source files in sys\os2
+# Source files in sys/os2
 
-$(OBJ)\os2.o: $(SOS2)\os2.c $(HACK_H) $(INC)\tcap.h $(INC)\def_os2.h
+$(OBJ)/os2.o: $(SOS2)/os2.c $(HACK_H) $(INC)/tcap.h $(INC)/def_os2.h
 
-# Source files in sys\share
+# Source files in sys/share
 
-$(OBJ)\pcmain.o:     $(SSHR)\pcmain.c     $(HACK_H) $(INC)\dlb.h
-$(OBJ)\pcsys.o:      $(SSHR)\pcsys.c      $(HACK_H) $(INC)\wintty.h
-$(OBJ)\pctty.o:      $(SSHR)\pctty.c      $(HACK_H) $(INC)\wintty.h
-$(OBJ)\pcunix.o:     $(SSHR)\pcunix.c     $(HACK_H) $(INC)\wintty.h
-$(OBJ)\posixregex.o: $(SSHR)\posixregex.c $(HACK_H)
+$(OBJ)/pcmain.o:     $(SSHR)/pcmain.c     $(HACK_H) $(INC)/dlb.h
+$(OBJ)/pcsys.o:      $(SSHR)/pcsys.c      $(HACK_H) $(INC)/wintty.h
+$(OBJ)/pctty.o:      $(SSHR)/pctty.c      $(HACK_H) $(INC)/wintty.h
+$(OBJ)/pcunix.o:     $(SSHR)/pcunix.c     $(HACK_H) $(INC)/wintty.h
+$(OBJ)/posixregex.o: $(SSHR)/posixregex.c $(HACK_H)
 
 # PDCurses sources
 
-$(COBJ)\addch.o:    $(PDCURSES_TOP)\pdcurses\addch.c
-$(COBJ)\addchstr.o: $(PDCURSES_TOP)\pdcurses\addchstr.c
-$(COBJ)\addstr.o:   $(PDCURSES_TOP)\pdcurses\addstr.c
-$(COBJ)\attr.o:     $(PDCURSES_TOP)\pdcurses\attr.c
-$(COBJ)\beep.o:     $(PDCURSES_TOP)\pdcurses\beep.c
-$(COBJ)\bkgd.o:     $(PDCURSES_TOP)\pdcurses\bkgd.c
-$(COBJ)\border.o:   $(PDCURSES_TOP)\pdcurses\border.c
-$(COBJ)\clear.o:    $(PDCURSES_TOP)\pdcurses\clear.c
-$(COBJ)\color.o:    $(PDCURSES_TOP)\pdcurses\color.c
-$(COBJ)\debug.o:    $(PDCURSES_TOP)\pdcurses\debug.c
-$(COBJ)\delch.o:    $(PDCURSES_TOP)\pdcurses\delch.c
-$(COBJ)\deleteln.o: $(PDCURSES_TOP)\pdcurses\deleteln.c
-$(COBJ)\getch.o:    $(PDCURSES_TOP)\pdcurses\getch.c
-$(COBJ)\getstr.o:   $(PDCURSES_TOP)\pdcurses\getstr.c
-$(COBJ)\getyx.o:    $(PDCURSES_TOP)\pdcurses\getyx.c
-$(COBJ)\inch.o:     $(PDCURSES_TOP)\pdcurses\inch.c
-$(COBJ)\inchstr.o:  $(PDCURSES_TOP)\pdcurses\inchstr.c
-$(COBJ)\initscr.o:  $(PDCURSES_TOP)\pdcurses\initscr.c
-$(COBJ)\inopts.o:   $(PDCURSES_TOP)\pdcurses\inopts.c
-$(COBJ)\insch.o:    $(PDCURSES_TOP)\pdcurses\insch.c
-$(COBJ)\insstr.o:   $(PDCURSES_TOP)\pdcurses\insstr.c
-$(COBJ)\instr.o:    $(PDCURSES_TOP)\pdcurses\instr.c
-$(COBJ)\kernel.o:   $(PDCURSES_TOP)\pdcurses\kernel.c
-$(COBJ)\keyname.o:  $(PDCURSES_TOP)\pdcurses\keyname.c
-$(COBJ)\mouse.o:    $(PDCURSES_TOP)\pdcurses\mouse.c
-$(COBJ)\move.o:     $(PDCURSES_TOP)\pdcurses\move.c
-$(COBJ)\outopts.o:  $(PDCURSES_TOP)\pdcurses\outopts.c
-$(COBJ)\overlay.o:  $(PDCURSES_TOP)\pdcurses\overlay.c
-$(COBJ)\pad.o:      $(PDCURSES_TOP)\pdcurses\pad.c
-$(COBJ)\panel.o:    $(PDCURSES_TOP)\pdcurses\panel.c
-$(COBJ)\printw.o:   $(PDCURSES_TOP)\pdcurses\printw.c
-$(COBJ)\refresh.o:  $(PDCURSES_TOP)\pdcurses\refresh.c
-$(COBJ)\scanw.o:    $(PDCURSES_TOP)\pdcurses\scanw.c
-$(COBJ)\scr_dump.o: $(PDCURSES_TOP)\pdcurses\scr_dump.c
-$(COBJ)\scroll.o:   $(PDCURSES_TOP)\pdcurses\scroll.c
-$(COBJ)\slk.o:      $(PDCURSES_TOP)\pdcurses\slk.c
-$(COBJ)\termattr.o: $(PDCURSES_TOP)\pdcurses\termattr.c
-$(COBJ)\touch.o:    $(PDCURSES_TOP)\pdcurses\touch.c
-$(COBJ)\util.o:     $(PDCURSES_TOP)\pdcurses\util.c
-$(COBJ)\window.o:   $(PDCURSES_TOP)\pdcurses\window.c
-$(COBJ)\pdcclip.o:  $(PDCURSES_TOP)\os2\pdcclip.c
-$(COBJ)\pdcdisp.o:  $(PDCURSES_TOP)\os2\pdcdisp.c
-$(COBJ)\pdcgetsc.o: $(PDCURSES_TOP)\os2\pdcgetsc.c
-$(COBJ)\pdckbd.o:   $(PDCURSES_TOP)\os2\pdckbd.c
-$(COBJ)\pdcscrn.o:  $(PDCURSES_TOP)\os2\pdcscrn.c
-$(COBJ)\pdcsetsc.o: $(PDCURSES_TOP)\os2\pdcsetsc.c
-$(COBJ)\pdcutil.o:  $(PDCURSES_TOP)\os2\pdcutil.c
+$(COBJ)/addch.o:    $(PDCURSES_TOP)/pdcurses/addch.c
+$(COBJ)/addchstr.o: $(PDCURSES_TOP)/pdcurses/addchstr.c
+$(COBJ)/addstr.o:   $(PDCURSES_TOP)/pdcurses/addstr.c
+$(COBJ)/attr.o:     $(PDCURSES_TOP)/pdcurses/attr.c
+$(COBJ)/beep.o:     $(PDCURSES_TOP)/pdcurses/beep.c
+$(COBJ)/bkgd.o:     $(PDCURSES_TOP)/pdcurses/bkgd.c
+$(COBJ)/border.o:   $(PDCURSES_TOP)/pdcurses/border.c
+$(COBJ)/clear.o:    $(PDCURSES_TOP)/pdcurses/clear.c
+$(COBJ)/color.o:    $(PDCURSES_TOP)/pdcurses/color.c
+$(COBJ)/debug.o:    $(PDCURSES_TOP)/pdcurses/debug.c
+$(COBJ)/delch.o:    $(PDCURSES_TOP)/pdcurses/delch.c
+$(COBJ)/deleteln.o: $(PDCURSES_TOP)/pdcurses/deleteln.c
+$(COBJ)/getch.o:    $(PDCURSES_TOP)/pdcurses/getch.c
+$(COBJ)/getstr.o:   $(PDCURSES_TOP)/pdcurses/getstr.c
+$(COBJ)/getyx.o:    $(PDCURSES_TOP)/pdcurses/getyx.c
+$(COBJ)/inch.o:     $(PDCURSES_TOP)/pdcurses/inch.c
+$(COBJ)/inchstr.o:  $(PDCURSES_TOP)/pdcurses/inchstr.c
+$(COBJ)/initscr.o:  $(PDCURSES_TOP)/pdcurses/initscr.c
+$(COBJ)/inopts.o:   $(PDCURSES_TOP)/pdcurses/inopts.c
+$(COBJ)/insch.o:    $(PDCURSES_TOP)/pdcurses/insch.c
+$(COBJ)/insstr.o:   $(PDCURSES_TOP)/pdcurses/insstr.c
+$(COBJ)/instr.o:    $(PDCURSES_TOP)/pdcurses/instr.c
+$(COBJ)/kernel.o:   $(PDCURSES_TOP)/pdcurses/kernel.c
+$(COBJ)/keyname.o:  $(PDCURSES_TOP)/pdcurses/keyname.c
+$(COBJ)/mouse.o:    $(PDCURSES_TOP)/pdcurses/mouse.c
+$(COBJ)/move.o:     $(PDCURSES_TOP)/pdcurses/move.c
+$(COBJ)/outopts.o:  $(PDCURSES_TOP)/pdcurses/outopts.c
+$(COBJ)/overlay.o:  $(PDCURSES_TOP)/pdcurses/overlay.c
+$(COBJ)/pad.o:      $(PDCURSES_TOP)/pdcurses/pad.c
+$(COBJ)/panel.o:    $(PDCURSES_TOP)/pdcurses/panel.c
+$(COBJ)/printw.o:   $(PDCURSES_TOP)/pdcurses/printw.c
+$(COBJ)/refresh.o:  $(PDCURSES_TOP)/pdcurses/refresh.c
+$(COBJ)/scanw.o:    $(PDCURSES_TOP)/pdcurses/scanw.c
+$(COBJ)/scr_dump.o: $(PDCURSES_TOP)/pdcurses/scr_dump.c
+$(COBJ)/scroll.o:   $(PDCURSES_TOP)/pdcurses/scroll.c
+$(COBJ)/slk.o:      $(PDCURSES_TOP)/pdcurses/slk.c
+$(COBJ)/termattr.o: $(PDCURSES_TOP)/pdcurses/termattr.c
+$(COBJ)/touch.o:    $(PDCURSES_TOP)/pdcurses/touch.c
+$(COBJ)/util.o:     $(PDCURSES_TOP)/pdcurses/util.c
+$(COBJ)/window.o:   $(PDCURSES_TOP)/pdcurses/window.c
+$(COBJ)/pdcclip.o:  $(PDCURSES_TOP)/os2/pdcclip.c
+$(COBJ)/pdcdisp.o:  $(PDCURSES_TOP)/os2/pdcdisp.c
+$(COBJ)/pdcgetsc.o: $(PDCURSES_TOP)/os2/pdcgetsc.c
+$(COBJ)/pdckbd.o:   $(PDCURSES_TOP)/os2/pdckbd.c
+$(COBJ)/pdcscrn.o:  $(PDCURSES_TOP)/os2/pdcscrn.c
+$(COBJ)/pdcsetsc.o: $(PDCURSES_TOP)/os2/pdcsetsc.c
+$(COBJ)/pdcutil.o:  $(PDCURSES_TOP)/os2/pdcutil.c
 
 ifeq "$(USE_FLEX_BISON)" "Y"
 # Level compiler
-$(OBJ)\lev_lex.o:    $(OBJ)\lev_lex.c    $(HACK_H) $(INC)\lev_comp.h \
-                                         $(INC)\sp_lev.h
-	$(CC) $(CFLAGS) -c $(OBJ)\lev_lex.c -o $@
+$(OBJ)/lev_lex.o:    $(OBJ)/lev_lex.c    $(HACK_H) $(INC)/lev_comp.h \
+                                         $(INC)/sp_lev.h
+	$(CC) $(CFLAGS) -c $(OBJ)/lev_lex.c -o $@
 
-$(OBJ)\lev_lex.c: $(UTIL)\lev_comp.l
+$(OBJ)/lev_lex.c: $(UTIL)/lev_comp.l
 	flex -o $@ $<
 
-$(OBJ)\lev_yacc.o:   $(OBJ)\lev_yacc.c   $(HACK_H) $(INC)\sp_lev.h
-	$(CC) $(CFLAGS) -c $(OBJ)\lev_yacc.c -o $@
+$(OBJ)/lev_yacc.o:   $(OBJ)/lev_yacc.c   $(HACK_H) $(INC)/sp_lev.h
+	$(CC) $(CFLAGS) -c $(OBJ)/lev_yacc.c -o $@
 
-$(OBJ)\lev_yacc.c: $(UTIL)\lev_comp.y
-	bison -y --defines=$(INC)\lev_comp.h -o $(OBJ)\lev_yacc.c $<
+$(OBJ)/lev_yacc.c: $(UTIL)/lev_comp.y
+	bison -y --defines=$(INC)/lev_comp.h -o $(OBJ)/lev_yacc.c $<
 
 # Dungeon compiler
-$(OBJ)\dgn_lex.o:    $(OBJ)\dgn_lex.c    $(CONFIG_H) $(INC)\dgn_comp.h \
-                                         $(INC)\dgn_file.h $(INC)\align.h
-	$(CC) $(CFLAGS) -c $(OBJ)\dgn_lex.c -o $@
+$(OBJ)/dgn_lex.o:    $(OBJ)/dgn_lex.c    $(CONFIG_H) $(INC)/dgn_comp.h \
+                                         $(INC)/dgn_file.h $(INC)/align.h
+	$(CC) $(CFLAGS) -c $(OBJ)/dgn_lex.c -o $@
 
-$(OBJ)\dgn_lex.c: $(UTIL)\dgn_comp.l
+$(OBJ)/dgn_lex.c: $(UTIL)/dgn_comp.l
 	flex -o $@ $<
 
-$(INC)\lev_comp.h: $(UTIL)\lev_comp.y
-	bison -y --defines=$(INC)\lev_comp.h -o $(OBJ)\lev_yacc.c $<
+$(INC)/lev_comp.h: $(UTIL)/lev_comp.y
+	bison -y --defines=$(INC)/lev_comp.h -o $(OBJ)/lev_yacc.c $<
 
-$(OBJ)\dgn_yacc.o:   $(OBJ)\dgn_yacc.c   $(CONFIG_H) $(INC)\date.h \
-                                         $(INC)\dgn_file.h $(INC)\align.h
-	$(CC) $(CFLAGS) -c $(OBJ)\dgn_yacc.c -o $@
+$(OBJ)/dgn_yacc.o:   $(OBJ)/dgn_yacc.c   $(CONFIG_H) $(INC)/date.h \
+                                         $(INC)/dgn_file.h $(INC)/align.h
+	$(CC) $(CFLAGS) -c $(OBJ)/dgn_yacc.c -o $@
 
-$(OBJ)\dgn_yacc.c: $(UTIL)\dgn_comp.y
-	bison -y --defines=$(INC)\dgn_comp.h -o $(OBJ)\dgn_yacc.c $<
+$(OBJ)/dgn_yacc.c: $(UTIL)/dgn_comp.y
+	bison -y --defines=$(INC)/dgn_comp.h -o $(OBJ)/dgn_yacc.c $<
 
-$(INC)\dgn_comp.h: $(UTIL)\dgn_comp.y
-	bison -y --defines=$(INC)\dgn_comp.h -o $(OBJ)\dgn_yacc.c $<
+$(INC)/dgn_comp.h: $(UTIL)/dgn_comp.y
+	bison -y --defines=$(INC)/dgn_comp.h -o $(OBJ)/dgn_yacc.c $<
 else
-$(OBJ)\lev_lex.o:  $(SSHR)\lev_lex.c  $(HACK_H) $(SSHR)\lev_comp.h \
-                                      $(INC)\sp_lev.h
-$(OBJ)\lev_yacc.o: $(SSHR)\lev_yacc.c $(HACK_H) $(INC)\sp_lev.h
-$(OBJ)\dgn_lex.o:  $(SSHR)\dgn_lex.c  $(CONFIG_H) $(SSHR)\dgn_comp.h \
-                                      $(INC)\dgn_file.h $(INC)\align.h
-$(OBJ)\dgn_yacc.o: $(SSHR)\dgn_yacc.c $(CONFIG_H) $(INC)\date.h \
-                                      $(INC)\dgn_file.h $(INC)\align.h
-endif
-
-ifeq "$(USE_FLEX_BISON)" "Y"
-else
+$(OBJ)/lev_lex.o:  $(SSHR)/lev_lex.c  $(HACK_H) $(SSHR)/lev_comp.h \
+                                      $(INC)/sp_lev.h
+$(OBJ)/lev_yacc.o: $(SSHR)/lev_yacc.c $(HACK_H) $(INC)/sp_lev.h
+$(OBJ)/dgn_lex.o:  $(SSHR)/dgn_lex.c  $(CONFIG_H) $(SSHR)/dgn_comp.h \
+                                      $(INC)/dgn_file.h $(INC)/align.h
+$(OBJ)/dgn_yacc.o: $(SSHR)/dgn_yacc.c $(CONFIG_H) $(INC)/date.h \
+                                      $(INC)/dgn_file.h $(INC)/align.h
 endif
 
 ##############################################################################

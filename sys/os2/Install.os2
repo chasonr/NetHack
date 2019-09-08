@@ -33,16 +33,16 @@
     should copy this to directory src and rename it Makefile. From now on,
     Makefile.os2 will be referred to as "the makefile" in this document.
 
-    The makefile is tested on ArcaOS 5.0.4, with the DMAKE and GCC installed
-    by the yum package manager on that platform. It may work on "classic" OS/2,
-    but this usage is untested at this writing.
+    The makefile is tested on ArcaOS 5.0.4, with the packages gcc, kbuild-make,
+    flex and bison installed by the yum package manager on that platform. It
+    may work on "classic" OS/2, but this usage is untested at this writing.
 
     If you're using some other compiler than GCC, you will have to adapt the
     makefile to your needs.  In particular, change the CC and CFLAGS to suit
     your C compiler.  See the makefile for more information.
 
     You will need at least these programs in your path:
-        * dmake
+        * make (kbuild-make package on ArcaOS)
         * gcc
         * bash
         * cp
@@ -66,7 +66,7 @@
     interface. Set USE_CURSES to Y and PDCURSES_TOP to the path to your
     PDCurses source tree. The file ${PDCURSES_TOP}\curses.h must exist.
 
-    Now, enter "dmake all".  If all goes well, you will get an executable in
+    Now, enter "make all".  If all goes well, you will get an executable in
     the binary directory under the NetHack root.
 
 5.  All the support data files should have been copied to the game directory
@@ -132,7 +132,7 @@ Notes
 1)  Save-files and bones-files from previous versions will not work with
     NetHack 3.6.  Don't bother trying to keep them.
 
-2)  To install an update of NetHack after changing something, enter "dmake"
+2)  To install an update of NetHack after changing something, enter "make"
     from the src directory.  If you add, delete, or reorder monsters or
     objects, or you change the format of saved level files, delete any save
     and bones files.  (Trying to use such files sometimes produces amusing
