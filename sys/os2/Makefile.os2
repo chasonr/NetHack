@@ -14,8 +14,8 @@
 
 # To include the Curses interface, enable USE_CURSES and set PDCURSES_TOP to
 # the path to the root of your PDCurses source.
-USE_CURSES = Y
-PDCURSES_TOP = c:/home/os2dev/pdcurses
+#USE_CURSES = Y
+#PDCURSES_TOP = c:/home/os2dev/pdcurses
 
 ##############################################################################
 #                         Some definitions and rules                         #
@@ -54,6 +54,9 @@ MAKE_COBJ = if [ ! -d $(COBJ) ]; then mkdir $(COBJ); fi
 default: $(GAMEDIR)/nethack.exe $(GAMEDIR)/license $(GAMEDIR)/nhdat \
          $(GAMEDIR)/symbols $(GAMEDIR)/NetHack.cnf $(GAMEDIR)/record \
          $(GAMEDIR)/sysconf $(GAMEDIR)/nethack.txt $(GAMEDIR)/guidebk.txt
+	if [ -f /usr/lib/gcc1.dll ]; then cp -p /usr/lib/gcc1.dll $(GAMEDIR); fi
+	if [ -f /usr/lib/libc066.dll ]; then cp -p /usr/lib/libc066.dll $(GAMEDIR); fi
+	if [ -f /usr/lib/libcn0.dll ]; then cp -p /usr/lib/libcn0.dll $(GAMEDIR); fi
 
 # Rules for compiling
 .SUFFIXES: .c .o
