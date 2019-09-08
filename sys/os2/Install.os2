@@ -28,7 +28,7 @@
     the last line of each file otherwise.  Besides, even editing UNIX-style
     files with DOS editors is often a royal pain.
 
-2.  The original Makefile is kept as Makefile.old, but it seems to be
+2a. The original Makefile is kept as Makefile.old, but it seems to be
     hopelessly bit-rotted. A new Makefile is provided as Makefile.os2. You
     should copy this to directory src and rename it Makefile. From now on,
     Makefile.os2 will be referred to as "the makefile" in this document.
@@ -51,6 +51,11 @@
         * touch
     You will need flex and bison also, if you enable compiling the dungeon and
     level compilers from the Lex and Yacc sources.
+
+2b. You can also use the Open Watcom compiler. You will need to copy the
+    sys\os2\Makefile.wcc file to src\Makefile. Build with wmake. The resulting
+    binary will not depend on any DLLs not shipped with OS/2, but it does not
+    support regular expression matching.
 
 3.  If you want to change the high score list behavior, examine the top of
     topten.c, in the src directory.  You may want to change the definitions of

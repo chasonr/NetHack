@@ -50,10 +50,6 @@
  * The remaining code shouldn't need modification.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <io.h>
-
 #ifdef MSDOS
 #undef MSDOS /* MSC autodefines this but we don't want it */
 #endif
@@ -64,6 +60,24 @@
 
 #if !defined(TERMLIB) && !defined(ANSI_DEFAULT)
 #define ANSI_DEFAULT /* have to have one or the other */
+#endif
+
+#if defined(__WATCOMC__)
+#ifdef strcmpi
+#undef strcmpi
+#endif
+#define lock djlock
+#include <stdlib.h>
+#include <string.h> /* Provides prototypes of strncmpi(), etc.     */
+#include <io.h>
+#undef lock
+#ifndef M
+#define M(c) ((char) (0x80 | (c)))
+#endif
+#else
+#include <stdlib.h>
+#include <string.h>
+#include <io.h>
 #endif
 
 #define PATHLEN 260  /* maximum pathlength (HPFS) */

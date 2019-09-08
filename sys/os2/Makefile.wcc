@@ -1,0 +1,1205 @@
+# Makefile for OS/2 NetHack
+# Tested on ArcaOS 5.0.4, using Open Watcom and wmake.
+# Optionally may use flex and bison.
+
+##############################################################################
+#                         User-controllable settings                         #
+##############################################################################
+
+# Define this to build dgn_lex.obj and lev_lex.obj from the Lex source, and
+# dgn_yacc.obj and lev_yacc.obj from the Yacc source.
+#USE_FLEX_BISON = Y
+
+# To include the Curses interface, enable USE_CURSES and set PDCURSES_TOP to
+# the path to the root of your PDCurses source.
+USE_CURSES = Y
+PDCURSES_TOP = c:\home\os2dev\pdcurses
+WATCOM = c:\watcom
+
+##############################################################################
+#                              Some definitions                              #
+##############################################################################
+
+# Directories
+GAMEDIR = ..\binary
+SRC = ..\src
+INC = ..\include
+DAT = ..\dat
+DOC = ..\doc
+UTIL = ..\util
+SSHR = ..\sys\share
+SOS2 = ..\sys\os2
+WCUR = ..\win\curses
+WTTY = ..\win\tty
+OBJ = o
+COBJ = $(OBJ)\curses
+
+# Useful stuff
+MAKE_COBJ = @if not exist $(COBJ) mkdir $(COBJ)
+
+##############################################################################
+#                             All build products                             #
+##############################################################################
+
+all : &
+$(GAMEDIR)\nethack.exe &
+$(GAMEDIR)\nhdat &
+$(GAMEDIR)\defaults.nh &
+$(GAMEDIR)\guidebk.txt &
+$(GAMEDIR)\keyhelp &
+$(GAMEDIR)\license &
+$(GAMEDIR)\logfile &
+$(GAMEDIR)\nethack.txt &
+$(GAMEDIR)\paniclog &
+$(GAMEDIR)\record &
+$(GAMEDIR)\symbols &
+$(GAMEDIR)\sysconf &
+
+##############################################################################
+#                               Compiler setup                               #
+##############################################################################
+
+CC = wcc386
+CFLAGS = -q -ox -wx -I$(INC) -DDLB -DOS2 -DOS2_HPFS
+!ifeq USE_CURSES Y
+CFLAGS += -DCURSES_GRAPHICS
+!endif
+
+##############################################################################
+#                           The NetHack executable                           #
+##############################################################################
+
+!ifeq USE_CURSES Y
+CURSES_OBJS = &
+$(OBJ)\cursdial.obj  $(OBJ)\cursinit.obj  $(OBJ)\cursinvt.obj $(OBJ)\cursmain.obj &
+$(OBJ)\cursmesg.obj  $(OBJ)\cursmisc.obj  $(OBJ)\cursstat.obj $(OBJ)\curswins.obj &
+$(COBJ)\addch.obj    $(COBJ)\addchstr.obj $(COBJ)\addstr.obj   $(COBJ)\attr.obj     &
+$(COBJ)\beep.obj     $(COBJ)\bkgd.obj     $(COBJ)\border.obj   $(COBJ)\clear.obj    &
+$(COBJ)\color.obj    $(COBJ)\debug.obj    $(COBJ)\delch.obj    $(COBJ)\deleteln.obj &
+$(COBJ)\getch.obj    $(COBJ)\getstr.obj   $(COBJ)\getyx.obj    $(COBJ)\inch.obj     &
+$(COBJ)\inchstr.obj  $(COBJ)\initscr.obj  $(COBJ)\inopts.obj   $(COBJ)\insch.obj    &
+$(COBJ)\insstr.obj   $(COBJ)\instr.obj    $(COBJ)\kernel.obj   $(COBJ)\keyname.obj  &
+$(COBJ)\mouse.obj    $(COBJ)\move.obj     $(COBJ)\outopts.obj  $(COBJ)\overlay.obj  &
+$(COBJ)\pad.obj      $(COBJ)\panel.obj    $(COBJ)\printw.obj   $(COBJ)\refresh.obj  &
+$(COBJ)\scanw.obj    $(COBJ)\scr_dump.obj $(COBJ)\scroll.obj   $(COBJ)\slk.obj      &
+$(COBJ)\termattr.obj $(COBJ)\touch.obj    $(COBJ)\util.obj     $(COBJ)\window.obj   &
+$(COBJ)\pdcclip.obj  $(COBJ)\pdcdisp.obj  $(COBJ)\pdcgetsc.obj $(COBJ)\pdckbd.obj   &
+$(COBJ)\pdcscrn.obj  $(COBJ)\pdcsetsc.obj $(COBJ)\pdcutil.obj
+!else
+CURSES_OBJS =
+!endif
+
+NETHACK_OBJS = &
+$(OBJ)\allmain.obj  $(OBJ)\alloc.obj    $(OBJ)\apply.obj    $(OBJ)\artifact.obj $(OBJ)\attrib.obj   &
+$(OBJ)\ball.obj     $(OBJ)\bones.obj    $(OBJ)\botl.obj     $(OBJ)\cmd.obj      $(OBJ)\dbridge.obj  &
+$(OBJ)\decl.obj     $(OBJ)\detect.obj   $(OBJ)\dig.obj      $(OBJ)\display.obj  $(OBJ)\dlb.obj      &
+$(OBJ)\do.obj       $(OBJ)\dog.obj      $(OBJ)\dogmove.obj  $(OBJ)\dokick.obj   $(OBJ)\do_name.obj  &
+$(OBJ)\dothrow.obj  $(OBJ)\do_wear.obj  $(OBJ)\drawing.obj  $(OBJ)\dungeon.obj  $(OBJ)\eat.obj      &
+$(OBJ)\end.obj      $(OBJ)\engrave.obj  $(OBJ)\exper.obj    $(OBJ)\explode.obj  $(OBJ)\extralev.obj &
+$(OBJ)\files.obj    $(OBJ)\fountain.obj $(OBJ)\hack.obj     $(OBJ)\hacklib.obj  $(OBJ)\invent.obj   &
+$(OBJ)\isaac64.obj  $(OBJ)\light.obj    $(OBJ)\lock.obj     $(OBJ)\mail.obj     $(OBJ)\makemon.obj  &
+$(OBJ)\mapglyph.obj $(OBJ)\mcastu.obj   $(OBJ)\mhitm.obj    $(OBJ)\mhitu.obj    $(OBJ)\minion.obj   &
+$(OBJ)\mklev.obj    $(OBJ)\mkmap.obj    $(OBJ)\mkmaze.obj   $(OBJ)\mkobj.obj    $(OBJ)\mkroom.obj   &
+$(OBJ)\mon.obj      $(OBJ)\mondata.obj  $(OBJ)\monmove.obj  $(OBJ)\monst.obj    $(OBJ)\mplayer.obj  &
+$(OBJ)\mthrowu.obj  $(OBJ)\muse.obj     $(OBJ)\music.obj    $(OBJ)\objects.obj  $(OBJ)\objnam.obj   &
+$(OBJ)\o_init.obj   $(OBJ)\options.obj  $(OBJ)\pager.obj    $(OBJ)\pickup.obj   $(OBJ)\pline.obj    &
+$(OBJ)\polyself.obj $(OBJ)\potion.obj   $(OBJ)\pray.obj     $(OBJ)\priest.obj   $(OBJ)\quest.obj    &
+$(OBJ)\questpgr.obj $(OBJ)\read.obj     $(OBJ)\rect.obj     $(OBJ)\region.obj   $(OBJ)\restore.obj  &
+$(OBJ)\rip.obj      $(OBJ)\rnd.obj      $(OBJ)\role.obj     $(OBJ)\rumors.obj   $(OBJ)\save.obj     &
+$(OBJ)\shk.obj      $(OBJ)\shknam.obj   $(OBJ)\sit.obj      $(OBJ)\sounds.obj   $(OBJ)\spell.obj    &
+$(OBJ)\sp_lev.obj   $(OBJ)\steal.obj    $(OBJ)\steed.obj    $(OBJ)\sys.obj      $(OBJ)\teleport.obj &
+$(OBJ)\timeout.obj  $(OBJ)\topten.obj   $(OBJ)\track.obj    $(OBJ)\trap.obj     $(OBJ)\uhitm.obj    &
+$(OBJ)\u_init.obj   $(OBJ)\vault.obj    $(OBJ)\version.obj  $(OBJ)\vision.obj   $(OBJ)\weapon.obj   &
+$(OBJ)\were.obj     $(OBJ)\wield.obj    $(OBJ)\windows.obj  $(OBJ)\wizard.obj   $(OBJ)\worm.obj     &
+$(OBJ)\worn.obj     $(OBJ)\write.obj    $(OBJ)\zap.obj      &
+$(OBJ)\os2.obj &
+$(OBJ)\pcmain.obj   $(OBJ)\pcsys.obj    $(OBJ)\pctty.obj    $(OBJ)\pcunix.obj   $(OBJ)\pmatchregex.obj &
+$(OBJ)\getline.obj  $(OBJ)\termcap.obj  $(OBJ)\topl.obj     $(OBJ)\wintty.obj   &
+$(CURSES_OBJS)
+
+$(GAMEDIR)\nethack.exe : $(NETHACK_OBJS) $(GAMEDIR)\license
+	@echo system os2386 >$(OBJ)\objs.txt
+	@echo option map >>$(OBJ)\objs.txt
+	@echo name $(GAMEDIR)\nethack.exe >>$(OBJ)\objs.txt
+	@for %a in ($(NETHACK_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
+	wlink @$(OBJ)\objs.txt
+
+##############################################################################
+#                          nhdat and its components                          #
+##############################################################################
+
+# File list to pass to dlb
+NHDAT_FILES = &
+bogusmon &
+cmdhelp &
+data &
+dungeon &
+engrave &
+epitaph &
+help &
+hh &
+history &
+license &
+opthelp &
+options &
+oracles &
+quest.dat &
+rumors &
+tribute &
+wizhelp &
+Arc-fila.lev Arc-filb.lev Arc-goal.lev Arc-loca.lev Arc-strt.lev &
+Bar-fila.lev Bar-filb.lev Bar-goal.lev Bar-loca.lev Bar-strt.lev &
+Cav-fila.lev Cav-filb.lev Cav-goal.lev Cav-loca.lev Cav-strt.lev &
+Hea-fila.lev Hea-filb.lev Hea-goal.lev Hea-loca.lev Hea-strt.lev &
+Kni-fila.lev Kni-filb.lev Kni-goal.lev Kni-loca.lev Kni-strt.lev &
+Mon-fila.lev Mon-filb.lev Mon-goal.lev Mon-loca.lev Mon-strt.lev &
+Pri-fila.lev Pri-filb.lev Pri-goal.lev Pri-loca.lev Pri-strt.lev &
+Ran-fila.lev Ran-filb.lev Ran-goal.lev Ran-loca.lev Ran-strt.lev &
+Rog-fila.lev Rog-filb.lev Rog-goal.lev Rog-loca.lev Rog-strt.lev &
+Sam-fila.lev Sam-filb.lev Sam-goal.lev Sam-loca.lev Sam-strt.lev &
+Tou-fila.lev Tou-filb.lev Tou-goal.lev Tou-loca.lev Tou-strt.lev &
+Val-fila.lev Val-filb.lev Val-goal.lev Val-loca.lev Val-strt.lev &
+Wiz-fila.lev Wiz-filb.lev Wiz-goal.lev Wiz-loca.lev Wiz-strt.lev &
+air.lev &
+asmodeus.lev &
+astral.lev &
+baalz.lev &
+bigrm-1.lev &
+bigrm-2.lev &
+bigrm-3.lev &
+bigrm-4.lev &
+bigrm-5.lev &
+bigrm-6.lev &
+bigrm-7.lev &
+bigrm-8.lev &
+bigrm-9.lev &
+bigrm-10.lev &
+castle.lev &
+earth.lev &
+fakewiz1.lev &
+fakewiz2.lev &
+fire.lev &
+juiblex.lev &
+knox.lev &
+medusa-1.lev &
+medusa-2.lev &
+medusa-3.lev &
+medusa-4.lev &
+minefill.lev &
+minend-1.lev &
+minend-2.lev &
+minend-3.lev &
+minetn-1.lev &
+minetn-2.lev &
+minetn-3.lev &
+minetn-4.lev &
+minetn-5.lev &
+minetn-6.lev &
+minetn-7.lev &
+oracle.lev &
+orcus.lev &
+sanctum.lev &
+soko1-1.lev &
+soko1-2.lev &
+soko2-1.lev &
+soko2-2.lev &
+soko3-1.lev &
+soko3-2.lev &
+soko4-1.lev &
+soko4-2.lev &
+tower1.lev &
+tower2.lev &
+tower3.lev &
+valley.lev &
+water.lev &
+wizard1.lev &
+wizard2.lev &
+wizard3.lev &
+
+# These files are generated at build time, and should be deleted by wmake clean
+NHDAT_NEW_FILES = &
+$(DAT)\bogusmon &
+$(DAT)\data &
+$(DAT)\dungeon &
+$(DAT)\engrave &
+$(DAT)\epitaph &
+$(DAT)\options &
+$(DAT)\oracles &
+$(DAT)\quest.dat &
+$(DAT)\rumors &
+
+# These files are copied to nhdat, and should NOT be deleted by wmake clean
+NHDAT_COPY_FILES = &
+$(DAT)\cmdhelp &
+$(DAT)\help &
+$(DAT)\hh &
+$(DAT)\history &
+$(DAT)\license &
+$(DAT)\opthelp &
+$(DAT)\tribute &
+$(DAT)\wizhelp &
+
+# These are tags created when each level description file is processed
+NHDAT_LEVEL_TAGS = &
+$(OBJ)\Arch.tag &
+$(OBJ)\Barb.tag &
+$(OBJ)\Caveman.tag &
+$(OBJ)\Healer.tag &
+$(OBJ)\Knight.tag &
+$(OBJ)\Monk.tag &
+$(OBJ)\Priest.tag &
+$(OBJ)\Ranger.tag &
+$(OBJ)\Rogue.tag &
+$(OBJ)\Samurai.tag &
+$(OBJ)\Tourist.tag &
+$(OBJ)\Valkyrie.tag &
+$(OBJ)\Wizard.tag &
+$(OBJ)\bigroom.tag &
+$(OBJ)\castle.tag &
+$(OBJ)\endgame.tag &
+$(OBJ)\gehennom.tag &
+$(OBJ)\knox.tag &
+$(OBJ)\medusa.tag &
+$(OBJ)\mines.tag &
+$(OBJ)\oracle.tag &
+$(OBJ)\sokoban.tag &
+$(OBJ)\tower.tag &
+$(OBJ)\yendor.tag &
+
+NHDAT_DEPS = $(NHDAT_COPY_FILES) $(NHDAT_NEW_FILES) $(NHDAT_LEVEL_TAGS)
+
+$(GAMEDIR)\nhdat : $(NHDAT_DEPS) $(OBJ)\dlb.exe $(GAMEDIR)\license
+	@if exist $(OBJ)\nhdat.txt del $(OBJ)\nhdat.txt
+	@for %a in ($(NHDAT_FILES)) do @echo %a >>$(OBJ)\nhdat.txt
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\dlb cvIf $(SRC)\$(OBJ)\nhdat.txt $(GAMEDIR)\nhdat
+	@cd $(SRC)
+
+##############################################################################
+#                          Copied and created files                          #
+##############################################################################
+
+$(GAMEDIR)\defaults.nh : $(SSHR)\NetHack.cnf $(GAMEDIR)\license
+	copy $(SSHR)\NetHack.cnf $(GAMEDIR)\defaults.nh
+
+$(GAMEDIR)\guidebk.txt : $(DOC)\guidebook.txt $(GAMEDIR)\license
+	copy $(DOC)\guidebk.txt $(GAMEDIR)
+
+$(GAMEDIR)\keyhelp : $(DAT)\keyhelp $(GAMEDIR)\license
+	copy $(DAT)\keyhelp $(GAMEDIR)
+
+$(GAMEDIR)\nethack.txt : $(DOC)\nethack.txt $(GAMEDIR)\license
+	copy $(DOC)\nethack.txt $(GAMEDIR)
+
+$(GAMEDIR)\symbols : $(DAT)\symbols $(GAMEDIR)\license
+	copy $(DAT)\symbols $(GAMEDIR)
+
+$(GAMEDIR)\sysconf : ..\sys\winnt\sysconf $(GAMEDIR)\license
+	copy ..\sys\winnt\sysconf $(GAMEDIR)
+
+$(GAMEDIR)\record : $(GAMEDIR)\license
+	wtouch $(GAMEDIR)\record
+
+$(GAMEDIR)\logfile : $(GAMEDIR)\license
+	wtouch $(GAMEDIR)\logfile
+
+$(GAMEDIR)\paniclog : $(GAMEDIR)\license
+	wtouch $(GAMEDIR)\paniclog
+
+##############################################################################
+#                       makedefs.exe and its products                        #
+##############################################################################
+
+MAKEDEFS_OBJS = $(OBJ)\makedefs.obj $(OBJ)\monst.obj $(OBJ)\objects.obj
+
+$(OBJ)\makedefs.exe : $(MAKEDEFS_OBJS)
+	@echo system os2386 >$(OBJ)\objs.txt
+	@echo name $(OBJ)\makedefs.exe >>$(OBJ)\objs.txt
+	@echo option map >>$(OBJ)\objs.txt
+	@for %a in ($(MAKEDEFS_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
+	wlink @$(OBJ)\objs.txt
+
+$(INC)\onames.h : $(OBJ)\makedefs.exe
+	$(OBJ)\makedefs.exe -o
+
+$(INC)\pm.h : $(OBJ)\makedefs.exe
+	$(OBJ)\makedefs.exe -p
+
+$(INC)\date.h : $(OBJ)\makedefs.exe
+	$(OBJ)\makedefs.exe -v
+
+$(DAT)\options : $(OBJ)\makedefs.exe
+	$(OBJ)\makedefs.exe -v
+
+$(DAT)\bogusmon : $(OBJ)\makedefs.exe $(DAT)\bogusmon.txt
+	$(OBJ)\makedefs.exe -s
+
+$(DAT)\engrave : $(OBJ)\makedefs.exe $(DAT)\engrave.txt
+	$(OBJ)\makedefs.exe -s
+
+$(DAT)\epitaph : $(OBJ)\makedefs.exe $(DAT)\epitaph.txt
+	$(OBJ)\makedefs.exe -s
+
+$(DAT)\oracles : $(OBJ)\makedefs.exe $(DAT)\oracles.txt
+	$(OBJ)\makedefs.exe -h
+
+$(DAT)\quest.dat : $(OBJ)\makedefs.exe $(DAT)\quest.txt
+	$(OBJ)\makedefs.exe -q
+
+$(DAT)\rumors : $(OBJ)\makedefs.exe $(DAT)\rumors.fal $(DAT)\rumors.tru
+	$(OBJ)\makedefs.exe -r
+
+$(DAT)\data : $(OBJ)\makedefs.exe $(DAT)\data.base
+	$(OBJ)\makedefs.exe -d
+
+$(DAT)\dungeon.pdf : $(OBJ)\makedefs.exe $(DAT)\dungeon.def
+	$(OBJ)\makedefs.exe -e
+
+##############################################################################
+#                             The data librarian                             #
+##############################################################################
+
+DLB_OBJS = $(OBJ)\dlb_main.obj $(OBJ)\dlb.obj $(OBJ)\alloc.obj $(OBJ)\panic.obj
+
+$(OBJ)\dlb.exe : $(DLB_OBJS)
+	@echo system os2386 >$(OBJ)\objs.txt
+	@echo name $(OBJ)\dlb.exe >>$(OBJ)\objs.txt
+	@echo option map >>$(OBJ)\objs.txt
+	@for %a in ($(DLB_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
+	wlink @$(OBJ)\objs.txt
+
+##############################################################################
+#                    The dungeon compiler and its product                    #
+##############################################################################
+
+DGN_COMP_OBJS = &
+$(OBJ)\dgn_main.obj $(OBJ)\dgn_lex.obj $(OBJ)\dgn_yacc.obj $(OBJ)\alloc.obj $(OBJ)\panic.obj
+
+$(OBJ)\dgn_comp.exe : $(DGN_COMP_OBJS)
+	@echo system os2386 >$(OBJ)\objs.txt
+	@echo name $(OBJ)\dgn_comp.exe >>$(OBJ)\objs.txt
+	@echo option map >>$(OBJ)\objs.txt
+	@for %a in ($(DGN_COMP_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
+	wlink @$(OBJ)\objs.txt
+
+$(DAT)\dungeon : $(OBJ)\dgn_comp.exe $(DAT)\dungeon.pdf
+	$(OBJ)\dgn_comp $(DAT)\dungeon.pdf
+
+##############################################################################
+#                    The level compiler and its products                     #
+##############################################################################
+
+LEV_COMP_OBJS = &
+$(OBJ)\lev_main.obj $(OBJ)\lev_lex.obj $(OBJ)\lev_yacc.obj $(OBJ)\alloc.obj $(OBJ)\panic.obj &
+$(OBJ)\monst.obj $(OBJ)\objects.obj $(OBJ)\decl.obj $(OBJ)\drawing.obj
+
+$(OBJ)\lev_comp.exe : $(LEV_COMP_OBJS)
+	@echo system os2386 >$(OBJ)\objs.txt
+	@echo name $(OBJ)\lev_comp.exe >>$(OBJ)\objs.txt
+	@echo option map >>$(OBJ)\objs.txt
+	@for %a in ($(LEV_COMP_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
+	wlink @$(OBJ)\objs.txt
+
+$(OBJ)\Arch.tag : $(OBJ)\lev_comp.exe $(DAT)\Arch.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Arch.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Arch.tag
+
+$(OBJ)\Barb.tag : $(OBJ)\lev_comp.exe $(DAT)\Barb.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Barb.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Barb.tag
+
+$(OBJ)\Caveman.tag : $(OBJ)\lev_comp.exe $(DAT)\Caveman.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Caveman.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Caveman.tag
+
+$(OBJ)\Healer.tag : $(OBJ)\lev_comp.exe $(DAT)\Healer.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Healer.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Healer.tag
+
+$(OBJ)\Knight.tag : $(OBJ)\lev_comp.exe $(DAT)\Knight.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Knight.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Knight.tag
+
+$(OBJ)\Monk.tag : $(OBJ)\lev_comp.exe $(DAT)\Monk.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Monk.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Monk.tag
+
+$(OBJ)\Priest.tag : $(OBJ)\lev_comp.exe $(DAT)\Priest.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Priest.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Priest.tag
+
+$(OBJ)\Ranger.tag : $(OBJ)\lev_comp.exe $(DAT)\Ranger.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Ranger.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Ranger.tag
+
+$(OBJ)\Rogue.tag : $(OBJ)\lev_comp.exe $(DAT)\Rogue.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Rogue.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Rogue.tag
+
+$(OBJ)\Samurai.tag : $(OBJ)\lev_comp.exe $(DAT)\Samurai.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Samurai.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Samurai.tag
+
+$(OBJ)\Tourist.tag : $(OBJ)\lev_comp.exe $(DAT)\Tourist.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Tourist.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Tourist.tag
+
+$(OBJ)\Valkyrie.tag : $(OBJ)\lev_comp.exe $(DAT)\Valkyrie.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Valkyrie.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Valkyrie.tag
+
+$(OBJ)\Wizard.tag : $(OBJ)\lev_comp.exe $(DAT)\Wizard.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp Wizard.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\Wizard.tag
+
+$(OBJ)\bigroom.tag : $(OBJ)\lev_comp.exe $(DAT)\bigroom.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp bigroom.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\bigroom.tag
+
+$(OBJ)\castle.tag : $(OBJ)\lev_comp.exe $(DAT)\castle.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp castle.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\castle.tag
+
+$(OBJ)\endgame.tag : $(OBJ)\lev_comp.exe $(DAT)\endgame.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp endgame.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\endgame.tag
+
+$(OBJ)\gehennom.tag : $(OBJ)\lev_comp.exe $(DAT)\gehennom.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp gehennom.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\gehennom.tag
+
+$(OBJ)\knox.tag : $(OBJ)\lev_comp.exe $(DAT)\knox.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp knox.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\knox.tag
+
+$(OBJ)\medusa.tag : $(OBJ)\lev_comp.exe $(DAT)\medusa.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp medusa.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\medusa.tag
+
+$(OBJ)\mines.tag : $(OBJ)\lev_comp.exe $(DAT)\mines.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp mines.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\mines.tag
+
+$(OBJ)\oracle.tag : $(OBJ)\lev_comp.exe $(DAT)\oracle.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp oracle.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\oracle.tag
+
+$(OBJ)\sokoban.tag : $(OBJ)\lev_comp.exe $(DAT)\sokoban.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp sokoban.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\sokoban.tag
+
+$(OBJ)\tower.tag : $(OBJ)\lev_comp.exe $(DAT)\tower.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp tower.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\tower.tag
+
+$(OBJ)\yendor.tag : $(OBJ)\lev_comp.exe $(DAT)\yendor.des
+	@cd $(DAT)
+	$(SRC)\$(OBJ)\lev_comp yendor.des
+	@cd $(SRC)
+	@wtouch $(OBJ)\yendor.tag
+
+##############################################################################
+#              Files copied directly into the binary directory               #
+##############################################################################
+
+# All files created in $(GAMEDIR) depend on $(GAMEDIR)\license, except of course
+# $(GAMEDIR)\license itself. The rule for $(GAMEDIR)\license ensures that the
+# directory exists.
+
+$(GAMEDIR)\license : $(DAT)\license
+	@-mkdir $(GAMEDIR)
+	copy $(DAT)\license $(GAMEDIR)
+
+##############################################################################
+#                              All object files                              #
+##############################################################################
+
+# In src
+
+$(OBJ)\allmain.obj : allmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) allmain.c -fo=$(OBJ)\allmain.obj
+
+$(OBJ)\alloc.obj : alloc.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) alloc.c -fo=$(OBJ)\alloc.obj
+
+$(OBJ)\apply.obj : apply.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) apply.c -fo=$(OBJ)\apply.obj
+
+$(OBJ)\artifact.obj : artifact.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) artifact.c -fo=$(OBJ)\artifact.obj
+
+$(OBJ)\attrib.obj : attrib.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) attrib.c -fo=$(OBJ)\attrib.obj
+
+$(OBJ)\ball.obj : ball.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) ball.c -fo=$(OBJ)\ball.obj
+
+$(OBJ)\bones.obj : bones.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) bones.c -fo=$(OBJ)\bones.obj
+
+$(OBJ)\botl.obj : botl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) botl.c -fo=$(OBJ)\botl.obj
+
+$(OBJ)\cmd.obj : cmd.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) cmd.c -fo=$(OBJ)\cmd.obj
+
+$(OBJ)\dbridge.obj : dbridge.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) dbridge.c -fo=$(OBJ)\dbridge.obj
+
+$(OBJ)\decl.obj : decl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) decl.c -fo=$(OBJ)\decl.obj
+
+$(OBJ)\detect.obj : detect.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) detect.c -fo=$(OBJ)\detect.obj
+
+$(OBJ)\dig.obj : dig.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) dig.c -fo=$(OBJ)\dig.obj
+
+$(OBJ)\display.obj : display.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) display.c -fo=$(OBJ)\display.obj
+
+$(OBJ)\dlb.obj : dlb.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) dlb.c -fo=$(OBJ)\dlb.obj
+
+$(OBJ)\do.obj : do.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) do.c -fo=$(OBJ)\do.obj
+
+$(OBJ)\dog.obj : dog.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) dog.c -fo=$(OBJ)\dog.obj
+
+$(OBJ)\dogmove.obj : dogmove.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) dogmove.c -fo=$(OBJ)\dogmove.obj
+
+$(OBJ)\dokick.obj : dokick.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) dokick.c -fo=$(OBJ)\dokick.obj
+
+$(OBJ)\do_name.obj : do_name.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) do_name.c -fo=$(OBJ)\do_name.obj
+
+$(OBJ)\dothrow.obj : dothrow.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) dothrow.c -fo=$(OBJ)\dothrow.obj
+
+$(OBJ)\do_wear.obj : do_wear.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) do_wear.c -fo=$(OBJ)\do_wear.obj
+
+$(OBJ)\drawing.obj : drawing.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) drawing.c -fo=$(OBJ)\drawing.obj
+
+$(OBJ)\dungeon.obj : dungeon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) dungeon.c -fo=$(OBJ)\dungeon.obj
+
+$(OBJ)\eat.obj : eat.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) eat.c -fo=$(OBJ)\eat.obj
+
+$(OBJ)\end.obj : end.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) end.c -fo=$(OBJ)\end.obj
+
+$(OBJ)\engrave.obj : engrave.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) engrave.c -fo=$(OBJ)\engrave.obj
+
+$(OBJ)\exper.obj : exper.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) exper.c -fo=$(OBJ)\exper.obj
+
+$(OBJ)\explode.obj : explode.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) explode.c -fo=$(OBJ)\explode.obj
+
+$(OBJ)\extralev.obj : extralev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) extralev.c -fo=$(OBJ)\extralev.obj
+
+$(OBJ)\files.obj : files.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) files.c -fo=$(OBJ)\files.obj
+
+$(OBJ)\fountain.obj : fountain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) fountain.c -fo=$(OBJ)\fountain.obj
+
+$(OBJ)\hack.obj : hack.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) hack.c -fo=$(OBJ)\hack.obj
+
+$(OBJ)\hacklib.obj : hacklib.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) hacklib.c -fo=$(OBJ)\hacklib.obj
+
+$(OBJ)\invent.obj : invent.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) invent.c -fo=$(OBJ)\invent.obj
+
+$(OBJ)\isaac64.obj : isaac64.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) isaac64.c -fo=$(OBJ)\isaac64.obj
+
+$(OBJ)\light.obj : light.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) light.c -fo=$(OBJ)\light.obj
+
+$(OBJ)\lock.obj : lock.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) lock.c -fo=$(OBJ)\lock.obj
+
+$(OBJ)\mail.obj : mail.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mail.c -fo=$(OBJ)\mail.obj
+
+$(OBJ)\makemon.obj : makemon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) makemon.c -fo=$(OBJ)\makemon.obj
+
+$(OBJ)\mapglyph.obj : mapglyph.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mapglyph.c -fo=$(OBJ)\mapglyph.obj
+
+$(OBJ)\mcastu.obj : mcastu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mcastu.c -fo=$(OBJ)\mcastu.obj
+
+$(OBJ)\mhitm.obj : mhitm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mhitm.c -fo=$(OBJ)\mhitm.obj
+
+$(OBJ)\mhitu.obj : mhitu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mhitu.c -fo=$(OBJ)\mhitu.obj
+
+$(OBJ)\minion.obj : minion.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) minion.c -fo=$(OBJ)\minion.obj
+
+$(OBJ)\mklev.obj : mklev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mklev.c -fo=$(OBJ)\mklev.obj
+
+$(OBJ)\mkmap.obj : mkmap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mkmap.c -fo=$(OBJ)\mkmap.obj
+
+$(OBJ)\mkmaze.obj : mkmaze.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mkmaze.c -fo=$(OBJ)\mkmaze.obj
+
+$(OBJ)\mkobj.obj : mkobj.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mkobj.c -fo=$(OBJ)\mkobj.obj
+
+$(OBJ)\mkroom.obj : mkroom.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mkroom.c -fo=$(OBJ)\mkroom.obj
+
+$(OBJ)\mon.obj : mon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mon.c -fo=$(OBJ)\mon.obj
+
+$(OBJ)\mondata.obj : mondata.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mondata.c -fo=$(OBJ)\mondata.obj
+
+$(OBJ)\monmove.obj : monmove.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) monmove.c -fo=$(OBJ)\monmove.obj
+
+$(OBJ)\monst.obj : monst.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) monst.c -fo=$(OBJ)\monst.obj
+
+$(OBJ)\mplayer.obj : mplayer.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mplayer.c -fo=$(OBJ)\mplayer.obj
+
+$(OBJ)\mthrowu.obj : mthrowu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) mthrowu.c -fo=$(OBJ)\mthrowu.obj
+
+$(OBJ)\muse.obj : muse.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) muse.c -fo=$(OBJ)\muse.obj
+
+$(OBJ)\music.obj : music.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) music.c -fo=$(OBJ)\music.obj
+
+$(OBJ)\objects.obj : objects.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) objects.c -fo=$(OBJ)\objects.obj
+
+$(OBJ)\objnam.obj : objnam.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) objnam.c -fo=$(OBJ)\objnam.obj
+
+$(OBJ)\o_init.obj : o_init.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) o_init.c -fo=$(OBJ)\o_init.obj
+
+$(OBJ)\options.obj : options.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) options.c -fo=$(OBJ)\options.obj
+
+$(OBJ)\pager.obj : pager.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) pager.c -fo=$(OBJ)\pager.obj
+
+$(OBJ)\pickup.obj : pickup.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) pickup.c -fo=$(OBJ)\pickup.obj
+
+$(OBJ)\pline.obj : pline.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) pline.c -fo=$(OBJ)\pline.obj
+
+$(OBJ)\polyself.obj : polyself.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) polyself.c -fo=$(OBJ)\polyself.obj
+
+$(OBJ)\potion.obj : potion.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) potion.c -fo=$(OBJ)\potion.obj
+
+$(OBJ)\pray.obj : pray.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) pray.c -fo=$(OBJ)\pray.obj
+
+$(OBJ)\priest.obj : priest.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) priest.c -fo=$(OBJ)\priest.obj
+
+$(OBJ)\quest.obj : quest.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) quest.c -fo=$(OBJ)\quest.obj
+
+$(OBJ)\questpgr.obj : questpgr.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) questpgr.c -fo=$(OBJ)\questpgr.obj
+
+$(OBJ)\read.obj : read.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) read.c -fo=$(OBJ)\read.obj
+
+$(OBJ)\rect.obj : rect.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) rect.c -fo=$(OBJ)\rect.obj
+
+$(OBJ)\region.obj : region.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) region.c -fo=$(OBJ)\region.obj
+
+$(OBJ)\restore.obj : restore.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) restore.c -fo=$(OBJ)\restore.obj
+
+$(OBJ)\rip.obj : rip.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) rip.c -fo=$(OBJ)\rip.obj
+
+$(OBJ)\rnd.obj : rnd.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) rnd.c -fo=$(OBJ)\rnd.obj
+
+$(OBJ)\role.obj : role.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) role.c -fo=$(OBJ)\role.obj
+
+$(OBJ)\rumors.obj : rumors.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) rumors.c -fo=$(OBJ)\rumors.obj
+
+$(OBJ)\save.obj : save.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) save.c -fo=$(OBJ)\save.obj
+
+$(OBJ)\shk.obj : shk.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) shk.c -fo=$(OBJ)\shk.obj
+
+$(OBJ)\shknam.obj : shknam.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) shknam.c -fo=$(OBJ)\shknam.obj
+
+$(OBJ)\sit.obj : sit.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) sit.c -fo=$(OBJ)\sit.obj
+
+$(OBJ)\sounds.obj : sounds.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) sounds.c -fo=$(OBJ)\sounds.obj
+
+$(OBJ)\spell.obj : spell.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) spell.c -fo=$(OBJ)\spell.obj
+
+$(OBJ)\sp_lev.obj : sp_lev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) sp_lev.c -fo=$(OBJ)\sp_lev.obj
+
+$(OBJ)\steal.obj : steal.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) steal.c -fo=$(OBJ)\steal.obj
+
+$(OBJ)\steed.obj : steed.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) steed.c -fo=$(OBJ)\steed.obj
+
+$(OBJ)\sys.obj : sys.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) sys.c -fo=$(OBJ)\sys.obj
+
+$(OBJ)\teleport.obj : teleport.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) teleport.c -fo=$(OBJ)\teleport.obj
+
+$(OBJ)\timeout.obj : timeout.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) timeout.c -fo=$(OBJ)\timeout.obj
+
+$(OBJ)\topten.obj : topten.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) topten.c -fo=$(OBJ)\topten.obj
+
+$(OBJ)\track.obj : track.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) track.c -fo=$(OBJ)\track.obj
+
+$(OBJ)\trap.obj : trap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -zm trap.c -fo=$(OBJ)\trap.obj
+
+$(OBJ)\uhitm.obj : uhitm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) uhitm.c -fo=$(OBJ)\uhitm.obj
+
+$(OBJ)\u_init.obj : u_init.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) u_init.c -fo=$(OBJ)\u_init.obj
+
+$(OBJ)\vault.obj : vault.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) vault.c -fo=$(OBJ)\vault.obj
+
+$(OBJ)\version.obj : version.c $(INC)\pm.h $(INC)\onames.h $(INC)\date.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) version.c -fo=$(OBJ)\version.obj
+
+$(OBJ)\vision.obj : vision.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) vision.c -fo=$(OBJ)\vision.obj
+
+$(OBJ)\weapon.obj : weapon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) weapon.c -fo=$(OBJ)\weapon.obj
+
+$(OBJ)\were.obj : were.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) were.c -fo=$(OBJ)\were.obj
+
+$(OBJ)\wield.obj : wield.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) wield.c -fo=$(OBJ)\wield.obj
+
+$(OBJ)\windows.obj : windows.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) windows.c -fo=$(OBJ)\windows.obj
+
+$(OBJ)\wizard.obj : wizard.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) wizard.c -fo=$(OBJ)\wizard.obj
+
+$(OBJ)\worm.obj : worm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) worm.c -fo=$(OBJ)\worm.obj
+
+$(OBJ)\worn.obj : worn.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) worn.c -fo=$(OBJ)\worn.obj
+
+$(OBJ)\write.obj : write.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) write.c -fo=$(OBJ)\write.obj
+
+$(OBJ)\zap.obj : zap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) zap.c -fo=$(OBJ)\zap.obj
+
+# In sys\os2
+
+$(OBJ)\os2.obj : $(SOS2)\os2.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SOS2)\os2.c -fo=$(OBJ)\os2.obj
+
+# In sys\share
+
+$(OBJ)\dgn_lex.obj : $(SSHR)\dgn_lex.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\dgn_lex.c -fo=$(OBJ)\dgn_lex.obj
+
+$(OBJ)\dgn_yacc.obj : $(SSHR)\dgn_yacc.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\dgn_yacc.c -fo=$(OBJ)\dgn_yacc.obj
+
+$(OBJ)\lev_lex.obj : $(SSHR)\lev_lex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\lev_lex.c -fo=$(OBJ)\lev_lex.obj
+
+$(OBJ)\lev_yacc.obj : $(SSHR)\lev_yacc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\lev_yacc.c -fo=$(OBJ)\lev_yacc.obj
+
+$(OBJ)\pcmain.obj : $(SSHR)\pcmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\pcmain.c -fo=$(OBJ)\pcmain.obj
+
+$(OBJ)\pcsys.obj : $(SSHR)\pcsys.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\pcsys.c -fo=$(OBJ)\pcsys.obj
+
+$(OBJ)\pctty.obj : $(SSHR)\pctty.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\pctty.c -fo=$(OBJ)\pctty.obj
+
+$(OBJ)\pcunix.obj : $(SSHR)\pcunix.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\pcunix.c -fo=$(OBJ)\pcunix.obj
+
+$(OBJ)\pmatchregex.obj : $(SSHR)\pmatchregex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\pmatchregex.c -fo=$(OBJ)\pmatchregex.obj
+
+$(OBJ)\posixregex.obj : $(SSHR)\posixregex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\posixregex.c -fo=$(OBJ)\posixregex.obj
+
+# In win\curses
+$(OBJ)\cursdial.obj : $(WCUR)\cursdial.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursdial.c -fo=$(OBJ)\cursdial.obj
+
+$(OBJ)\cursinit.obj : $(WCUR)\cursinit.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursinit.c -fo=$(OBJ)\cursinit.obj
+
+$(OBJ)\cursinvt.obj : $(WCUR)\cursinvt.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursinvt.c -fo=$(OBJ)\cursinvt.obj
+
+$(OBJ)\cursmain.obj : $(WCUR)\cursmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmain.c -fo=$(OBJ)\cursmain.obj
+
+$(OBJ)\cursmesg.obj : $(WCUR)\cursmesg.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmesg.c -fo=$(OBJ)\cursmesg.obj
+
+$(OBJ)\cursmisc.obj : $(WCUR)\cursmisc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmisc.c -fo=$(OBJ)\cursmisc.obj
+
+$(OBJ)\cursstat.obj : $(WCUR)\cursstat.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursstat.c -fo=$(OBJ)\cursstat.obj
+
+$(OBJ)\curswins.obj : $(WCUR)\curswins.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\curswins.c -fo=$(OBJ)\curswins.obj
+
+# In win\tty
+
+$(OBJ)\getline.obj : $(WTTY)\getline.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(WTTY)\getline.c -fo=$(OBJ)\getline.obj
+
+$(OBJ)\termcap.obj : $(WTTY)\termcap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(WTTY)\termcap.c -fo=$(OBJ)\termcap.obj
+
+$(OBJ)\topl.obj : $(WTTY)\topl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(WTTY)\topl.c -fo=$(OBJ)\topl.obj
+
+$(OBJ)\wintty.obj : $(WTTY)\wintty.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(WTTY)\wintty.c -fo=$(OBJ)\wintty.obj
+
+# In util
+
+$(OBJ)\dgn_main.obj : $(UTIL)\dgn_main.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(UTIL)\dgn_main.c -fo=$(OBJ)\dgn_main.obj
+
+$(OBJ)\dlb_main.obj : $(UTIL)\dlb_main.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(UTIL)\dlb_main.c -fo=$(OBJ)\dlb_main.obj
+
+$(OBJ)\lev_main.obj : $(UTIL)\lev_main.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(UTIL)\lev_main.c -fo=$(OBJ)\lev_main.obj
+
+$(OBJ)\makedefs.obj : $(UTIL)\makedefs.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(UTIL)\makedefs.c -fo=$(OBJ)\makedefs.obj
+
+$(OBJ)\panic.obj : $(UTIL)\panic.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(UTIL)\panic.c -fo=$(OBJ)\panic.obj
+
+$(OBJ)\recover.obj : $(UTIL)\recover.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(UTIL)\recover.c -fo=$(OBJ)\recover.obj
+
+$(COBJ)\addch.obj : $(PDCURSES_TOP)\pdcurses\addch.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addch.c -fo=$(COBJ)\addch.obj
+
+$(COBJ)\addchstr.obj : $(PDCURSES_TOP)\pdcurses\addchstr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addchstr.c -fo=$(COBJ)\addchstr.obj
+
+$(COBJ)\addstr.obj : $(PDCURSES_TOP)\pdcurses\addstr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addstr.c -fo=$(COBJ)\addstr.obj
+
+$(COBJ)\attr.obj : $(PDCURSES_TOP)\pdcurses\attr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\attr.c -fo=$(COBJ)\attr.obj
+
+$(COBJ)\beep.obj : $(PDCURSES_TOP)\pdcurses\beep.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\beep.c -fo=$(COBJ)\beep.obj
+
+$(COBJ)\bkgd.obj : $(PDCURSES_TOP)\pdcurses\bkgd.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\bkgd.c -fo=$(COBJ)\bkgd.obj
+
+$(COBJ)\border.obj : $(PDCURSES_TOP)\pdcurses\border.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\border.c -fo=$(COBJ)\border.obj
+
+$(COBJ)\clear.obj : $(PDCURSES_TOP)\pdcurses\clear.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\clear.c -fo=$(COBJ)\clear.obj
+
+$(COBJ)\color.obj : $(PDCURSES_TOP)\pdcurses\color.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\color.c -fo=$(COBJ)\color.obj
+
+$(COBJ)\debug.obj : $(PDCURSES_TOP)\pdcurses\debug.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\debug.c -fo=$(COBJ)\debug.obj
+
+$(COBJ)\delch.obj : $(PDCURSES_TOP)\pdcurses\delch.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\delch.c -fo=$(COBJ)\delch.obj
+
+$(COBJ)\deleteln.obj : $(PDCURSES_TOP)\pdcurses\deleteln.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\deleteln.c -fo=$(COBJ)\deleteln.obj
+
+$(COBJ)\getch.obj : $(PDCURSES_TOP)\pdcurses\getch.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getch.c -fo=$(COBJ)\getch.obj
+
+$(COBJ)\getstr.obj : $(PDCURSES_TOP)\pdcurses\getstr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getstr.c -fo=$(COBJ)\getstr.obj
+
+$(COBJ)\getyx.obj : $(PDCURSES_TOP)\pdcurses\getyx.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getyx.c -fo=$(COBJ)\getyx.obj
+
+$(COBJ)\inch.obj : $(PDCURSES_TOP)\pdcurses\inch.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inch.c -fo=$(COBJ)\inch.obj
+
+$(COBJ)\inchstr.obj : $(PDCURSES_TOP)\pdcurses\inchstr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inchstr.c -fo=$(COBJ)\inchstr.obj
+
+$(COBJ)\initscr.obj : $(PDCURSES_TOP)\pdcurses\initscr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\initscr.c -fo=$(COBJ)\initscr.obj
+
+$(COBJ)\inopts.obj : $(PDCURSES_TOP)\pdcurses\inopts.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inopts.c -fo=$(COBJ)\inopts.obj
+
+$(COBJ)\insch.obj : $(PDCURSES_TOP)\pdcurses\insch.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\insch.c -fo=$(COBJ)\insch.obj
+
+$(COBJ)\insstr.obj : $(PDCURSES_TOP)\pdcurses\insstr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\insstr.c -fo=$(COBJ)\insstr.obj
+
+$(COBJ)\instr.obj : $(PDCURSES_TOP)\pdcurses\instr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\instr.c -fo=$(COBJ)\instr.obj
+
+$(COBJ)\kernel.obj : $(PDCURSES_TOP)\pdcurses\kernel.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\kernel.c -fo=$(COBJ)\kernel.obj
+
+$(COBJ)\keyname.obj : $(PDCURSES_TOP)\pdcurses\keyname.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\keyname.c -fo=$(COBJ)\keyname.obj
+
+$(COBJ)\mouse.obj : $(PDCURSES_TOP)\pdcurses\mouse.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\mouse.c -fo=$(COBJ)\mouse.obj
+
+$(COBJ)\move.obj : $(PDCURSES_TOP)\pdcurses\move.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\move.c -fo=$(COBJ)\move.obj
+
+$(COBJ)\outopts.obj : $(PDCURSES_TOP)\pdcurses\outopts.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\outopts.c -fo=$(COBJ)\outopts.obj
+
+$(COBJ)\overlay.obj : $(PDCURSES_TOP)\pdcurses\overlay.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\overlay.c -fo=$(COBJ)\overlay.obj
+
+$(COBJ)\pad.obj : $(PDCURSES_TOP)\pdcurses\pad.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\pad.c -fo=$(COBJ)\pad.obj
+
+$(COBJ)\panel.obj : $(PDCURSES_TOP)\pdcurses\panel.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\panel.c -fo=$(COBJ)\panel.obj
+
+$(COBJ)\printw.obj : $(PDCURSES_TOP)\pdcurses\printw.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\printw.c -fo=$(COBJ)\printw.obj
+
+$(COBJ)\refresh.obj : $(PDCURSES_TOP)\pdcurses\refresh.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\refresh.c -fo=$(COBJ)\refresh.obj
+
+$(COBJ)\scanw.obj : $(PDCURSES_TOP)\pdcurses\scanw.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scanw.c -fo=$(COBJ)\scanw.obj
+
+$(COBJ)\scr_dump.obj : $(PDCURSES_TOP)\pdcurses\scr_dump.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scr_dump.c -fo=$(COBJ)\scr_dump.obj
+
+$(COBJ)\scroll.obj : $(PDCURSES_TOP)\pdcurses\scroll.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scroll.c -fo=$(COBJ)\scroll.obj
+
+$(COBJ)\slk.obj : $(PDCURSES_TOP)\pdcurses\slk.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\slk.c -fo=$(COBJ)\slk.obj
+
+$(COBJ)\termattr.obj : $(PDCURSES_TOP)\pdcurses\termattr.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\termattr.c -fo=$(COBJ)\termattr.obj
+
+$(COBJ)\touch.obj : $(PDCURSES_TOP)\pdcurses\touch.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\touch.c -fo=$(COBJ)\touch.obj
+
+$(COBJ)\util.obj : $(PDCURSES_TOP)\pdcurses\util.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\util.c -fo=$(COBJ)\util.obj
+
+$(COBJ)\window.obj : $(PDCURSES_TOP)\pdcurses\window.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\window.c -fo=$(COBJ)\window.obj
+
+$(COBJ)\pdcclip.obj : $(PDCURSES_TOP)\os2\pdcclip.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcclip.c -fo=$(COBJ)\pdcclip.obj
+
+$(COBJ)\pdcdisp.obj : $(PDCURSES_TOP)\os2\pdcdisp.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcdisp.c -fo=$(COBJ)\pdcdisp.obj
+
+$(COBJ)\pdcgetsc.obj : $(PDCURSES_TOP)\os2\pdcgetsc.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcgetsc.c -fo=$(COBJ)\pdcgetsc.obj
+
+$(COBJ)\pdckbd.obj : $(PDCURSES_TOP)\os2\pdckbd.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdckbd.c -fo=$(COBJ)\pdckbd.obj
+
+$(COBJ)\pdcscrn.obj : $(PDCURSES_TOP)\os2\pdcscrn.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcscrn.c -fo=$(COBJ)\pdcscrn.obj
+
+$(COBJ)\pdcsetsc.obj : $(PDCURSES_TOP)\os2\pdcsetsc.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcsetsc.c -fo=$(COBJ)\pdcsetsc.obj
+
+$(COBJ)\pdcutil.obj : $(PDCURSES_TOP)\os2\pdcutil.c $(OBJ)\obj.tag .AUTODEPEND
+	@$(MAKE_COBJ)
+	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcutil.c -fo=$(COBJ)\pdcutil.obj
+
+# All objects depend on this, so the directory will be created
+
+$(OBJ)\obj.tag:
+	@-mkdir $(OBJ)
+	@wtouch $(OBJ)\obj.tag
+
+##############################################################################
+#                                   Cleanup                                  #
+##############################################################################
+clean : .SYMBOLIC
+	@if exist $(OBJ)\*.obj del $(OBJ)\*.obj
+	@if exist $(COBJ)\*.obj del $(COBJ)\*.obj
+	@if exist *.err del *.err
+	@for %a in ($(NHDAT_NEW_FILES)) do @if exist %a del %a
+	@for %a in ($(NHDAT_LEVEL_TAGS)) do @if exist %a del %a
+	@if exist $(DAT)\*.lev del $(DAT)\*.lev
+	@if exist $(DAT)\dungeon.pdf del $(DAT)\dungeon.pdf
+	@if exist $(INC)\date.h del $(INC)\date.h
+	@if exist $(INC)\onames.h del $(INC)\onames.h
+	@if exist $(INC)\pm.h del $(INC)\pm.h
+	@if exist tile.c del tile.c
+	@if exist *.map del *.map
+	@if exist $(OBJ)\obj.tag del $(OBJ)\obj.tag
+	@if exist $(OBJ)\dgn_comp.exe del $(OBJ)\dgn_comp.exe
+	@if exist $(OBJ)\dlb.exe del $(OBJ)\dlb.exe
+	@if exist $(OBJ)\lev_comp.exe del $(OBJ)\lev_comp.exe
+	@if exist $(OBJ)\makedefs.exe del $(OBJ)\makedefs.exe
+	@if exist $(OBJ)\tile2bmp.exe del $(OBJ)\tile2bmp.exe
+	@if exist $(OBJ)\tilemap.exe del $(OBJ)\tilemap.exe
+	@if exist $(OBJ)\nhdat.txt del $(OBJ)\nhdat.txt
+	@if exist $(OBJ)\objs.txt del $(OBJ)\objs.txt
+	-@if exist $(COBJ) rmdir $(COBJ)
+	-@if exist $(OBJ) rmdir $(OBJ)
