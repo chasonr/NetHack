@@ -21,6 +21,9 @@
 #                         Some definitions and rules                         #
 ##############################################################################
 
+# Shell
+SHELL = bash
+
 # Directories
 GAMEDIR = ..\binary
 SRC = .
@@ -208,144 +211,7 @@ $(OBJ)\oracle.tag   $(OBJ)\sokoban.tag $(OBJ)\tower.tag   $(OBJ)\yendor.tag
 
 $(GAMEDIR)\nhdat: $(NHDAT_DEPS1) $(NHDAT_DEPS2) $(UTIL)\dlb.exe
 	@$(MAKE_GAMEDIR)
-	@echo cmdhelp       >$(UTIL)\dlb.lst
-	@echo help         >>$(UTIL)\dlb.lst
-	@echo hh           >>$(UTIL)\dlb.lst
-	@echo history      >>$(UTIL)\dlb.lst
-	@echo keyhelp      >>$(UTIL)\dlb.lst
-	@echo opthelp      >>$(UTIL)\dlb.lst
-	@echo tribute      >>$(UTIL)\dlb.lst
-	@echo wizhelp      >>$(UTIL)\dlb.lst
-	@echo dungeon      >>$(UTIL)\dlb.lst
-	@echo bogusmon     >>$(UTIL)\dlb.lst
-	@echo engrave      >>$(UTIL)\dlb.lst
-	@echo epitaph      >>$(UTIL)\dlb.lst
-	@echo data         >>$(UTIL)\dlb.lst
-	@echo oracles      >>$(UTIL)\dlb.lst
-	@echo options      >>$(UTIL)\dlb.lst
-	@echo quest.dat    >>$(UTIL)\dlb.lst
-	@echo rumors       >>$(UTIL)\dlb.lst
-	@echo Arc-fila.lev >>$(UTIL)\dlb.lst
-	@echo Arc-filb.lev >>$(UTIL)\dlb.lst
-	@echo Arc-goal.lev >>$(UTIL)\dlb.lst
-	@echo Arc-loca.lev >>$(UTIL)\dlb.lst
-	@echo Arc-strt.lev >>$(UTIL)\dlb.lst
-	@echo Bar-fila.lev >>$(UTIL)\dlb.lst
-	@echo Bar-filb.lev >>$(UTIL)\dlb.lst
-	@echo Bar-goal.lev >>$(UTIL)\dlb.lst
-	@echo Bar-loca.lev >>$(UTIL)\dlb.lst
-	@echo Bar-strt.lev >>$(UTIL)\dlb.lst
-	@echo Cav-fila.lev >>$(UTIL)\dlb.lst
-	@echo Cav-filb.lev >>$(UTIL)\dlb.lst
-	@echo Cav-goal.lev >>$(UTIL)\dlb.lst
-	@echo Cav-loca.lev >>$(UTIL)\dlb.lst
-	@echo Cav-strt.lev >>$(UTIL)\dlb.lst
-	@echo Hea-fila.lev >>$(UTIL)\dlb.lst
-	@echo Hea-filb.lev >>$(UTIL)\dlb.lst
-	@echo Hea-goal.lev >>$(UTIL)\dlb.lst
-	@echo Hea-loca.lev >>$(UTIL)\dlb.lst
-	@echo Hea-strt.lev >>$(UTIL)\dlb.lst
-	@echo Kni-fila.lev >>$(UTIL)\dlb.lst
-	@echo Kni-filb.lev >>$(UTIL)\dlb.lst
-	@echo Kni-goal.lev >>$(UTIL)\dlb.lst
-	@echo Kni-loca.lev >>$(UTIL)\dlb.lst
-	@echo Kni-strt.lev >>$(UTIL)\dlb.lst
-	@echo Mon-fila.lev >>$(UTIL)\dlb.lst
-	@echo Mon-filb.lev >>$(UTIL)\dlb.lst
-	@echo Mon-goal.lev >>$(UTIL)\dlb.lst
-	@echo Mon-loca.lev >>$(UTIL)\dlb.lst
-	@echo Mon-strt.lev >>$(UTIL)\dlb.lst
-	@echo Pri-fila.lev >>$(UTIL)\dlb.lst
-	@echo Pri-filb.lev >>$(UTIL)\dlb.lst
-	@echo Pri-goal.lev >>$(UTIL)\dlb.lst
-	@echo Pri-loca.lev >>$(UTIL)\dlb.lst
-	@echo Pri-strt.lev >>$(UTIL)\dlb.lst
-	@echo Ran-fila.lev >>$(UTIL)\dlb.lst
-	@echo Ran-filb.lev >>$(UTIL)\dlb.lst
-	@echo Ran-goal.lev >>$(UTIL)\dlb.lst
-	@echo Ran-loca.lev >>$(UTIL)\dlb.lst
-	@echo Ran-strt.lev >>$(UTIL)\dlb.lst
-	@echo Rog-fila.lev >>$(UTIL)\dlb.lst
-	@echo Rog-filb.lev >>$(UTIL)\dlb.lst
-	@echo Rog-goal.lev >>$(UTIL)\dlb.lst
-	@echo Rog-loca.lev >>$(UTIL)\dlb.lst
-	@echo Rog-strt.lev >>$(UTIL)\dlb.lst
-	@echo Sam-fila.lev >>$(UTIL)\dlb.lst
-	@echo Sam-filb.lev >>$(UTIL)\dlb.lst
-	@echo Sam-goal.lev >>$(UTIL)\dlb.lst
-	@echo Sam-loca.lev >>$(UTIL)\dlb.lst
-	@echo Sam-strt.lev >>$(UTIL)\dlb.lst
-	@echo Tou-fila.lev >>$(UTIL)\dlb.lst
-	@echo Tou-filb.lev >>$(UTIL)\dlb.lst
-	@echo Tou-goal.lev >>$(UTIL)\dlb.lst
-	@echo Tou-loca.lev >>$(UTIL)\dlb.lst
-	@echo Tou-strt.lev >>$(UTIL)\dlb.lst
-	@echo Val-fila.lev >>$(UTIL)\dlb.lst
-	@echo Val-filb.lev >>$(UTIL)\dlb.lst
-	@echo Val-goal.lev >>$(UTIL)\dlb.lst
-	@echo Val-loca.lev >>$(UTIL)\dlb.lst
-	@echo Val-strt.lev >>$(UTIL)\dlb.lst
-	@echo Wiz-fila.lev >>$(UTIL)\dlb.lst
-	@echo Wiz-filb.lev >>$(UTIL)\dlb.lst
-	@echo Wiz-goal.lev >>$(UTIL)\dlb.lst
-	@echo Wiz-loca.lev >>$(UTIL)\dlb.lst
-	@echo Wiz-strt.lev >>$(UTIL)\dlb.lst
-	@echo bigrm-1.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-2.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-3.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-4.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-5.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-6.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-7.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-8.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-9.lev  >>$(UTIL)\dlb.lst
-	@echo bigrm-10.lev >>$(UTIL)\dlb.lst
-	@echo castle.lev   >>$(UTIL)\dlb.lst
-	@echo air.lev      >>$(UTIL)\dlb.lst
-	@echo astral.lev   >>$(UTIL)\dlb.lst
-	@echo earth.lev    >>$(UTIL)\dlb.lst
-	@echo fire.lev     >>$(UTIL)\dlb.lst
-	@echo water.lev    >>$(UTIL)\dlb.lst
-	@echo asmodeus.lev >>$(UTIL)\dlb.lst
-	@echo baalz.lev    >>$(UTIL)\dlb.lst
-	@echo juiblex.lev  >>$(UTIL)\dlb.lst
-	@echo orcus.lev    >>$(UTIL)\dlb.lst
-	@echo sanctum.lev  >>$(UTIL)\dlb.lst
-	@echo valley.lev   >>$(UTIL)\dlb.lst
-	@echo knox.lev     >>$(UTIL)\dlb.lst
-	@echo medusa-1.lev >>$(UTIL)\dlb.lst
-	@echo medusa-2.lev >>$(UTIL)\dlb.lst
-	@echo medusa-3.lev >>$(UTIL)\dlb.lst
-	@echo medusa-4.lev >>$(UTIL)\dlb.lst
-	@echo minend-1.lev >>$(UTIL)\dlb.lst
-	@echo minend-2.lev >>$(UTIL)\dlb.lst
-	@echo minend-3.lev >>$(UTIL)\dlb.lst
-	@echo minetn-1.lev >>$(UTIL)\dlb.lst
-	@echo minetn-2.lev >>$(UTIL)\dlb.lst
-	@echo minetn-3.lev >>$(UTIL)\dlb.lst
-	@echo minetn-4.lev >>$(UTIL)\dlb.lst
-	@echo minetn-5.lev >>$(UTIL)\dlb.lst
-	@echo minetn-6.lev >>$(UTIL)\dlb.lst
-	@echo minetn-7.lev >>$(UTIL)\dlb.lst
-	@echo minefill.lev >>$(UTIL)\dlb.lst
-	@echo oracle.lev   >>$(UTIL)\dlb.lst
-	@echo soko1-1.lev  >>$(UTIL)\dlb.lst
-	@echo soko1-2.lev  >>$(UTIL)\dlb.lst
-	@echo soko2-1.lev  >>$(UTIL)\dlb.lst
-	@echo soko2-2.lev  >>$(UTIL)\dlb.lst
-	@echo soko3-1.lev  >>$(UTIL)\dlb.lst
-	@echo soko3-2.lev  >>$(UTIL)\dlb.lst
-	@echo soko4-1.lev  >>$(UTIL)\dlb.lst
-	@echo soko4-2.lev  >>$(UTIL)\dlb.lst
-	@echo tower1.lev   >>$(UTIL)\dlb.lst
-	@echo tower2.lev   >>$(UTIL)\dlb.lst
-	@echo tower3.lev   >>$(UTIL)\dlb.lst
-	@echo fakewiz1.lev >>$(UTIL)\dlb.lst
-	@echo fakewiz2.lev >>$(UTIL)\dlb.lst
-	@echo wizard1.lev  >>$(UTIL)\dlb.lst
-	@echo wizard2.lev  >>$(UTIL)\dlb.lst
-	@echo wizard3.lev  >>$(UTIL)\dlb.lst
-	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)/dlb.exe cvIf $(UTIL)/dlb.lst $@")
+	bash -c $(subst,\,/ "cd $(DAT) && $(UTIL)/dlb.exe cvf $@ cmdhelp help hh history keyhelp opthelp tribute wizhelp dungeon bogusmon engrave epitaph data oracles options quest.dat rumors *.lev")
 
 ##############################################################################
 #                       makedefs.exe and its products                        #
@@ -832,4 +698,3 @@ clean:
 	rm -f $(INC)/lev_comp.h
 	rm -rf $(OBJ)
 	rm -f $(UTIL)/*.exe
-	rm -f $(UTIL)/dlb.lst
