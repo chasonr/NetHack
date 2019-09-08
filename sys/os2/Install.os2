@@ -41,6 +41,17 @@
     makefile to your needs.  In particular, change the CC and CFLAGS to suit
     your C compiler.  See the makefile for more information.
 
+    You will need at least these programs in your path:
+        * dmake
+        * gcc
+        * bash
+        * cp
+        * echo
+        * rm
+        * touch
+    You will need flex and bison also, if you enable compiling the dungeon and
+    level compilers from the Lex and Yacc sources.
+
 3.  If you want to change the high score list behavior, examine the top of
     topten.c, in the src directory.  You may want to change the definitions of
     PERSMAX, POINTSMIN, and ENTRYMAX.
