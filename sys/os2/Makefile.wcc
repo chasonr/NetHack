@@ -12,7 +12,7 @@
 
 # To include the Curses interface, enable USE_CURSES and set PDCURSES_TOP to
 # the path to the root of your PDCurses source.
-USE_CURSES = Y
+#USE_CURSES = Y
 PDCURSES_TOP = c:\home\os2dev\pdcurses
 WATCOM = c:\watcom
 
