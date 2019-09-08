@@ -893,18 +893,6 @@ $(OBJ)\os2.obj : $(SOS2)\os2.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTOD
 
 # In sys\share
 
-$(OBJ)\dgn_lex.obj : $(SSHR)\dgn_lex.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\dgn_lex.c -fo=$(OBJ)\dgn_lex.obj
-
-$(OBJ)\dgn_yacc.obj : $(SSHR)\dgn_yacc.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\dgn_yacc.c -fo=$(OBJ)\dgn_yacc.obj
-
-$(OBJ)\lev_lex.obj : $(SSHR)\lev_lex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\lev_lex.c -fo=$(OBJ)\lev_lex.obj
-
-$(OBJ)\lev_yacc.obj : $(SSHR)\lev_yacc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\lev_yacc.c -fo=$(OBJ)\lev_yacc.obj
-
 $(OBJ)\pcmain.obj : $(SSHR)\pcmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
 	$(CC) $(CFLAGS) $(SSHR)\pcmain.c -fo=$(OBJ)\pcmain.obj
 
@@ -1170,6 +1158,45 @@ $(COBJ)\pdcutil.obj : $(PDCURSES_TOP)\os2\pdcutil.c $(OBJ)\obj.tag .AUTODEPEND
 	@$(MAKE_COBJ)
 	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcutil.c -fo=$(COBJ)\pdcutil.obj
 
+# Lex and Yacc sources for the dungeon and level compilers
+!ifeq USE_FLEX_BISON Y
+$(OBJ)\dgn_lex.obj : $(OBJ)\dgn_lex.c $(INC)\dgn_comp.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(OBJ)\dgn_lex.c -fo=$(OBJ)\dgn_lex.obj
+
+$(OBJ)\dgn_lex.c: $(UTIL)\dgn_comp.l
+	flex -o $(OBJ)\dgn_lex.c $(UTIL)\dgn_comp.l
+
+$(OBJ)\dgn_yacc.obj : $(OBJ)\dgn_yacc.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(OBJ)\dgn_yacc.c -fo=$(OBJ)\dgn_yacc.obj
+
+$(OBJ)\dgn_yacc.c $(INC)\dgn_comp.h : $(UTIL)\dgn_comp.y
+	bison -y --defines=$(INC)\dgn_comp.h -o $(OBJ)\dgn_yacc.c $<
+
+$(OBJ)\lev_lex.obj : $(OBJ)\lev_lex.c $(INC)\lev_comp.h $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(OBJ)\lev_lex.c -fo=$(OBJ)\lev_lex.obj
+
+$(OBJ)\lev_lex.c: $(UTIL)\lev_comp.l
+	flex -o $(OBJ)\lev_lex.c $(UTIL)\lev_comp.l
+
+$(OBJ)\lev_yacc.obj : $(OBJ)\lev_yacc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(OBJ)\lev_yacc.c -fo=$(OBJ)\lev_yacc.obj
+
+$(OBJ)\lev_yacc.c $(INC)\lev_comp.h : $(UTIL)\lev_comp.y
+	bison -y --defines=$(INC)\lev_comp.h -o $(OBJ)\lev_yacc.c $<
+!else
+$(OBJ)\dgn_lex.obj : $(SSHR)\dgn_lex.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\dgn_lex.c -fo=$(OBJ)\dgn_lex.obj
+
+$(OBJ)\dgn_yacc.obj : $(SSHR)\dgn_yacc.c $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\dgn_yacc.c -fo=$(OBJ)\dgn_yacc.obj
+
+$(OBJ)\lev_lex.obj : $(SSHR)\lev_lex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\lev_lex.c -fo=$(OBJ)\lev_lex.obj
+
+$(OBJ)\lev_yacc.obj : $(SSHR)\lev_yacc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
+	$(CC) $(CFLAGS) $(SSHR)\lev_yacc.c -fo=$(OBJ)\lev_yacc.obj
+!endif
+
 # All objects depend on this, so the directory will be created
 
 $(OBJ)\obj.tag:
@@ -1190,8 +1217,11 @@ clean : .SYMBOLIC
 	@if exist $(INC)\date.h del $(INC)\date.h
 	@if exist $(INC)\onames.h del $(INC)\onames.h
 	@if exist $(INC)\pm.h del $(INC)\pm.h
+	@if exist $(INC)\dgn_comp.h del $(INC)\dgn_comp.h
+	@if exist $(INC)\lev_comp.h del $(INC)\lev_comp.h
 	@if exist tile.c del tile.c
 	@if exist *.map del *.map
+	@if exist $(OBJ)\*.c del $(OBJ)\*.c
 	@if exist $(OBJ)\obj.tag del $(OBJ)\obj.tag
 	@if exist $(OBJ)\dgn_comp.exe del $(OBJ)\dgn_comp.exe
 	@if exist $(OBJ)\dlb.exe del $(OBJ)\dlb.exe
