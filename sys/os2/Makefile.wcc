@@ -6,12 +6,19 @@
 #                         User-controllable settings                         #
 ##############################################################################
 
+# To build a 16-bit NetHack, enable this and make sure that your INCLUDE
+# environment variable points to the correct directory for 16-bit development,
+# e.g.:
+# set INCLUDE=C:\WATCOM\H;C:\WATCOM\H\OS21X
+#BUILD_16_BIT = Y
+
 # Define this to build dgn_lex.obj and lev_lex.obj from the Lex source, and
 # dgn_yacc.obj and lev_yacc.obj from the Yacc source.
 #USE_FLEX_BISON = Y
 
 # To include the Curses interface, enable USE_CURSES and set PDCURSES_TOP to
 # the path to the root of your PDCurses source.
+# PDCurses cannot be built for 16 bit applications.
 #USE_CURSES = Y
 PDCURSES_TOP = c:\home\os2dev\pdcurses
 WATCOM = c:\watcom
@@ -59,8 +66,15 @@ $(GAMEDIR)\sysconf &
 #                               Compiler setup                               #
 ##############################################################################
 
+!ifeq BUILD_16_BIT Y
+CC = wcc
+CFLAGS = -zq -wx -bt=os2 -os -ml -zc -zdf -zt0 -2 -I$(INC) -DDLB -DOS2 -DOS2_HPFS
+CMD_CFLAGS = @$(OBJ)\cflags.txt
+!else
 CC = wcc386
-CFLAGS = -q -ox -wx -I$(INC) -DDLB -DOS2 -DOS2_HPFS
+CFLAGS = -zq -wx -ox -I$(INC) -DDLB -DOS2 -DOS2_HPFS
+CMD_CFLAGS = $(CFLAGS)
+!endif
 !ifeq USE_CURSES Y
 CFLAGS += -DCURSES_GRAPHICS
 !endif
@@ -118,7 +132,14 @@ $(OBJ)\getline.obj  $(OBJ)\termcap.obj  $(OBJ)\topl.obj     $(OBJ)\wintty.obj   
 $(CURSES_OBJS)
 
 $(GAMEDIR)\nethack.exe : $(NETHACK_OBJS) $(GAMEDIR)\license
+!ifeq BUILD_16_BIT Y
+	@echo system os2 >$(OBJ)\objs.txt
+	@echo option newfiles >>$(OBJ)\objs.txt
+	@echo option stack=49152 >>$(OBJ)\objs.txt
+	@echo library clibl.lib >>$(OBJ)\objs.txt
+!else
 	@echo system os2386 >$(OBJ)\objs.txt
+!endif
 	@echo option map >>$(OBJ)\objs.txt
 	@echo name $(GAMEDIR)\nethack.exe >>$(OBJ)\objs.txt
 	@for %a in ($(NETHACK_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
@@ -313,7 +334,13 @@ $(GAMEDIR)\paniclog : $(GAMEDIR)\license
 MAKEDEFS_OBJS = $(OBJ)\makedefs.obj $(OBJ)\monst.obj $(OBJ)\objects.obj
 
 $(OBJ)\makedefs.exe : $(MAKEDEFS_OBJS)
+!ifeq BUILD_16_BIT Y
+	@echo system os2 >$(OBJ)\objs.txt
+	@echo option newfiles >>$(OBJ)\objs.txt
+	@echo option stack=49152 >>$(OBJ)\objs.txt
+!else
 	@echo system os2386 >$(OBJ)\objs.txt
+!endif
 	@echo name $(OBJ)\makedefs.exe >>$(OBJ)\objs.txt
 	@echo option map >>$(OBJ)\objs.txt
 	@for %a in ($(MAKEDEFS_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
@@ -362,7 +389,13 @@ $(DAT)\dungeon.pdf : $(OBJ)\makedefs.exe $(DAT)\dungeon.def
 DLB_OBJS = $(OBJ)\dlb_main.obj $(OBJ)\dlb.obj $(OBJ)\alloc.obj $(OBJ)\panic.obj
 
 $(OBJ)\dlb.exe : $(DLB_OBJS)
+!ifeq BUILD_16_BIT Y
+	@echo system os2 >$(OBJ)\objs.txt
+	@echo option newfiles >>$(OBJ)\objs.txt
+	@echo option stack=49152 >>$(OBJ)\objs.txt
+!else
 	@echo system os2386 >$(OBJ)\objs.txt
+!endif
 	@echo name $(OBJ)\dlb.exe >>$(OBJ)\objs.txt
 	@echo option map >>$(OBJ)\objs.txt
 	@for %a in ($(DLB_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
@@ -376,7 +409,13 @@ DGN_COMP_OBJS = &
 $(OBJ)\dgn_main.obj $(OBJ)\dgn_lex.obj $(OBJ)\dgn_yacc.obj $(OBJ)\alloc.obj $(OBJ)\panic.obj
 
 $(OBJ)\dgn_comp.exe : $(DGN_COMP_OBJS)
+!ifeq BUILD_16_BIT Y
+	@echo system os2 >$(OBJ)\objs.txt
+	@echo option newfiles >>$(OBJ)\objs.txt
+	@echo option stack=49152 >>$(OBJ)\objs.txt
+!else
 	@echo system os2386 >$(OBJ)\objs.txt
+!endif
 	@echo name $(OBJ)\dgn_comp.exe >>$(OBJ)\objs.txt
 	@echo option map >>$(OBJ)\objs.txt
 	@for %a in ($(DGN_COMP_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
@@ -394,7 +433,13 @@ $(OBJ)\lev_main.obj $(OBJ)\lev_lex.obj $(OBJ)\lev_yacc.obj $(OBJ)\alloc.obj $(OB
 $(OBJ)\monst.obj $(OBJ)\objects.obj $(OBJ)\decl.obj $(OBJ)\drawing.obj
 
 $(OBJ)\lev_comp.exe : $(LEV_COMP_OBJS)
+!ifeq BUILD_16_BIT Y
+	@echo system os2 >$(OBJ)\objs.txt
+	@echo option newfiles >>$(OBJ)\objs.txt
+	@echo option stack=49152 >>$(OBJ)\objs.txt
+!else
 	@echo system os2386 >$(OBJ)\objs.txt
+!endif
 	@echo name $(OBJ)\lev_comp.exe >>$(OBJ)\objs.txt
 	@echo option map >>$(OBJ)\objs.txt
 	@for %a in ($(LEV_COMP_OBJS)) do @echo file %a >>$(OBJ)\objs.txt
@@ -562,646 +607,652 @@ $(GAMEDIR)\license : $(DAT)\license
 
 # In src
 
-$(OBJ)\allmain.obj : allmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) allmain.c -fo=$(OBJ)\allmain.obj
+$(OBJ)\allmain.obj : allmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) allmain.c -fo=$(OBJ)\allmain.obj
 
-$(OBJ)\alloc.obj : alloc.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) alloc.c -fo=$(OBJ)\alloc.obj
+$(OBJ)\alloc.obj : alloc.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) alloc.c -fo=$(OBJ)\alloc.obj
 
-$(OBJ)\apply.obj : apply.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) apply.c -fo=$(OBJ)\apply.obj
+$(OBJ)\apply.obj : apply.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) apply.c -fo=$(OBJ)\apply.obj
 
-$(OBJ)\artifact.obj : artifact.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) artifact.c -fo=$(OBJ)\artifact.obj
+$(OBJ)\artifact.obj : artifact.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) artifact.c -fo=$(OBJ)\artifact.obj
 
-$(OBJ)\attrib.obj : attrib.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) attrib.c -fo=$(OBJ)\attrib.obj
+$(OBJ)\attrib.obj : attrib.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) attrib.c -fo=$(OBJ)\attrib.obj
 
-$(OBJ)\ball.obj : ball.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) ball.c -fo=$(OBJ)\ball.obj
+$(OBJ)\ball.obj : ball.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) ball.c -fo=$(OBJ)\ball.obj
 
-$(OBJ)\bones.obj : bones.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) bones.c -fo=$(OBJ)\bones.obj
+$(OBJ)\bones.obj : bones.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) bones.c -fo=$(OBJ)\bones.obj
 
-$(OBJ)\botl.obj : botl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) botl.c -fo=$(OBJ)\botl.obj
+$(OBJ)\botl.obj : botl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) botl.c -fo=$(OBJ)\botl.obj
 
-$(OBJ)\cmd.obj : cmd.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) cmd.c -fo=$(OBJ)\cmd.obj
+$(OBJ)\cmd.obj : cmd.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) cmd.c -fo=$(OBJ)\cmd.obj
 
-$(OBJ)\dbridge.obj : dbridge.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) dbridge.c -fo=$(OBJ)\dbridge.obj
+$(OBJ)\dbridge.obj : dbridge.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) dbridge.c -fo=$(OBJ)\dbridge.obj
 
-$(OBJ)\decl.obj : decl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) decl.c -fo=$(OBJ)\decl.obj
+$(OBJ)\decl.obj : decl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) decl.c -fo=$(OBJ)\decl.obj
 
-$(OBJ)\detect.obj : detect.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) detect.c -fo=$(OBJ)\detect.obj
+$(OBJ)\detect.obj : detect.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) detect.c -fo=$(OBJ)\detect.obj
 
-$(OBJ)\dig.obj : dig.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) dig.c -fo=$(OBJ)\dig.obj
+$(OBJ)\dig.obj : dig.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) dig.c -fo=$(OBJ)\dig.obj
 
-$(OBJ)\display.obj : display.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) display.c -fo=$(OBJ)\display.obj
+$(OBJ)\display.obj : display.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) display.c -fo=$(OBJ)\display.obj
 
-$(OBJ)\dlb.obj : dlb.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) dlb.c -fo=$(OBJ)\dlb.obj
+$(OBJ)\dlb.obj : dlb.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) dlb.c -fo=$(OBJ)\dlb.obj
 
-$(OBJ)\do.obj : do.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) do.c -fo=$(OBJ)\do.obj
+$(OBJ)\do.obj : do.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) do.c -fo=$(OBJ)\do.obj
 
-$(OBJ)\dog.obj : dog.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) dog.c -fo=$(OBJ)\dog.obj
+$(OBJ)\dog.obj : dog.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) dog.c -fo=$(OBJ)\dog.obj
 
-$(OBJ)\dogmove.obj : dogmove.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) dogmove.c -fo=$(OBJ)\dogmove.obj
+$(OBJ)\dogmove.obj : dogmove.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) dogmove.c -fo=$(OBJ)\dogmove.obj
 
-$(OBJ)\dokick.obj : dokick.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) dokick.c -fo=$(OBJ)\dokick.obj
+$(OBJ)\dokick.obj : dokick.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) dokick.c -fo=$(OBJ)\dokick.obj
 
-$(OBJ)\do_name.obj : do_name.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) do_name.c -fo=$(OBJ)\do_name.obj
+$(OBJ)\do_name.obj : do_name.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) do_name.c -fo=$(OBJ)\do_name.obj
 
-$(OBJ)\dothrow.obj : dothrow.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) dothrow.c -fo=$(OBJ)\dothrow.obj
+$(OBJ)\dothrow.obj : dothrow.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) dothrow.c -fo=$(OBJ)\dothrow.obj
 
-$(OBJ)\do_wear.obj : do_wear.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) do_wear.c -fo=$(OBJ)\do_wear.obj
+$(OBJ)\do_wear.obj : do_wear.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) do_wear.c -fo=$(OBJ)\do_wear.obj
 
-$(OBJ)\drawing.obj : drawing.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) drawing.c -fo=$(OBJ)\drawing.obj
+$(OBJ)\drawing.obj : drawing.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) drawing.c -fo=$(OBJ)\drawing.obj
 
-$(OBJ)\dungeon.obj : dungeon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) dungeon.c -fo=$(OBJ)\dungeon.obj
+$(OBJ)\dungeon.obj : dungeon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) dungeon.c -fo=$(OBJ)\dungeon.obj
 
-$(OBJ)\eat.obj : eat.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) eat.c -fo=$(OBJ)\eat.obj
+$(OBJ)\eat.obj : eat.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) eat.c -fo=$(OBJ)\eat.obj
 
-$(OBJ)\end.obj : end.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) end.c -fo=$(OBJ)\end.obj
+$(OBJ)\end.obj : end.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) end.c -fo=$(OBJ)\end.obj
 
-$(OBJ)\engrave.obj : engrave.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) engrave.c -fo=$(OBJ)\engrave.obj
+$(OBJ)\engrave.obj : engrave.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) engrave.c -fo=$(OBJ)\engrave.obj
 
-$(OBJ)\exper.obj : exper.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) exper.c -fo=$(OBJ)\exper.obj
+$(OBJ)\exper.obj : exper.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) exper.c -fo=$(OBJ)\exper.obj
 
-$(OBJ)\explode.obj : explode.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) explode.c -fo=$(OBJ)\explode.obj
+$(OBJ)\explode.obj : explode.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) explode.c -fo=$(OBJ)\explode.obj
 
-$(OBJ)\extralev.obj : extralev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) extralev.c -fo=$(OBJ)\extralev.obj
+$(OBJ)\extralev.obj : extralev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) extralev.c -fo=$(OBJ)\extralev.obj
 
-$(OBJ)\files.obj : files.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) files.c -fo=$(OBJ)\files.obj
+$(OBJ)\files.obj : files.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) files.c -fo=$(OBJ)\files.obj
 
-$(OBJ)\fountain.obj : fountain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) fountain.c -fo=$(OBJ)\fountain.obj
+$(OBJ)\fountain.obj : fountain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) fountain.c -fo=$(OBJ)\fountain.obj
 
-$(OBJ)\hack.obj : hack.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) hack.c -fo=$(OBJ)\hack.obj
+$(OBJ)\hack.obj : hack.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) hack.c -fo=$(OBJ)\hack.obj
 
-$(OBJ)\hacklib.obj : hacklib.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) hacklib.c -fo=$(OBJ)\hacklib.obj
+$(OBJ)\hacklib.obj : hacklib.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) hacklib.c -fo=$(OBJ)\hacklib.obj
 
-$(OBJ)\invent.obj : invent.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) invent.c -fo=$(OBJ)\invent.obj
+$(OBJ)\invent.obj : invent.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) invent.c -fo=$(OBJ)\invent.obj
 
-$(OBJ)\isaac64.obj : isaac64.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) isaac64.c -fo=$(OBJ)\isaac64.obj
+$(OBJ)\isaac64.obj : isaac64.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) isaac64.c -fo=$(OBJ)\isaac64.obj
 
-$(OBJ)\light.obj : light.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) light.c -fo=$(OBJ)\light.obj
+$(OBJ)\light.obj : light.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) light.c -fo=$(OBJ)\light.obj
 
-$(OBJ)\lock.obj : lock.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) lock.c -fo=$(OBJ)\lock.obj
+$(OBJ)\lock.obj : lock.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) lock.c -fo=$(OBJ)\lock.obj
 
-$(OBJ)\mail.obj : mail.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mail.c -fo=$(OBJ)\mail.obj
+$(OBJ)\mail.obj : mail.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mail.c -fo=$(OBJ)\mail.obj
 
-$(OBJ)\makemon.obj : makemon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) makemon.c -fo=$(OBJ)\makemon.obj
+$(OBJ)\makemon.obj : makemon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) makemon.c -fo=$(OBJ)\makemon.obj
 
-$(OBJ)\mapglyph.obj : mapglyph.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mapglyph.c -fo=$(OBJ)\mapglyph.obj
+$(OBJ)\mapglyph.obj : mapglyph.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mapglyph.c -fo=$(OBJ)\mapglyph.obj
 
-$(OBJ)\mcastu.obj : mcastu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mcastu.c -fo=$(OBJ)\mcastu.obj
+$(OBJ)\mcastu.obj : mcastu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mcastu.c -fo=$(OBJ)\mcastu.obj
 
-$(OBJ)\mhitm.obj : mhitm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mhitm.c -fo=$(OBJ)\mhitm.obj
+$(OBJ)\mhitm.obj : mhitm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mhitm.c -fo=$(OBJ)\mhitm.obj
 
-$(OBJ)\mhitu.obj : mhitu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mhitu.c -fo=$(OBJ)\mhitu.obj
+$(OBJ)\mhitu.obj : mhitu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mhitu.c -fo=$(OBJ)\mhitu.obj
 
-$(OBJ)\minion.obj : minion.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) minion.c -fo=$(OBJ)\minion.obj
+$(OBJ)\minion.obj : minion.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) minion.c -fo=$(OBJ)\minion.obj
 
-$(OBJ)\mklev.obj : mklev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mklev.c -fo=$(OBJ)\mklev.obj
+$(OBJ)\mklev.obj : mklev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mklev.c -fo=$(OBJ)\mklev.obj
 
-$(OBJ)\mkmap.obj : mkmap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mkmap.c -fo=$(OBJ)\mkmap.obj
+$(OBJ)\mkmap.obj : mkmap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mkmap.c -fo=$(OBJ)\mkmap.obj
 
-$(OBJ)\mkmaze.obj : mkmaze.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mkmaze.c -fo=$(OBJ)\mkmaze.obj
+$(OBJ)\mkmaze.obj : mkmaze.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mkmaze.c -fo=$(OBJ)\mkmaze.obj
 
-$(OBJ)\mkobj.obj : mkobj.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mkobj.c -fo=$(OBJ)\mkobj.obj
+$(OBJ)\mkobj.obj : mkobj.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mkobj.c -fo=$(OBJ)\mkobj.obj
 
-$(OBJ)\mkroom.obj : mkroom.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mkroom.c -fo=$(OBJ)\mkroom.obj
+$(OBJ)\mkroom.obj : mkroom.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mkroom.c -fo=$(OBJ)\mkroom.obj
 
-$(OBJ)\mon.obj : mon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mon.c -fo=$(OBJ)\mon.obj
+$(OBJ)\mon.obj : mon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mon.c -fo=$(OBJ)\mon.obj
 
-$(OBJ)\mondata.obj : mondata.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mondata.c -fo=$(OBJ)\mondata.obj
+$(OBJ)\mondata.obj : mondata.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mondata.c -fo=$(OBJ)\mondata.obj
 
-$(OBJ)\monmove.obj : monmove.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) monmove.c -fo=$(OBJ)\monmove.obj
+$(OBJ)\monmove.obj : monmove.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) monmove.c -fo=$(OBJ)\monmove.obj
 
-$(OBJ)\monst.obj : monst.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) monst.c -fo=$(OBJ)\monst.obj
+$(OBJ)\monst.obj : monst.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) monst.c -fo=$(OBJ)\monst.obj
 
-$(OBJ)\mplayer.obj : mplayer.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mplayer.c -fo=$(OBJ)\mplayer.obj
+$(OBJ)\mplayer.obj : mplayer.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mplayer.c -fo=$(OBJ)\mplayer.obj
 
-$(OBJ)\mthrowu.obj : mthrowu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) mthrowu.c -fo=$(OBJ)\mthrowu.obj
+$(OBJ)\mthrowu.obj : mthrowu.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) mthrowu.c -fo=$(OBJ)\mthrowu.obj
 
-$(OBJ)\muse.obj : muse.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) muse.c -fo=$(OBJ)\muse.obj
+$(OBJ)\muse.obj : muse.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) muse.c -fo=$(OBJ)\muse.obj
 
-$(OBJ)\music.obj : music.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) music.c -fo=$(OBJ)\music.obj
+$(OBJ)\music.obj : music.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) music.c -fo=$(OBJ)\music.obj
 
-$(OBJ)\objects.obj : objects.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) objects.c -fo=$(OBJ)\objects.obj
+$(OBJ)\objects.obj : objects.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) objects.c -fo=$(OBJ)\objects.obj
 
-$(OBJ)\objnam.obj : objnam.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) objnam.c -fo=$(OBJ)\objnam.obj
+$(OBJ)\objnam.obj : objnam.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) objnam.c -fo=$(OBJ)\objnam.obj
 
-$(OBJ)\o_init.obj : o_init.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) o_init.c -fo=$(OBJ)\o_init.obj
+$(OBJ)\o_init.obj : o_init.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) o_init.c -fo=$(OBJ)\o_init.obj
 
-$(OBJ)\options.obj : options.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) options.c -fo=$(OBJ)\options.obj
+$(OBJ)\options.obj : options.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) options.c -fo=$(OBJ)\options.obj
 
-$(OBJ)\pager.obj : pager.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) pager.c -fo=$(OBJ)\pager.obj
+$(OBJ)\pager.obj : pager.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) pager.c -fo=$(OBJ)\pager.obj
 
-$(OBJ)\pickup.obj : pickup.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) pickup.c -fo=$(OBJ)\pickup.obj
+$(OBJ)\pickup.obj : pickup.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) pickup.c -fo=$(OBJ)\pickup.obj
 
-$(OBJ)\pline.obj : pline.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) pline.c -fo=$(OBJ)\pline.obj
+$(OBJ)\pline.obj : pline.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) pline.c -fo=$(OBJ)\pline.obj
 
-$(OBJ)\polyself.obj : polyself.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) polyself.c -fo=$(OBJ)\polyself.obj
+$(OBJ)\polyself.obj : polyself.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) polyself.c -fo=$(OBJ)\polyself.obj
 
-$(OBJ)\potion.obj : potion.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) potion.c -fo=$(OBJ)\potion.obj
+$(OBJ)\potion.obj : potion.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) potion.c -fo=$(OBJ)\potion.obj
 
-$(OBJ)\pray.obj : pray.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) pray.c -fo=$(OBJ)\pray.obj
+$(OBJ)\pray.obj : pray.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) pray.c -fo=$(OBJ)\pray.obj
 
-$(OBJ)\priest.obj : priest.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) priest.c -fo=$(OBJ)\priest.obj
+$(OBJ)\priest.obj : priest.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) priest.c -fo=$(OBJ)\priest.obj
 
-$(OBJ)\quest.obj : quest.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) quest.c -fo=$(OBJ)\quest.obj
+$(OBJ)\quest.obj : quest.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) quest.c -fo=$(OBJ)\quest.obj
 
-$(OBJ)\questpgr.obj : questpgr.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) questpgr.c -fo=$(OBJ)\questpgr.obj
+$(OBJ)\questpgr.obj : questpgr.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) questpgr.c -fo=$(OBJ)\questpgr.obj
 
-$(OBJ)\read.obj : read.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) read.c -fo=$(OBJ)\read.obj
+$(OBJ)\read.obj : read.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) read.c -fo=$(OBJ)\read.obj
 
-$(OBJ)\rect.obj : rect.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) rect.c -fo=$(OBJ)\rect.obj
+$(OBJ)\rect.obj : rect.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) rect.c -fo=$(OBJ)\rect.obj
 
-$(OBJ)\region.obj : region.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) region.c -fo=$(OBJ)\region.obj
+$(OBJ)\region.obj : region.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) region.c -fo=$(OBJ)\region.obj
 
-$(OBJ)\restore.obj : restore.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) restore.c -fo=$(OBJ)\restore.obj
+$(OBJ)\restore.obj : restore.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) restore.c -fo=$(OBJ)\restore.obj
 
-$(OBJ)\rip.obj : rip.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) rip.c -fo=$(OBJ)\rip.obj
+$(OBJ)\rip.obj : rip.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) rip.c -fo=$(OBJ)\rip.obj
 
-$(OBJ)\rnd.obj : rnd.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) rnd.c -fo=$(OBJ)\rnd.obj
+$(OBJ)\rnd.obj : rnd.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) rnd.c -fo=$(OBJ)\rnd.obj
 
-$(OBJ)\role.obj : role.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) role.c -fo=$(OBJ)\role.obj
+$(OBJ)\role.obj : role.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) role.c -fo=$(OBJ)\role.obj
 
-$(OBJ)\rumors.obj : rumors.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) rumors.c -fo=$(OBJ)\rumors.obj
+$(OBJ)\rumors.obj : rumors.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) rumors.c -fo=$(OBJ)\rumors.obj
 
-$(OBJ)\save.obj : save.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) save.c -fo=$(OBJ)\save.obj
+$(OBJ)\save.obj : save.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) save.c -fo=$(OBJ)\save.obj
 
-$(OBJ)\shk.obj : shk.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) shk.c -fo=$(OBJ)\shk.obj
+$(OBJ)\shk.obj : shk.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) shk.c -fo=$(OBJ)\shk.obj
 
-$(OBJ)\shknam.obj : shknam.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) shknam.c -fo=$(OBJ)\shknam.obj
+$(OBJ)\shknam.obj : shknam.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) shknam.c -fo=$(OBJ)\shknam.obj
 
-$(OBJ)\sit.obj : sit.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) sit.c -fo=$(OBJ)\sit.obj
+$(OBJ)\sit.obj : sit.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) sit.c -fo=$(OBJ)\sit.obj
 
-$(OBJ)\sounds.obj : sounds.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) sounds.c -fo=$(OBJ)\sounds.obj
+$(OBJ)\sounds.obj : sounds.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) sounds.c -fo=$(OBJ)\sounds.obj
 
-$(OBJ)\spell.obj : spell.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) spell.c -fo=$(OBJ)\spell.obj
+$(OBJ)\spell.obj : spell.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) spell.c -fo=$(OBJ)\spell.obj
 
-$(OBJ)\sp_lev.obj : sp_lev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) sp_lev.c -fo=$(OBJ)\sp_lev.obj
+$(OBJ)\sp_lev.obj : sp_lev.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) sp_lev.c -fo=$(OBJ)\sp_lev.obj
 
-$(OBJ)\steal.obj : steal.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) steal.c -fo=$(OBJ)\steal.obj
+$(OBJ)\steal.obj : steal.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) steal.c -fo=$(OBJ)\steal.obj
 
-$(OBJ)\steed.obj : steed.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) steed.c -fo=$(OBJ)\steed.obj
+$(OBJ)\steed.obj : steed.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) steed.c -fo=$(OBJ)\steed.obj
 
-$(OBJ)\sys.obj : sys.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) sys.c -fo=$(OBJ)\sys.obj
+$(OBJ)\sys.obj : sys.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) sys.c -fo=$(OBJ)\sys.obj
 
-$(OBJ)\teleport.obj : teleport.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) teleport.c -fo=$(OBJ)\teleport.obj
+$(OBJ)\teleport.obj : teleport.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) teleport.c -fo=$(OBJ)\teleport.obj
 
-$(OBJ)\timeout.obj : timeout.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) timeout.c -fo=$(OBJ)\timeout.obj
+$(OBJ)\timeout.obj : timeout.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) timeout.c -fo=$(OBJ)\timeout.obj
 
-$(OBJ)\topten.obj : topten.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) topten.c -fo=$(OBJ)\topten.obj
+$(OBJ)\topten.obj : topten.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) topten.c -fo=$(OBJ)\topten.obj
 
-$(OBJ)\track.obj : track.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) track.c -fo=$(OBJ)\track.obj
+$(OBJ)\track.obj : track.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) track.c -fo=$(OBJ)\track.obj
 
-$(OBJ)\trap.obj : trap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -zm trap.c -fo=$(OBJ)\trap.obj
+$(OBJ)\trap.obj : trap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -zm trap.c -fo=$(OBJ)\trap.obj
 
-$(OBJ)\uhitm.obj : uhitm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) uhitm.c -fo=$(OBJ)\uhitm.obj
+$(OBJ)\uhitm.obj : uhitm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) uhitm.c -fo=$(OBJ)\uhitm.obj
 
-$(OBJ)\u_init.obj : u_init.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) u_init.c -fo=$(OBJ)\u_init.obj
+$(OBJ)\u_init.obj : u_init.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) u_init.c -fo=$(OBJ)\u_init.obj
 
-$(OBJ)\vault.obj : vault.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) vault.c -fo=$(OBJ)\vault.obj
+$(OBJ)\vault.obj : vault.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) vault.c -fo=$(OBJ)\vault.obj
 
-$(OBJ)\version.obj : version.c $(INC)\pm.h $(INC)\onames.h $(INC)\date.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) version.c -fo=$(OBJ)\version.obj
+$(OBJ)\version.obj : version.c $(INC)\pm.h $(INC)\onames.h $(INC)\date.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) version.c -fo=$(OBJ)\version.obj
 
-$(OBJ)\vision.obj : vision.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) vision.c -fo=$(OBJ)\vision.obj
+$(OBJ)\vision.obj : vision.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) vision.c -fo=$(OBJ)\vision.obj
 
-$(OBJ)\weapon.obj : weapon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) weapon.c -fo=$(OBJ)\weapon.obj
+$(OBJ)\weapon.obj : weapon.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) weapon.c -fo=$(OBJ)\weapon.obj
 
-$(OBJ)\were.obj : were.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) were.c -fo=$(OBJ)\were.obj
+$(OBJ)\were.obj : were.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) were.c -fo=$(OBJ)\were.obj
 
-$(OBJ)\wield.obj : wield.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) wield.c -fo=$(OBJ)\wield.obj
+$(OBJ)\wield.obj : wield.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) wield.c -fo=$(OBJ)\wield.obj
 
-$(OBJ)\windows.obj : windows.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) windows.c -fo=$(OBJ)\windows.obj
+$(OBJ)\windows.obj : windows.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) windows.c -fo=$(OBJ)\windows.obj
 
-$(OBJ)\wizard.obj : wizard.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) wizard.c -fo=$(OBJ)\wizard.obj
+$(OBJ)\wizard.obj : wizard.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) wizard.c -fo=$(OBJ)\wizard.obj
 
-$(OBJ)\worm.obj : worm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) worm.c -fo=$(OBJ)\worm.obj
+$(OBJ)\worm.obj : worm.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) worm.c -fo=$(OBJ)\worm.obj
 
-$(OBJ)\worn.obj : worn.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) worn.c -fo=$(OBJ)\worn.obj
+$(OBJ)\worn.obj : worn.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) worn.c -fo=$(OBJ)\worn.obj
 
-$(OBJ)\write.obj : write.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) write.c -fo=$(OBJ)\write.obj
+$(OBJ)\write.obj : write.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) write.c -fo=$(OBJ)\write.obj
 
-$(OBJ)\zap.obj : zap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) zap.c -fo=$(OBJ)\zap.obj
+$(OBJ)\zap.obj : zap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) zap.c -fo=$(OBJ)\zap.obj
 
 # In sys\os2
 
-$(OBJ)\os2.obj : $(SOS2)\os2.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SOS2)\os2.c -fo=$(OBJ)\os2.obj
+$(OBJ)\os2.obj : $(SOS2)\os2.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SOS2)\os2.c -fo=$(OBJ)\os2.obj
 
 # In sys\share
 
-$(OBJ)\pcmain.obj : $(SSHR)\pcmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\pcmain.c -fo=$(OBJ)\pcmain.obj
+$(OBJ)\pcmain.obj : $(SSHR)\pcmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\pcmain.c -fo=$(OBJ)\pcmain.obj
 
-$(OBJ)\pcsys.obj : $(SSHR)\pcsys.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\pcsys.c -fo=$(OBJ)\pcsys.obj
+$(OBJ)\pcsys.obj : $(SSHR)\pcsys.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\pcsys.c -fo=$(OBJ)\pcsys.obj
 
-$(OBJ)\pctty.obj : $(SSHR)\pctty.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\pctty.c -fo=$(OBJ)\pctty.obj
+$(OBJ)\pctty.obj : $(SSHR)\pctty.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\pctty.c -fo=$(OBJ)\pctty.obj
 
-$(OBJ)\pcunix.obj : $(SSHR)\pcunix.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\pcunix.c -fo=$(OBJ)\pcunix.obj
+$(OBJ)\pcunix.obj : $(SSHR)\pcunix.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\pcunix.c -fo=$(OBJ)\pcunix.obj
 
-$(OBJ)\pmatchregex.obj : $(SSHR)\pmatchregex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\pmatchregex.c -fo=$(OBJ)\pmatchregex.obj
+$(OBJ)\pmatchregex.obj : $(SSHR)\pmatchregex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\pmatchregex.c -fo=$(OBJ)\pmatchregex.obj
 
-$(OBJ)\posixregex.obj : $(SSHR)\posixregex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\posixregex.c -fo=$(OBJ)\posixregex.obj
+$(OBJ)\posixregex.obj : $(SSHR)\posixregex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\posixregex.c -fo=$(OBJ)\posixregex.obj
 
 # In win\curses
-$(OBJ)\cursdial.obj : $(WCUR)\cursdial.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursdial.c -fo=$(OBJ)\cursdial.obj
+$(OBJ)\cursdial.obj : $(WCUR)\cursdial.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursdial.c -fo=$(OBJ)\cursdial.obj
 
-$(OBJ)\cursinit.obj : $(WCUR)\cursinit.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursinit.c -fo=$(OBJ)\cursinit.obj
+$(OBJ)\cursinit.obj : $(WCUR)\cursinit.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursinit.c -fo=$(OBJ)\cursinit.obj
 
-$(OBJ)\cursinvt.obj : $(WCUR)\cursinvt.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursinvt.c -fo=$(OBJ)\cursinvt.obj
+$(OBJ)\cursinvt.obj : $(WCUR)\cursinvt.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursinvt.c -fo=$(OBJ)\cursinvt.obj
 
-$(OBJ)\cursmain.obj : $(WCUR)\cursmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmain.c -fo=$(OBJ)\cursmain.obj
+$(OBJ)\cursmain.obj : $(WCUR)\cursmain.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmain.c -fo=$(OBJ)\cursmain.obj
 
-$(OBJ)\cursmesg.obj : $(WCUR)\cursmesg.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmesg.c -fo=$(OBJ)\cursmesg.obj
+$(OBJ)\cursmesg.obj : $(WCUR)\cursmesg.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmesg.c -fo=$(OBJ)\cursmesg.obj
 
-$(OBJ)\cursmisc.obj : $(WCUR)\cursmisc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmisc.c -fo=$(OBJ)\cursmisc.obj
+$(OBJ)\cursmisc.obj : $(WCUR)\cursmisc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursmisc.c -fo=$(OBJ)\cursmisc.obj
 
-$(OBJ)\cursstat.obj : $(WCUR)\cursstat.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursstat.c -fo=$(OBJ)\cursstat.obj
+$(OBJ)\cursstat.obj : $(WCUR)\cursstat.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\cursstat.c -fo=$(OBJ)\cursstat.obj
 
-$(OBJ)\curswins.obj : $(WCUR)\curswins.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\curswins.c -fo=$(OBJ)\curswins.obj
+$(OBJ)\curswins.obj : $(WCUR)\curswins.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(WCUR)\curswins.c -fo=$(OBJ)\curswins.obj
 
 # In win\tty
 
-$(OBJ)\getline.obj : $(WTTY)\getline.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(WTTY)\getline.c -fo=$(OBJ)\getline.obj
+$(OBJ)\getline.obj : $(WTTY)\getline.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(WTTY)\getline.c -fo=$(OBJ)\getline.obj
 
-$(OBJ)\termcap.obj : $(WTTY)\termcap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(WTTY)\termcap.c -fo=$(OBJ)\termcap.obj
+$(OBJ)\termcap.obj : $(WTTY)\termcap.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(WTTY)\termcap.c -fo=$(OBJ)\termcap.obj
 
-$(OBJ)\topl.obj : $(WTTY)\topl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(WTTY)\topl.c -fo=$(OBJ)\topl.obj
+$(OBJ)\topl.obj : $(WTTY)\topl.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(WTTY)\topl.c -fo=$(OBJ)\topl.obj
 
-$(OBJ)\wintty.obj : $(WTTY)\wintty.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(WTTY)\wintty.c -fo=$(OBJ)\wintty.obj
+$(OBJ)\wintty.obj : $(WTTY)\wintty.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(WTTY)\wintty.c -fo=$(OBJ)\wintty.obj
 
 # In util
 
-$(OBJ)\dgn_main.obj : $(UTIL)\dgn_main.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(UTIL)\dgn_main.c -fo=$(OBJ)\dgn_main.obj
+$(OBJ)\dgn_main.obj : $(UTIL)\dgn_main.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(UTIL)\dgn_main.c -fo=$(OBJ)\dgn_main.obj
 
-$(OBJ)\dlb_main.obj : $(UTIL)\dlb_main.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(UTIL)\dlb_main.c -fo=$(OBJ)\dlb_main.obj
+$(OBJ)\dlb_main.obj : $(UTIL)\dlb_main.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(UTIL)\dlb_main.c -fo=$(OBJ)\dlb_main.obj
 
-$(OBJ)\lev_main.obj : $(UTIL)\lev_main.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(UTIL)\lev_main.c -fo=$(OBJ)\lev_main.obj
+$(OBJ)\lev_main.obj : $(UTIL)\lev_main.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(UTIL)\lev_main.c -fo=$(OBJ)\lev_main.obj
 
-$(OBJ)\makedefs.obj : $(UTIL)\makedefs.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(UTIL)\makedefs.c -fo=$(OBJ)\makedefs.obj
+$(OBJ)\makedefs.obj : $(UTIL)\makedefs.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(UTIL)\makedefs.c -fo=$(OBJ)\makedefs.obj
 
-$(OBJ)\panic.obj : $(UTIL)\panic.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(UTIL)\panic.c -fo=$(OBJ)\panic.obj
+$(OBJ)\panic.obj : $(UTIL)\panic.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(UTIL)\panic.c -fo=$(OBJ)\panic.obj
 
-$(OBJ)\recover.obj : $(UTIL)\recover.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(UTIL)\recover.c -fo=$(OBJ)\recover.obj
+$(OBJ)\recover.obj : $(UTIL)\recover.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(UTIL)\recover.c -fo=$(OBJ)\recover.obj
 
-$(COBJ)\addch.obj : $(PDCURSES_TOP)\pdcurses\addch.c $(OBJ)\obj.tag .AUTODEPEND
+# PDCurses source
+
+$(COBJ)\addch.obj : $(PDCURSES_TOP)\pdcurses\addch.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addch.c -fo=$(COBJ)\addch.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addch.c -fo=$(COBJ)\addch.obj
 
-$(COBJ)\addchstr.obj : $(PDCURSES_TOP)\pdcurses\addchstr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\addchstr.obj : $(PDCURSES_TOP)\pdcurses\addchstr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addchstr.c -fo=$(COBJ)\addchstr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addchstr.c -fo=$(COBJ)\addchstr.obj
 
-$(COBJ)\addstr.obj : $(PDCURSES_TOP)\pdcurses\addstr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\addstr.obj : $(PDCURSES_TOP)\pdcurses\addstr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addstr.c -fo=$(COBJ)\addstr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\addstr.c -fo=$(COBJ)\addstr.obj
 
-$(COBJ)\attr.obj : $(PDCURSES_TOP)\pdcurses\attr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\attr.obj : $(PDCURSES_TOP)\pdcurses\attr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\attr.c -fo=$(COBJ)\attr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\attr.c -fo=$(COBJ)\attr.obj
 
-$(COBJ)\beep.obj : $(PDCURSES_TOP)\pdcurses\beep.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\beep.obj : $(PDCURSES_TOP)\pdcurses\beep.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\beep.c -fo=$(COBJ)\beep.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\beep.c -fo=$(COBJ)\beep.obj
 
-$(COBJ)\bkgd.obj : $(PDCURSES_TOP)\pdcurses\bkgd.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\bkgd.obj : $(PDCURSES_TOP)\pdcurses\bkgd.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\bkgd.c -fo=$(COBJ)\bkgd.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\bkgd.c -fo=$(COBJ)\bkgd.obj
 
-$(COBJ)\border.obj : $(PDCURSES_TOP)\pdcurses\border.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\border.obj : $(PDCURSES_TOP)\pdcurses\border.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\border.c -fo=$(COBJ)\border.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\border.c -fo=$(COBJ)\border.obj
 
-$(COBJ)\clear.obj : $(PDCURSES_TOP)\pdcurses\clear.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\clear.obj : $(PDCURSES_TOP)\pdcurses\clear.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\clear.c -fo=$(COBJ)\clear.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\clear.c -fo=$(COBJ)\clear.obj
 
-$(COBJ)\color.obj : $(PDCURSES_TOP)\pdcurses\color.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\color.obj : $(PDCURSES_TOP)\pdcurses\color.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\color.c -fo=$(COBJ)\color.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\color.c -fo=$(COBJ)\color.obj
 
-$(COBJ)\debug.obj : $(PDCURSES_TOP)\pdcurses\debug.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\debug.obj : $(PDCURSES_TOP)\pdcurses\debug.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\debug.c -fo=$(COBJ)\debug.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\debug.c -fo=$(COBJ)\debug.obj
 
-$(COBJ)\delch.obj : $(PDCURSES_TOP)\pdcurses\delch.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\delch.obj : $(PDCURSES_TOP)\pdcurses\delch.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\delch.c -fo=$(COBJ)\delch.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\delch.c -fo=$(COBJ)\delch.obj
 
-$(COBJ)\deleteln.obj : $(PDCURSES_TOP)\pdcurses\deleteln.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\deleteln.obj : $(PDCURSES_TOP)\pdcurses\deleteln.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\deleteln.c -fo=$(COBJ)\deleteln.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\deleteln.c -fo=$(COBJ)\deleteln.obj
 
-$(COBJ)\getch.obj : $(PDCURSES_TOP)\pdcurses\getch.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\getch.obj : $(PDCURSES_TOP)\pdcurses\getch.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getch.c -fo=$(COBJ)\getch.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getch.c -fo=$(COBJ)\getch.obj
 
-$(COBJ)\getstr.obj : $(PDCURSES_TOP)\pdcurses\getstr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\getstr.obj : $(PDCURSES_TOP)\pdcurses\getstr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getstr.c -fo=$(COBJ)\getstr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getstr.c -fo=$(COBJ)\getstr.obj
 
-$(COBJ)\getyx.obj : $(PDCURSES_TOP)\pdcurses\getyx.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\getyx.obj : $(PDCURSES_TOP)\pdcurses\getyx.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getyx.c -fo=$(COBJ)\getyx.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\getyx.c -fo=$(COBJ)\getyx.obj
 
-$(COBJ)\inch.obj : $(PDCURSES_TOP)\pdcurses\inch.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\inch.obj : $(PDCURSES_TOP)\pdcurses\inch.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inch.c -fo=$(COBJ)\inch.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inch.c -fo=$(COBJ)\inch.obj
 
-$(COBJ)\inchstr.obj : $(PDCURSES_TOP)\pdcurses\inchstr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\inchstr.obj : $(PDCURSES_TOP)\pdcurses\inchstr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inchstr.c -fo=$(COBJ)\inchstr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inchstr.c -fo=$(COBJ)\inchstr.obj
 
-$(COBJ)\initscr.obj : $(PDCURSES_TOP)\pdcurses\initscr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\initscr.obj : $(PDCURSES_TOP)\pdcurses\initscr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\initscr.c -fo=$(COBJ)\initscr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\initscr.c -fo=$(COBJ)\initscr.obj
 
-$(COBJ)\inopts.obj : $(PDCURSES_TOP)\pdcurses\inopts.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\inopts.obj : $(PDCURSES_TOP)\pdcurses\inopts.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inopts.c -fo=$(COBJ)\inopts.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\inopts.c -fo=$(COBJ)\inopts.obj
 
-$(COBJ)\insch.obj : $(PDCURSES_TOP)\pdcurses\insch.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\insch.obj : $(PDCURSES_TOP)\pdcurses\insch.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\insch.c -fo=$(COBJ)\insch.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\insch.c -fo=$(COBJ)\insch.obj
 
-$(COBJ)\insstr.obj : $(PDCURSES_TOP)\pdcurses\insstr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\insstr.obj : $(PDCURSES_TOP)\pdcurses\insstr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\insstr.c -fo=$(COBJ)\insstr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\insstr.c -fo=$(COBJ)\insstr.obj
 
-$(COBJ)\instr.obj : $(PDCURSES_TOP)\pdcurses\instr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\instr.obj : $(PDCURSES_TOP)\pdcurses\instr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\instr.c -fo=$(COBJ)\instr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\instr.c -fo=$(COBJ)\instr.obj
 
-$(COBJ)\kernel.obj : $(PDCURSES_TOP)\pdcurses\kernel.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\kernel.obj : $(PDCURSES_TOP)\pdcurses\kernel.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\kernel.c -fo=$(COBJ)\kernel.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\kernel.c -fo=$(COBJ)\kernel.obj
 
-$(COBJ)\keyname.obj : $(PDCURSES_TOP)\pdcurses\keyname.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\keyname.obj : $(PDCURSES_TOP)\pdcurses\keyname.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\keyname.c -fo=$(COBJ)\keyname.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\keyname.c -fo=$(COBJ)\keyname.obj
 
-$(COBJ)\mouse.obj : $(PDCURSES_TOP)\pdcurses\mouse.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\mouse.obj : $(PDCURSES_TOP)\pdcurses\mouse.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\mouse.c -fo=$(COBJ)\mouse.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\mouse.c -fo=$(COBJ)\mouse.obj
 
-$(COBJ)\move.obj : $(PDCURSES_TOP)\pdcurses\move.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\move.obj : $(PDCURSES_TOP)\pdcurses\move.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\move.c -fo=$(COBJ)\move.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\move.c -fo=$(COBJ)\move.obj
 
-$(COBJ)\outopts.obj : $(PDCURSES_TOP)\pdcurses\outopts.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\outopts.obj : $(PDCURSES_TOP)\pdcurses\outopts.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\outopts.c -fo=$(COBJ)\outopts.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\outopts.c -fo=$(COBJ)\outopts.obj
 
-$(COBJ)\overlay.obj : $(PDCURSES_TOP)\pdcurses\overlay.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\overlay.obj : $(PDCURSES_TOP)\pdcurses\overlay.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\overlay.c -fo=$(COBJ)\overlay.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\overlay.c -fo=$(COBJ)\overlay.obj
 
-$(COBJ)\pad.obj : $(PDCURSES_TOP)\pdcurses\pad.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\pad.obj : $(PDCURSES_TOP)\pdcurses\pad.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\pad.c -fo=$(COBJ)\pad.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\pad.c -fo=$(COBJ)\pad.obj
 
-$(COBJ)\panel.obj : $(PDCURSES_TOP)\pdcurses\panel.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\panel.obj : $(PDCURSES_TOP)\pdcurses\panel.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\panel.c -fo=$(COBJ)\panel.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\panel.c -fo=$(COBJ)\panel.obj
 
-$(COBJ)\printw.obj : $(PDCURSES_TOP)\pdcurses\printw.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\printw.obj : $(PDCURSES_TOP)\pdcurses\printw.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\printw.c -fo=$(COBJ)\printw.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\printw.c -fo=$(COBJ)\printw.obj
 
-$(COBJ)\refresh.obj : $(PDCURSES_TOP)\pdcurses\refresh.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\refresh.obj : $(PDCURSES_TOP)\pdcurses\refresh.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\refresh.c -fo=$(COBJ)\refresh.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\refresh.c -fo=$(COBJ)\refresh.obj
 
-$(COBJ)\scanw.obj : $(PDCURSES_TOP)\pdcurses\scanw.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\scanw.obj : $(PDCURSES_TOP)\pdcurses\scanw.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scanw.c -fo=$(COBJ)\scanw.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scanw.c -fo=$(COBJ)\scanw.obj
 
-$(COBJ)\scr_dump.obj : $(PDCURSES_TOP)\pdcurses\scr_dump.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\scr_dump.obj : $(PDCURSES_TOP)\pdcurses\scr_dump.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scr_dump.c -fo=$(COBJ)\scr_dump.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scr_dump.c -fo=$(COBJ)\scr_dump.obj
 
-$(COBJ)\scroll.obj : $(PDCURSES_TOP)\pdcurses\scroll.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\scroll.obj : $(PDCURSES_TOP)\pdcurses\scroll.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scroll.c -fo=$(COBJ)\scroll.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\scroll.c -fo=$(COBJ)\scroll.obj
 
-$(COBJ)\slk.obj : $(PDCURSES_TOP)\pdcurses\slk.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\slk.obj : $(PDCURSES_TOP)\pdcurses\slk.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\slk.c -fo=$(COBJ)\slk.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\slk.c -fo=$(COBJ)\slk.obj
 
-$(COBJ)\termattr.obj : $(PDCURSES_TOP)\pdcurses\termattr.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\termattr.obj : $(PDCURSES_TOP)\pdcurses\termattr.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\termattr.c -fo=$(COBJ)\termattr.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\termattr.c -fo=$(COBJ)\termattr.obj
 
-$(COBJ)\touch.obj : $(PDCURSES_TOP)\pdcurses\touch.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\touch.obj : $(PDCURSES_TOP)\pdcurses\touch.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\touch.c -fo=$(COBJ)\touch.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\touch.c -fo=$(COBJ)\touch.obj
 
-$(COBJ)\util.obj : $(PDCURSES_TOP)\pdcurses\util.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\util.obj : $(PDCURSES_TOP)\pdcurses\util.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\util.c -fo=$(COBJ)\util.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\util.c -fo=$(COBJ)\util.obj
 
-$(COBJ)\window.obj : $(PDCURSES_TOP)\pdcurses\window.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\window.obj : $(PDCURSES_TOP)\pdcurses\window.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\window.c -fo=$(COBJ)\window.obj
+	$(CC) $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\pdcurses\window.c -fo=$(COBJ)\window.obj
 
-$(COBJ)\pdcclip.obj : $(PDCURSES_TOP)\os2\pdcclip.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\pdcclip.obj : $(PDCURSES_TOP)\os2\pdcclip.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcclip.c -fo=$(COBJ)\pdcclip.obj
+	$(CC) -I$(WATCOM)\h\os2 $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcclip.c -fo=$(COBJ)\pdcclip.obj
 
-$(COBJ)\pdcdisp.obj : $(PDCURSES_TOP)\os2\pdcdisp.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\pdcdisp.obj : $(PDCURSES_TOP)\os2\pdcdisp.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcdisp.c -fo=$(COBJ)\pdcdisp.obj
+	$(CC) -I$(WATCOM)\h\os2 $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcdisp.c -fo=$(COBJ)\pdcdisp.obj
 
-$(COBJ)\pdcgetsc.obj : $(PDCURSES_TOP)\os2\pdcgetsc.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\pdcgetsc.obj : $(PDCURSES_TOP)\os2\pdcgetsc.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcgetsc.c -fo=$(COBJ)\pdcgetsc.obj
+	$(CC) -I$(WATCOM)\h\os2 $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcgetsc.c -fo=$(COBJ)\pdcgetsc.obj
 
-$(COBJ)\pdckbd.obj : $(PDCURSES_TOP)\os2\pdckbd.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\pdckbd.obj : $(PDCURSES_TOP)\os2\pdckbd.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdckbd.c -fo=$(COBJ)\pdckbd.obj
+	$(CC) -I$(WATCOM)\h\os2 $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdckbd.c -fo=$(COBJ)\pdckbd.obj
 
-$(COBJ)\pdcscrn.obj : $(PDCURSES_TOP)\os2\pdcscrn.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\pdcscrn.obj : $(PDCURSES_TOP)\os2\pdcscrn.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcscrn.c -fo=$(COBJ)\pdcscrn.obj
+	$(CC) -I$(WATCOM)\h\os2 $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcscrn.c -fo=$(COBJ)\pdcscrn.obj
 
-$(COBJ)\pdcsetsc.obj : $(PDCURSES_TOP)\os2\pdcsetsc.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\pdcsetsc.obj : $(PDCURSES_TOP)\os2\pdcsetsc.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcsetsc.c -fo=$(COBJ)\pdcsetsc.obj
+	$(CC) -I$(WATCOM)\h\os2 $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcsetsc.c -fo=$(COBJ)\pdcsetsc.obj
 
-$(COBJ)\pdcutil.obj : $(PDCURSES_TOP)\os2\pdcutil.c $(OBJ)\obj.tag .AUTODEPEND
+$(COBJ)\pdcutil.obj : $(PDCURSES_TOP)\os2\pdcutil.c $(OBJ)\cflags.txt .AUTODEPEND
 	@$(MAKE_COBJ)
-	$(CC) -I$(WATCOM)\h\os2 $(CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcutil.c -fo=$(COBJ)\pdcutil.obj
+	$(CC) -I$(WATCOM)\h\os2 $(CMD_CFLAGS) -I$(PDCURSES_TOP) $(PDCURSES_TOP)\os2\pdcutil.c -fo=$(COBJ)\pdcutil.obj
 
 # Lex and Yacc sources for the dungeon and level compilers
 !ifeq USE_FLEX_BISON Y
-$(OBJ)\dgn_lex.obj : $(OBJ)\dgn_lex.c $(INC)\dgn_comp.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(OBJ)\dgn_lex.c -fo=$(OBJ)\dgn_lex.obj
+$(OBJ)\dgn_lex.obj : $(OBJ)\dgn_lex.c $(INC)\dgn_comp.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(OBJ)\dgn_lex.c -fo=$(OBJ)\dgn_lex.obj
 
 $(OBJ)\dgn_lex.c: $(UTIL)\dgn_comp.l
 	flex -o $(OBJ)\dgn_lex.c $(UTIL)\dgn_comp.l
 
-$(OBJ)\dgn_yacc.obj : $(OBJ)\dgn_yacc.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(OBJ)\dgn_yacc.c -fo=$(OBJ)\dgn_yacc.obj
+$(OBJ)\dgn_yacc.obj : $(OBJ)\dgn_yacc.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(OBJ)\dgn_yacc.c -fo=$(OBJ)\dgn_yacc.obj
 
 $(OBJ)\dgn_yacc.c $(INC)\dgn_comp.h : $(UTIL)\dgn_comp.y
 	bison -y --defines=$(INC)\dgn_comp.h -o $(OBJ)\dgn_yacc.c $<
 
-$(OBJ)\lev_lex.obj : $(OBJ)\lev_lex.c $(INC)\lev_comp.h $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(OBJ)\lev_lex.c -fo=$(OBJ)\lev_lex.obj
+$(OBJ)\lev_lex.obj : $(OBJ)\lev_lex.c $(INC)\lev_comp.h $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(OBJ)\lev_lex.c -fo=$(OBJ)\lev_lex.obj
 
 $(OBJ)\lev_lex.c: $(UTIL)\lev_comp.l
 	flex -o $(OBJ)\lev_lex.c $(UTIL)\lev_comp.l
 
-$(OBJ)\lev_yacc.obj : $(OBJ)\lev_yacc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(OBJ)\lev_yacc.c -fo=$(OBJ)\lev_yacc.obj
+$(OBJ)\lev_yacc.obj : $(OBJ)\lev_yacc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(OBJ)\lev_yacc.c -fo=$(OBJ)\lev_yacc.obj
 
 $(OBJ)\lev_yacc.c $(INC)\lev_comp.h : $(UTIL)\lev_comp.y
 	bison -y --defines=$(INC)\lev_comp.h -o $(OBJ)\lev_yacc.c $<
 !else
-$(OBJ)\dgn_lex.obj : $(SSHR)\dgn_lex.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\dgn_lex.c -fo=$(OBJ)\dgn_lex.obj
+$(OBJ)\dgn_lex.obj : $(SSHR)\dgn_lex.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\dgn_lex.c -fo=$(OBJ)\dgn_lex.obj
 
-$(OBJ)\dgn_yacc.obj : $(SSHR)\dgn_yacc.c $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\dgn_yacc.c -fo=$(OBJ)\dgn_yacc.obj
+$(OBJ)\dgn_yacc.obj : $(SSHR)\dgn_yacc.c $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\dgn_yacc.c -fo=$(OBJ)\dgn_yacc.obj
 
-$(OBJ)\lev_lex.obj : $(SSHR)\lev_lex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\lev_lex.c -fo=$(OBJ)\lev_lex.obj
+$(OBJ)\lev_lex.obj : $(SSHR)\lev_lex.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\lev_lex.c -fo=$(OBJ)\lev_lex.obj
 
-$(OBJ)\lev_yacc.obj : $(SSHR)\lev_yacc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\obj.tag .AUTODEPEND
-	$(CC) $(CFLAGS) $(SSHR)\lev_yacc.c -fo=$(OBJ)\lev_yacc.obj
+$(OBJ)\lev_yacc.obj : $(SSHR)\lev_yacc.c $(INC)\pm.h $(INC)\onames.h $(OBJ)\cflags.txt .AUTODEPEND
+	$(CC) $(CMD_CFLAGS) $(SSHR)\lev_yacc.c -fo=$(OBJ)\lev_yacc.obj
 !endif
 
-# All objects depend on this, so the directory will be created
+# All objects depend on this, so the directory will be created.
+# For 16 bit compile, we can't pass the options on the command line, because
+# they're too long; we use this as a response file.
+# For 32 bit compile, we merely depend on this to create thedirectory.
 
-$(OBJ)\obj.tag:
+$(OBJ)\cflags.txt:
 	@-mkdir $(OBJ)
-	@wtouch $(OBJ)\obj.tag
+	@if exist $(OBJ)\cflags.txt del $(OBJ)\cflags.txt
+	@for %a in ($(CFLAGS)) do @echo %a >>$(OBJ)\cflags.txt
 
 ##############################################################################
 #                                   Cleanup                                  #
@@ -1222,7 +1273,8 @@ clean : .SYMBOLIC
 	@if exist tile.c del tile.c
 	@if exist *.map del *.map
 	@if exist $(OBJ)\*.c del $(OBJ)\*.c
-	@if exist $(OBJ)\obj.tag del $(OBJ)\obj.tag
+	@if exist $(OBJ)\cflags.txt del $(OBJ)\cflags.txt
+	@if exist $(OBJ)\*.tag del $(OBJ)\*.tag
 	@if exist $(OBJ)\dgn_comp.exe del $(OBJ)\dgn_comp.exe
 	@if exist $(OBJ)\dlb.exe del $(OBJ)\dlb.exe
 	@if exist $(OBJ)\lev_comp.exe del $(OBJ)\lev_comp.exe
