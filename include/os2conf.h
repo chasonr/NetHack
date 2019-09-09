@@ -14,7 +14,9 @@
  */
 
 /* #define OS2_MSC */		/* Microsoft C 5.1 and 6.0 */
+#if defined(__EMX__) || (defined(__WATCOMC__) && defined(__386__))
 #define OS2_GCC /* GCC emx 0.8f */
+#endif
 /* #define OS2_CSET2 */		/* IBM C Set/2 (courtesy Jeff Urlwin) */
 /* #define OS2_CSET2_VER_1 */	/* CSet/2 version selection */
 /* #define OS2_CSET2_VER_2 */	/* - " - */
