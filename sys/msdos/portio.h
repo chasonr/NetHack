@@ -53,6 +53,7 @@
 #define READ_ABSOLUTE_WORD(x) *(x)
 #define WRITE_ABSOLUTE(x, y) *(x) = (y)
 #define WRITE_ABSOLUTE_WORD(x, y) *(x) = (y)
+#define WRITE_ABSOLUTE_DWORD(x, y) *(x) = (y)
 #endif
 
 #if defined(__GO32__) || defined(__DJGPP__)
@@ -101,6 +102,7 @@
 #define READ_ABSOLUTE_WORD(x) *(x)
 #define WRITE_ABSOLUTE(x, y) *(x) = (y)
 #define WRITE_ABSOLUTE_WORD(x, y) *(x) = (y)
+#define WRITE_ABSOLUTE_DWORD(x, y) *(x) = (y)
 #endif
 #endif /* MK_PTR */
 

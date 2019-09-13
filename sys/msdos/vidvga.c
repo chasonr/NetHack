@@ -231,20 +231,18 @@ void
 vga_clear_screen(colour)
 int colour;
 {
-    char __far *pch;
+    unsigned long __far *pch;
     unsigned j;
 
     egawriteplane(colour);
-    pch = screentable[0];
-    for (j = 0; j < SCREENHEIGHT * SCREENBYTES; j += 4) {
-        WRITE_ABSOLUTE_DWORD(pch, 0xFFFFFFFF);
-        pch += 4;
+    pch = (unsigned long __far *) screentable[0];
+    for (j = 0; j < SCREENHEIGHT * SCREENBYTES / 4; ++j) {
+        WRITE_ABSOLUTE_DWORD(&pch[j], 0xFFFFFFFF);
     }
     egawriteplane(~colour);
-    pch = screentable[0];
-    for (j = 0; j < SCREENHEIGHT * SCREENBYTES; j += 4) {
-        WRITE_ABSOLUTE_DWORD(pch, 0x00000000);
-        pch += 4;
+    pch = (unsigned long __far *) screentable[0];
+    for (j = 0; j < SCREENHEIGHT * SCREENBYTES / 4; ++j) {
+        WRITE_ABSOLUTE_DWORD(&pch[j], 0x00000000);
     }
     egawriteplane(15);
     if (iflags.tile_view)
@@ -457,19 +455,19 @@ vga_redrawmap(clearfirst)
 boolean clearfirst;
 {
     int x, y, t;
-    char __far *pch;
+    unsigned long __far *pch;
 
     if (clearfirst) {
         unsigned j;
         t = TOP_MAP_ROW * ROWS_PER_CELL;
-        pch = screentable[t];
+        pch = (unsigned long __far *) screentable[t];
         egawriteplane(BACKGROUND_VGA_COLOR);
-        for (j = 0; j < ROWNO * ROWS_PER_CELL * SCREENBYTES; j += 4) {
-            WRITE_ABSOLUTE_DWORD(pch + j, 0xFFFFFFFF);
+        for (j = 0; j < ROWNO * ROWS_PER_CELL * SCREENBYTES / 4; ++j) {
+            WRITE_ABSOLUTE_DWORD(&pch[j], 0xFFFFFFFF);
         }
         egawriteplane(~BACKGROUND_VGA_COLOR);
-        for (j = 0; j < ROWNO * ROWS_PER_CELL * SCREENBYTES; j += 4) {
-            WRITE_ABSOLUTE_DWORD(pch + j, 0x00000000);
+        for (j = 0; j < ROWNO * ROWS_PER_CELL * SCREENBYTES / 4; ++j) {
+            WRITE_ABSOLUTE_DWORD(&pch[j], 0x00000000);
         }
         egawriteplane(15);
     }
