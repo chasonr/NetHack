@@ -2,7 +2,7 @@
 
 #include "hack.h"
 #undef yn
-#include <pango/pangoft2.h>
+#include <pango/pangocairo.h>
 #include "sdl2font.h"
 
 /* Classes and functions used internally here: */
@@ -13,41 +13,11 @@ struct SDL2Font_Impl {
     PangoLayout *layout;
 };
 
-/* Simplified functions to create and free an FT_Bitmap */
-static FT_Bitmap *FT_Bitmap_new(int width, int height);
-static void FT_Bitmap_free(FT_Bitmap *bitmap);
-
 /* Encoding conversions */
 static SDL_Rect sdl2_font_textSizeStr_UTF8(SDL2Font *font, const char *text);
 static SDL_Surface *sdl2_font_renderStrBG_UTF8(SDL2Font *font,
         const char *text, SDL_Color foreground, SDL_Color background);
 static char * iso8859_1_to_utf8(const char *inpstr);
-
-static FT_Bitmap *
-FT_Bitmap_new(int width, int height)
-{
-    /* Per the pango-view example */
-    FT_Bitmap *bitmap = (FT_Bitmap *) alloc(sizeof(FT_Bitmap));
-    bitmap->width = width;
-    bitmap->pitch = (bitmap->width + 3) & ~3;
-    bitmap->rows = height;
-    bitmap->buffer = (unsigned char *) alloc(bitmap->pitch * bitmap->rows);
-    memset(bitmap->buffer, 0x00, bitmap->pitch * bitmap->rows);
-    bitmap->num_grays = 255;
-    bitmap->pixel_mode = ft_pixel_mode_grays;
-    bitmap->palette_mode = 0;
-    bitmap->palette = NULL;
-    return bitmap;
-}
-
-static void
-FT_Bitmap_free(FT_Bitmap *bitmap)
-{
-    if (bitmap != NULL) {
-        free(bitmap->buffer);
-        free(bitmap);
-    }
-};
 
 static PangoFontMetrics *getMetrics(const SDL2Font *font);
 
@@ -58,7 +28,7 @@ sdl2_font_new(const char *name, int ptsize)
     SDL2Font *font = (SDL2Font *) alloc(sizeof(*font));
 
     font->desc = pango_font_description_new();
-    font->map = pango_ft2_font_map_new();
+    font->map = pango_cairo_font_map_new();
     font->ctx = pango_font_map_create_context(font->map);
     font->layout = pango_layout_new(font->ctx);
 
@@ -162,70 +132,75 @@ static SDL_Surface *
 sdl2_font_renderStrBG_UTF8(SDL2Font *font, const char *text,
                            SDL_Color foreground, SDL_Color background)
 {
+    int width, height;
+    cairo_surface_t *csurface;
+    cairo_t *cr;
+    SDL_Surface *surface;
+    unsigned char *image_data;
+
     pango_layout_set_text(font->layout, text, strlen(text));
 
-    int width, height;
     pango_layout_get_pixel_size(font->layout, &width, &height);
-    FT_Bitmap *bitmap = FT_Bitmap_new(width, height);
+    csurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    cr = cairo_create(csurface);
 
-    pango_ft2_render_layout(bitmap, font->layout, 0, 0);
+    /* Render the background */
+    cairo_set_source_rgba(cr,
+                          background.r / 255.0,
+                          background.g / 255.0,
+                          background.b / 255.0,
+                          background.a / 255.0);
+    cairo_paint(cr);
+
+    /* Render the text */
+    cairo_set_source_rgba(cr,
+                          foreground.r / 255.0,
+                          foreground.g / 255.0,
+                          foreground.b / 255.0,
+                          foreground.a / 255.0);
+    pango_cairo_update_layout(cr, font->layout);
+    pango_cairo_show_layout(cr, font->layout);
+
+    /* Convert to an SDL2 surface */
+    image_data = cairo_image_surface_get_data(csurface);
 
     /* Convert Pango bitmap format to SDL */
-    SDL_Surface *surface = SDL_CreateRGBSurface(
+    surface = SDL_CreateRGBSurface(
             SDL_SWSURFACE,
-            bitmap->width, bitmap->rows, 32,
+            width, height, 32,
             0x000000FF,  /* red */
             0x0000FF00,  /* green */
             0x00FF0000,  /* blue */
             0xFF000000); /* alpha */
     if (surface != NULL) {
         unsigned char *row1;
-        Uint32 *row2;
+        unsigned char *row2;
 
-        for (int y = 0; y < bitmap->rows; ++y) {
-            row1 = bitmap->buffer + bitmap->pitch * y;
-            row2 = (Uint32 *) ((unsigned char *) surface->pixels + surface->pitch * y);
-            for (int x = 0; x < bitmap->width; ++x) {
+        for (int y = 0; y < height; ++y) {
+            row1 = image_data + width * 4 * y;
+            row2 = (unsigned char *) surface->pixels + surface->pitch * y;
+            for (int x = 0; x < width; ++x) {
                 unsigned char r, g, b, a;
-                unsigned char alpha = row1[x];
-                /* The most common cases are alpha == 0 and alpha == 255 */
-                if (alpha == 0) {
-                    r = background.r;
-                    g = background.g;
-                    b = background.b;
-                    a = background.a;
-                } else if (alpha == 255 && foreground.a == 255) {
-                    r = foreground.r;
-                    g = foreground.g;
-                    b = foreground.b;
-                    a = foreground.a;
-                } else {
-                    /* srcA, dstA and outA are fixed point quantities
-                       such that 0xFF00 represents an alpha of 1 */
-                    Uint32 srcA = foreground.a * 256 * alpha / 255;
-                    Uint32 dstA = background.a * 256;
-                    dstA = dstA * (0xFF00 - srcA) / 0xFF00;
-                    Uint32 outA = srcA + dstA;
-                    if (outA == 0) {
-                        r = 0;
-                        g = 0;
-                        b = 0;
-                    } else {
-                        r = (foreground.r*srcA + background.r*dstA) / outA;
-                        g = (foreground.g*srcA + background.g*dstA) / outA;
-                        b = (foreground.b*srcA + background.b*dstA) / outA;
-                    }
-                    a = outA / 256;
+                /* Cairo returns RGB prescaled by alpha, but SDL2 needs it
+                 * without the prescaling */
+                r = row1[x*4 + 0];
+                g = row1[x*4 + 1];
+                b = row1[x*4 + 2];
+                a = row1[x*4 + 3];
+                if (a != 0) {
+                    r = r * 255 / a;
+                    g = g * 255 / a;
+                    b = b * 255 / a;
                 }
-                row2[x] = ((Uint32) (r) <<  0)
-                        | ((Uint32) (g) <<  8)
-                        | ((Uint32) (b) << 16)
-                        | ((Uint32) (a) << 24);
+                row2[x*4 + 0] = b;
+                row2[x*4 + 1] = g;
+                row2[x*4 + 2] = r;
+                row2[x*4 + 3] = a;
             }
         }
     }
 
-    FT_Bitmap_free(bitmap);
+    cairo_destroy(cr);
     return surface;
 }
 

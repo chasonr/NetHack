@@ -31,7 +31,7 @@ CFLAGS+=-DTIMED_DELAY
 CFLAGS+=-DDUMPLOG
 CFLAGS+=-DCONFIG_ERROR_SECURE=FALSE
 CFLAGS+=-DSDL2_GRAPHICS -DDEFAULT_WINDOW_SYS=\"sdl2\" -DNOTTYGRAPHICS -DPOSITIONBAR -DSTATUES_LOOK_LIKE_MONSTERS
-CFLAGS+=$(shell pkg-config sdl2 pangoft2 --cflags)
+CFLAGS+=$(shell pkg-config sdl2 pangocairo --cflags)
 ifdef WANT_PNG
     CFLAGS += -DHAVE_PNG $(shell pkg-config --cflags libpng)
 endif
@@ -41,7 +41,7 @@ LINK=$(CC)
 WINSRC = $(WINSDL2SRC)
 WINOBJ = $(WINSDL2OBJ)
 WINTILEOBJ = tile.o
-WINLIB = $(shell pkg-config sdl2 pangoft2 --libs)
+WINLIB = $(shell pkg-config sdl2 pangocairo --libs)
 SDL2FONT = sdl2font_pango.o
 
 ifdef WANT_PNG
