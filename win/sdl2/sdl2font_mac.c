@@ -179,8 +179,14 @@ static SDL_Surface *
 renderImpl(SDL2Font *mfont, const UniChar *text, SDL_Color foreground,
            SDL_Color background)
 {
+    static const CGFloat whitepoint[] = { 1.0, 1.0, 1.0 };
+    CFRange range;
     CFStringRef string = NULL; /* custodial */
-    CFAttributedStringRef attrstring = NULL; /* custodial */
+    CFMutableAttributedStringRef attrstring = NULL; /* custodial */
+    CGFloat colors[4];
+    CGColorSpaceRef cs_ref = NULL; /* custodial */
+    CGColorRef fg_ref = NULL; /* custodial */
+    CGColorRef bg_ref = NULL; /* custodial */
     CTLineRef line = NULL; /* custodial */
     CGContextRef context_ref = NULL; /* custodial */
     int x, y, w, h;
@@ -189,7 +195,35 @@ renderImpl(SDL2Font *mfont, const UniChar *text, SDL_Color foreground,
 
     string = CFStringCreateWithCharacters(NULL, text, appleLength(text));
 
-    attrstring = CFAttributedStringCreate(NULL, string, mfont->attributes);
+    /* Create a string object */
+    attrstring = CFAttributedStringCreateMutable(NULL, 0);
+    range.location = 0;
+    range.length = 0;
+    CFAttributedStringReplaceString(attrstring, range, string);
+
+    /* Set the font */
+    range.length = CFStringGetLength(string);
+    CFAttributedStringSetAttributes(attrstring, range, mfont->attributes, TRUE);
+
+    /* Set the colors */
+    cs_ref = CGColorSpaceCreateCalibratedRGB(
+            whitepoint, NULL, NULL, NULL);
+    colors[0] = foreground.r / 255.0;
+    colors[1] = foreground.g / 255.0;
+    colors[2] = foreground.b / 255.0;
+    colors[3] = foreground.a / 255.0;
+    fg_ref = CGColorCreate(cs_ref, colors);
+    CFAttributedStringSetAttribute(attrstring, range,
+            kCTForegroundColorAttributeName,
+            fg_ref);
+    colors[0] = background.r / 255.0;
+    colors[1] = background.g / 255.0;
+    colors[2] = background.b / 255.0;
+    colors[3] = background.a / 255.0;
+    bg_ref = CGColorCreate(cs_ref, colors);
+    CFAttributedStringSetAttribute(attrstring, range,
+            kCTBackgroundColorAttributeName,
+            bg_ref);
 
     /* CoreText line with complex rendering */
     line = CTLineCreateWithAttributedString(attrstring);
@@ -200,13 +234,6 @@ renderImpl(SDL2Font *mfont, const UniChar *text, SDL_Color foreground,
     h = (int) (ascent + descent + leading);
     if (w < 1) w = 1;
     if (h < 1) h = 1;
-
-    /*
-     * SDL expects the color components not to be premultiplied by the alpha.
-     * CoreGraphics does not support this usage, so we have to fake it: the
-     * text is drawn in black and the returned pixels have only alpha, and we
-     * fill in the colors later.
-     */
 
     /* SDL surface to receive the bitmap */
     surface = SDL_CreateRGBSurface(
@@ -222,46 +249,28 @@ renderImpl(SDL2Font *mfont, const UniChar *text, SDL_Color foreground,
     context_ref = CGBitmapContextCreate(surface->pixels, w, h, 8,
                 surface->pitch, rgb_colorspace,
                 kCGImageAlphaPremultipliedLast);
-    CGContextSetTextDrawingMode(context_ref, kCGTextFillStrokeClip);
+    CGContextSetTextDrawingMode(context_ref, kCGTextFill);
 
     CGContextSetTextPosition(context_ref, 0.0, descent + leading/2.0);
     CTLineDraw(line, context_ref);
 
     for (y = 0; y < surface->h; ++y) {
         Uint32 *row = (Uint32 *) (
-                (uint8_t *) surface->pixels + surface->pitch * y);
+                (unsigned char *) surface->pixels + surface->pitch * y);
         for (x = 0; x < surface->w; ++x) {
-            unsigned alpha = row[x] >> 24;
-            uint8_t r, g, b, a;
-            /* The most common cases are alpha == 0 and alpha == 255 */
-            if (alpha == 0) {
-                r = background.r;
-                g = background.g;
-                b = background.b;
-                a = background.a;
-            } else if (alpha == 255 && foreground.a == 255) {
-                r = foreground.r;
-                g = foreground.g;
-                b = foreground.b;
-                a = foreground.a;
-            } else {
-                /* srcA, dstA and outA are fixed point quantities
-                   such that 0xFF00 represents an alpha of 1 */
-                Uint32 srcA, dstA, outA;
-                srcA = foreground.a * 256 * alpha / 255;
-                dstA = background.a * 256;
-                dstA = dstA * (0xFF00 - srcA) / 0xFF00;
-                outA = srcA + dstA;
-                if (outA == 0) {
-                    r = 0;
-                    g = 0;
-                    b = 0;
-                } else {
-                    r = (foreground.r*srcA + background.r*dstA) / outA;
-                    g = (foreground.g*srcA + background.g*dstA) / outA;
-                    b = (foreground.b*srcA + background.b*dstA) / outA;
-                }
-                a = outA / 256;
+            Uint32 pixel;
+            unsigned char r, g, b, a;
+            /* CoreGraphics returns RGB prescaled by alpha, but SDL2 needs it
+             * without the prescaling */
+            pixel = row[x];
+            r = (unsigned char) (pixel >>  0);
+            g = (unsigned char) (pixel >>  8);
+            b = (unsigned char) (pixel >> 16);
+            a = (unsigned char) (pixel >> 24);
+            if (a != 0) {
+                r = r * 255 / a;
+                g = g * 255 / a;
+                b = b * 255 / a;
             }
             row[x] = ((Uint32) (r) <<  0)
                    | ((Uint32) (g) <<  8)
@@ -271,6 +280,9 @@ renderImpl(SDL2Font *mfont, const UniChar *text, SDL_Color foreground,
     }
 
 end:
+    if (fg_ref) CFRelease(fg_ref);
+    if (bg_ref) CFRelease(bg_ref);
+    if (cs_ref) CFRelease(cs_ref);
     if (string) CFRelease(string);
     if (attrstring) CFRelease(attrstring);
     if (line) CFRelease(line);
