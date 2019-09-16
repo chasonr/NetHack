@@ -200,6 +200,7 @@ sdl2_font_renderStrBG_UTF8(SDL2Font *font, const char *text,
         }
     }
 
+    cairo_surface_destroy(csurface);
     cairo_destroy(cr);
     return surface;
 }
