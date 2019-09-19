@@ -936,10 +936,45 @@ dgn_comp_ofiles = %w[
     src/alloc.c
 ].map {|x| obj('build/'+x)}
 
-dgn_comp_ofiles += %w[
-    sys/share/dgn_yacc.c
-    sys/share/dgn_lex.c
-].map {|x| obj('build/'+x)}
+if CONFIG[:lex] and CONFIG[:yacc] then
+    dgn_comp_ofiles += %w[
+        build/util/dgn_lex.c
+        build/util/dgn_yacc.c
+    ].map {|x| obj(x)}
+
+    file 'build/util/dgn_lex.c.o' => %w[
+        build/util/dgn_lex.c
+        build/util/dgn_comp.h
+    ] do |x|
+        sh slash("#{CONFIG[:CC]} #{CFLAGS} -c #{x.source} #{objflag(x.name)}")
+    end
+
+    file 'build/util/dgn_yacc.c.o' => 'build/util/dgn_yacc.c' do |x|
+        sh slash("#{CONFIG[:CC]} #{CFLAGS} -c #{x.source} #{objflag(x.name)}")
+    end
+
+    file 'build/util/dgn_lex.c' => 'util/dgn_comp.l' do
+        mkdir_p 'build/util' unless File.directory?('build/util')
+        sh "#{CONFIG[:lex]} -o build/util/dgn_lex.c util/dgn_comp.l"
+    end
+
+    file 'build/util/dgn_yacc.c' => 'util/dgn_comp.y' do
+        mkdir_p 'build/util' unless File.directory?('build/util')
+        sh "#{CONFIG[:yacc]} -d -o build/util/dgn_yacc.c util/dgn_comp.y"
+        mv "build/util/dgn_yacc.h", "build/util/dgn_comp.h"
+    end
+
+    file 'build/util/dgn_comp.h' => 'util/dgn_comp.y' do
+        mkdir_p 'build/util' unless File.directory?('build/util')
+        sh "#{CONFIG[:yacc]} -d -o build/util/dgn_yacc.c util/dgn_comp.y"
+        mv "build/util/dgn_yacc.h", "build/util/dgn_comp.h"
+    end
+else
+    dgn_comp_ofiles += %w[
+        sys/share/dgn_yacc.c
+        sys/share/dgn_lex.c
+    ].map {|x| obj('build/'+x)}
+end
 
 link_rule(dgn_comp_ofiles, dgn_comp_exe, [])
 
@@ -962,10 +997,51 @@ lev_comp_ofiles = %w[
     src/objects.c
 ].map {|x| obj('build/'+x)}
 
-lev_comp_ofiles += %w[
-    sys/share/lev_yacc.c
-    sys/share/lev_lex.c
-].map {|x| obj('build/'+x)}
+if CONFIG[:lex] and CONFIG[:yacc] then
+    lev_comp_ofiles += %w[
+        build/util/lev_lex.c
+        build/util/lev_yacc.c
+    ].map {|x| obj(x)}
+
+    file 'build/util/lev_lex.c.o' => %w[
+        build/util/lev_lex.c
+        build/util/lev_comp.h
+        include/pm.h
+        include/onames.h
+    ] do |x|
+        sh slash("#{CONFIG[:CC]} #{CFLAGS} -c #{x.source} #{objflag(x.name)}")
+    end
+
+    file 'build/util/lev_yacc.c.o' => %w[
+        build/util/lev_yacc.c
+        include/pm.h
+        include/onames.h
+    ] do |x|
+        sh slash("#{CONFIG[:CC]} #{CFLAGS} -c #{x.source} #{objflag(x.name)}")
+    end
+
+    file 'build/util/lev_lex.c' => 'util/lev_comp.l' do
+        mkdir_p 'build/util' unless File.directory?('build/util')
+        sh "#{CONFIG[:lex]} -o build/util/lev_lex.c util/lev_comp.l"
+    end
+
+    file 'build/util/lev_yacc.c' => 'util/lev_comp.y' do
+        mkdir_p 'build/util' unless File.directory?('build/util')
+        sh "#{CONFIG[:yacc]} -d -o build/util/lev_yacc.c util/lev_comp.y"
+        mv "build/util/lev_yacc.h", "build/util/lev_comp.h"
+    end
+
+    file 'build/util/lev_comp.h' => 'util/lev_comp.y' do
+        mkdir_p 'build/util' unless File.directory?('build/util')
+        sh "#{CONFIG[:yacc]} -d -o build/util/lev_yacc.c util/lev_comp.y"
+        mv "build/util/lev_yacc.h", "build/util/lev_comp.h"
+    end
+else
+    lev_comp_ofiles += %w[
+        sys/share/lev_yacc.c
+        sys/share/lev_lex.c
+    ].map {|x| obj('build/'+x)}
+end
 
 link_rule(lev_comp_ofiles, lev_comp_exe, [])
 
