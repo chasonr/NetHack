@@ -54,20 +54,32 @@ case CONFIG[:compiler]
 when :gcc then
 	CONFIG[:CC] ||= 'gcc'
 	CONFIG[:CXX] ||= 'g++'
+    CONFIG[:rc] ||= 'windres'
 when :clang then
     CONFIG[:CC] ||= 'clang'
     CONFIG[:CXX] ||= 'clang++'
+    CONFIG[:rc] ||= 'windres'
 when :visualc then
     CONFIG[:CC] ||= 'cl'
     CONFIG[:CXX] ||= 'cl'
+    CONFIG[:rc] ||= 'todo'
 when :watcom then
     CONFIG[:CC] ||= 'wcc386'
     CONFIG[:CXX] ||= 'wpp386'
+    CONFIG[:rc] ||= 'todo'
 when :cc then
     CONFIG[:CC] ||= 'cc'
     CONFIG[:CXX] ||= 'c++'
+    CONFIG[:rc] ||= 'windres'
 else
     raise RuntimeError, %Q[Unknown compiler "#{CONFIG[:compiler]}"]
+end
+
+# Certain combinations of platform and interface are unsupported
+if PLATFORM == :windows then
+    CONFIG[:Curses_graphics] ||= CONFIG[:TTY_graphics]
+    CONFIG[:TTY_graphics] = false
+    CONFIG[:X11_graphics] = false
 end
 
 # If Qt, look for the MOC
@@ -94,8 +106,8 @@ end
 
 # Define a default window system if none is specified
 if not CONFIG[:default_graphics] then
-    if PLATFORM == :win32 then
-        CONFIG[:default_graphics] = 'win32'
+    if PLATFORM == :windows then
+        CONFIG[:default_graphics] = 'mswin'
     elsif CONFIG[:SDL2_graphics] then
         CONFIG[:default_graphics] = 'sdl2'
     elsif CONFIG[:Qt_graphics] then
@@ -163,7 +175,7 @@ else
         base_flags = "-wx -ox"
     end
 end
-base_flags += ' -DDLB -DSYSCF -DTIMED_DELAY -DDUMPLOG'
+base_flags += ' -DDLB -DTIMED_DELAY'
 base_flags += " -Iinclude"
 base_flags += " -DNOTTYGRAPHICS" unless CONFIG[:TTY_graphics]
 base_flags += " -DCURSES_GRAPHICS" if CONFIG[:Curses_graphics]
@@ -171,6 +183,11 @@ base_flags += " -DQT_GRAPHICS" if CONFIG[:Qt_graphics]
 base_flags += " -DSDL2_GRAPHICS" if CONFIG[:SDL2_graphics]
 base_flags += " -DX11_GRAPHICS -DUSE_XPM= -DHAVE_XPM" if CONFIG[:X11_graphics]
 base_flags += %Q[ -DDEFAULT_WINDOW_SYS=\\"#{CONFIG[:default_graphics]}\\"]
+if PLATFORM == :windows then
+    base_flags += " -DMSWIN_GRAPHICS -DSAFEPROCS"
+else
+    base_flags += " -DSYSCF -DDUMPLOG"
+end
 if PLATFORM == :unix then
     base_flags += %q[ -DCOMPRESS=\\"/bin/gzip\\"]
     base_flags += %q[ -DCOMPRESS_EXTENSION=\\".gz\\"]
@@ -259,7 +276,7 @@ end
 if CONFIG[:SDL2_graphics] then
     targets << 'binary/nhtiles.bmp'
 end
-if PLATFORM == :win32 then
+if PLATFORM == :windows then
     targets << 'binary/nhtiles.bmp'
 end
 
@@ -365,8 +382,9 @@ end
 
 # Directory win/share
 winshare_dir = %w[
-    tilemap tile2bmp tiletext
+    tilemap tiletext
     tileset bmptiles giftiles pngtiles xpmtiles
+    safeproc
 ].map {|x| "win/share/#{x}.c"}
 winshare_dir.each do |src|
     compile_rule(src, '')
@@ -485,6 +503,25 @@ if CONFIG[:Qt_graphics] then
     end
 end
 
+# Directory win/win32
+if PLATFORM == :windows then
+    win32_flags = '-Isys/winnt'
+    syswinnt_dir = %w[
+        win10 windmain winnt ntsound
+    ].map {|x| "sys/winnt/#{x}.c"}
+    syswinnt_dir.each do |src|
+        compile_rule(src, win32_flags)
+    end
+    compile_rule('sys/winnt/stubs.c', win32_flags + ' -DTTYSTUB')
+    win32_dir = %w[
+        mhaskyn  mhdlg    mhfont   mhinput  mhmain   mhmap    mhmenu
+        mhmsgwnd mhrip    mhsplash mhstatus mhtext   mswproc  winhack
+    ].map {|x| "win/win32/#{x}.c"}
+    win32_dir.each do |src|
+        compile_rule(src, win32_flags)
+    end
+end
+
 ##############################################################################
 #                             The NetHack binary                             #
 ##############################################################################
@@ -492,7 +529,17 @@ end
 # TODO: for Unix and Mac, set up executable permissions
 nethack_ofiles = Set.new(src_dir.map {|x| obj("build/#{x}")})
 if PLATFORM == :windows then
-    # TODO: add the relevant sources here
+    nethack_ofiles.merge(win32_dir.map {|x| obj("build/#{x}")})
+    nethack_ofiles.merge(%w[
+        win/share/safeproc.c
+        sys/winnt/ntsound.c
+        sys/winnt/stubs.c
+        sys/winnt/win10.c
+        sys/winnt/windmain.c
+        sys/winnt/winnt.c
+        sys/share/cppregex.cpp
+        win/win32/winhack.rc
+    ].map {|x| obj("build/#{x}")})
 else
     nethack_ofiles.merge(%w[
         sys/share/ioctl.c
@@ -504,14 +551,14 @@ else
 end
 nethack_libs = []
 if CONFIG[:SDL2_graphics] or CONFIG[:Qt_graphics] or CONFIG[:X11_graphics] \
-    or PLATFORM == :win32 then
+    or PLATFORM == :windows then
     # At least one tiled configuration is being built
     nethack_ofiles.merge(%w[
         src/tile.c
     ].map {|x| obj("build/#{x}")})
     compile_rule('src/tile.c', '')
 end
-if CONFIG[:SDL2_graphics] or CONFIG[:X11_graphics] or PLATFORM == :win32 then
+if CONFIG[:SDL2_graphics] or CONFIG[:X11_graphics] or PLATFORM == :windows then
     nethack_ofiles.merge(%w[
         win/share/tileset.c
         win/share/bmptiles.c
@@ -565,15 +612,20 @@ if CONFIG[:TTY_graphics] or CONFIG[:Curses_graphics] then
         nethack_libs << `pkg-config --libs ncursesw`.chomp
     end
 end
-
+if PLATFORM == :windows then
+    case CONFIG[:compiler]
+    when :visualc, :watcom then
+        # TODO
+        nethack_libs << ''
+    else
+        nethack_libs << '-lgdi32 -lcomctl32 -lcomdlg32 -lwinmm -lbcrypt'
+    end
+end
 link_rule(nethack_ofiles.to_a, exe('binary/nethack'), nethack_libs)
 
 ##############################################################################
 #                          nhdat and its components                          #
 ##############################################################################
-
-=begin
-=end
 
 dat_files = %w[
     cmdhelp
@@ -907,6 +959,8 @@ tile2bmp_ofiles = %w[
 ].map {|x| obj('build/'+x)}
 tile2bmp_exe = exe('build/tile2bmp')
 
+compile_rule('win/share/tile2bmp.c', '-mno-ms-bitfields')
+
 file obj('build/win/share/tiletxt2.c') => %w[
     win/share/tilemap.c include/pm.h include/onames.h
 ] do
@@ -919,6 +973,7 @@ file 'binary/nhtiles.bmp' => [
     tile2bmp_exe,
     'win/share/monsters.txt', 'win/share/objects.txt', 'win/share/other.txt'
 ] do
+    mkdir_p 'binary' unless File.directory?('binary')
     dir = Dir.getwd
     Dir.chdir('build')
     sh './tile2bmp ../binary/nhtiles.bmp'
@@ -1143,6 +1198,67 @@ dlb_ofiles = %w[
 ].map {|x| obj('build/'+x)}
 
 link_rule(dlb_ofiles, dlb_exe, [])
+
+##############################################################################
+#                              Win32 resources                               #
+##############################################################################
+
+file obj('build/win/win32/winhack.rc') => [
+    'win/win32/winhack.rc',
+    'build/nethack.ico',
+    'build/tiles.bmp',
+    'build/mnsel.bmp',
+    'build/mnunsel.bmp',
+    'build/petmark.bmp',
+    'build/pilemark.bmp',
+    'build/mnselcnt.bmp',
+    'build/rip.bmp',
+    'build/splash.bmp'
+] do |x|
+    sh slash("#{CONFIG[:rc]} -Ibuild -Iwin/win32 -o #{x.name} win/win32/winhack.rc")
+end
+
+file 'build/tiles.bmp' => 'binary/nhtiles.bmp' do
+    mkdir_p 'build' unless File.directory?('build')
+    cp 'binary/nhtiles.bmp', 'build/tiles.bmp'
+end
+
+##############################################################################
+#                         uudecode and its products                          #
+##############################################################################
+
+uudecode_ofiles = %w[
+    sys/share/uudecode.c
+].map {|x| obj('build/'+x)}
+uudecode_exe = exe('build/uudecode')
+
+link_rule(uudecode_ofiles, uudecode_exe, [])
+
+file 'build/nethack.ico' => [ uudecode_exe, 'sys/winnt/nhico.uu' ] do
+    mkdir_p 'build' unless File.directory?('build')
+    dir = Dir.getwd
+    Dir.chdir('build')
+    sh "./uudecode ../sys/winnt/nhico.uu"
+    Dir.chdir(dir)
+end
+
+file 'build/nethack.ico' => [ uudecode_exe, 'sys/winnt/nhico.uu' ] do
+    mkdir_p 'build' unless File.directory?('build')
+    dir = Dir.getwd
+    Dir.chdir('build')
+    sh "./uudecode ../sys/winnt/nhico.uu"
+    Dir.chdir(dir)
+end
+
+%w[mnsel mnunsel petmark pilemark mnselcnt rip splash].each do |name|
+    file "build/#{name}.bmp" => [ uudecode_exe, "win/win32/#{name}.uu" ] do
+        mkdir_p 'build' unless File.directory?('build')
+        dir = Dir.getwd
+        Dir.chdir('build')
+        sh "./uudecode ../win/win32/#{name}.uu"
+        Dir.chdir(dir)
+    end
+end
 
 ##############################################################################
 #                                  Cleanup                                   #

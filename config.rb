@@ -17,7 +17,7 @@ CONFIG[:TTY_graphics   ] = true
 # CONFIG[:default_graphics] = 'Qt'
 # CONFIG[:default_graphics] = 'SDL2'
 # CONFIG[:default_graphics] = 'X11'
-# CONFIG[:default_graphics] = 'win32'
+# CONFIG[:default_graphics] = 'mswin'
 
 # Choose a compiler; if no entry, let the Rakefile try to detect one
 # CONFIG[:compiler] = :gcc      # Default on Linux; fallback on Windows
@@ -30,6 +30,7 @@ CONFIG[:TTY_graphics   ] = true
 # of "clang"
 # CONFIG[:CC] = "clang"
 # CONFIG[:CXX] = "clang++"
+# CONFIG[:rc] = "rc"
 # CONFIG[:link] = "clang++"
 # CONFIG[:moc] = "moc"
 
@@ -51,6 +52,9 @@ CONFIG[:TTY_graphics   ] = true
 ##############################################################################
 
 # This is the root of the PDCurses tree
+# This should be the Bill Gray fork of PDCurses; see
+# https://www.projectpluto.com/win32a.htm
+# https://github.com/Bill-Gray/PDCurses/
 CONFIG[:PDCurses] = "#{ENV['USERPROFILE']}/PDCurses"
 
 # This is the root of the SDL2 tree
@@ -58,9 +62,3 @@ CONFIG[:SDL2] = "#{ENV['USERPROFILE']}/SDL2"
 
 # This is the root of the Qt tree
 CONFIG[:Qt] = "C:/qt/Qt5.13.0/5.13.0/mingw73_32"
-
-# To get the Curses interface in NetHackW, enable this and use the Bill Gray
-# fork of PDCurses; see
-# https://www.projectpluto.com/win32a.htm
-# https://github.com/Bill-Gray/PDCurses/
-#CONFIG[:win_curses] = true
