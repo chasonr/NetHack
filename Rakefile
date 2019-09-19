@@ -265,6 +265,7 @@ if CONFIG[:Qt_graphics] then
                 binary/Qt5Gui.dll
                 binary/Qt5Widgets.dll
                 binary/Qt5Multimedia.dll
+                binary/Qt5Core.dll
             ])
         else
             targets.merge(%w[
@@ -429,7 +430,7 @@ if CONFIG[:SDL2_graphics] then
     ].map {|x| "win/sdl2/#{x}.c"}
     if PLATFORM == :windows then
         winsdl2_dir << 'win/sdl2/sdl2font_windows.c'
-        sdl2_flags = "-I#{CONFIG[:SDL2]}"
+        sdl2_flags = %Q[-I#{CONFIG[:SDL2]} -DPIXMAPDIR=\\".\\"]
     elsif PLATFORM == :mac then
         winsdl2_dir << 'win/sdl2/sdl2font_mac.c'
         sdl2_flags = `pkg-config --cflags sdl2`
@@ -466,7 +467,7 @@ if CONFIG[:Qt_graphics] then
         qt4stat  qt4str   qt4streq qt4svsel qt4win   qt4xcmd  qt4yndlg
     ].map {|x| "win/Qt4/#{x}.cpp"}
     if PLATFORM == :windows then
-        qt4_flags = "-I#{CONFIG[:Qt]}"
+        qt4_flags = %Q[-I#{CONFIG[:Qt]}/include -DPIXMAPDIR=\\".\\"]
     else
         if QT5 then
             qt4_flags = `pkg-config --cflags Qt5Gui Qt5Widgets Qt5Multimedia`.chomp
@@ -626,7 +627,7 @@ if CONFIG[:Qt_graphics] then
     nethack_ofiles.merge(winQt4_dir.map {|x| obj("build/#{x}")})
     if PLATFORM == :windows then
         if QT5 then
-            nethack_libs << "#{CONFIG[:Qt]}/lib/Qt5Gui.a #{CONFIG[:Qt]}/lib/Qt5Widgets.a #{CONFIG[:Qt]}/lib/Qt5Multimedia.a"
+            nethack_libs << "#{CONFIG[:Qt]}/lib/libQt5Gui.a #{CONFIG[:Qt]}/lib/libQt5Widgets.a #{CONFIG[:Qt]}/lib/libQt5Multimedia.a #{CONFIG[:Qt]}/lib/libQt5Core.a"
         else
             nethack_libs << "#{CONFIG[:Qt]}/lib/QtGui4.a #{CONFIG[:Qt]}/lib/QtCore4.a"
         end
@@ -919,6 +920,13 @@ end
 file 'binary/sysconf' => sysconf do
     mkdir_p 'binary' unless File.directory?('binary')
     cp(sysconf, 'binary/sysconf')
+end
+
+%w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
+    file "binary/#{name}.dll" => "#{CONFIG[:Qt]}/bin/#{name}.dll" do |x|
+        mkdir_p 'binary' unless File.directory?('binary')
+        cp(x.source, x.name)
+    end
 end
 
 ##############################################################################
