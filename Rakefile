@@ -155,26 +155,27 @@ cxxflags = ""
 if CONFIG[:debug] then
     case CONFIG[:compiler]
     when :gcc, :clang then
-        base_flags = "-Wall -g"
+        min_flags = "-Wall -g"
     when :cc then
-        base_flags = "-g"
+        min_flags = "-g"
     when :cl then
-        base_flags = "-Wall"
+        min_flags = "-Wall"
     when :watcom then
-        base_flags = "-wx -g"
+        min_flags = "-wx -g"
     end
 else
     case CONFIG[:compiler]
     when :gcc, :clang then
-        base_flags = "-Wall -O2"
+        min_flags = "-Wall -O2"
     when :cc then
-        base_flags = "-O1"
+        min_flags = "-O1"
     when :cl then
-        base_flags = "-Wall -Ox"
+        min_flags = "-Wall -Ox"
     when :watcom then
-        base_flags = "-wx -ox"
+        min_flags = "-wx -ox"
     end
 end
+base_flags = min_flags
 base_flags += ' -DDLB -DTIMED_DELAY'
 base_flags += " -Iinclude"
 base_flags += " -DNOTTYGRAPHICS" unless CONFIG[:TTY_graphics]
@@ -411,7 +412,7 @@ if CONFIG[:Curses_graphics] then
         cursdial cursinit cursinvt cursmain cursmesg cursmisc cursstat curswins
     ].map {|x| "win/curses/#{x}.c"}
     if PLATFORM == :windows then
-        curses_flags = "-I#{CONFIG[:PDCurses]}"
+        curses_flags = "-I#{CONFIG[:PDCurses]} -DPDC_WIDE"
     else
         curses_flags = `pkg-config --cflags ncursesw`
     end
@@ -522,6 +523,36 @@ if PLATFORM == :windows then
     end
 end
 
+# PDCurses sources
+if PLATFORM == :windows and CONFIG[:Curses_graphics] then
+    pdcurses_dir = %w[
+        addch    addchstr addstr   attr     beep     bkgd     border
+        clear    color    debug    delch    deleteln getch    getstr
+        getyx    inch     inchstr  initscr  inopts   insch    insstr
+        instr    kernel   keyname  mouse    move     outopts  overlay
+        pad      panel    printw   refresh  scanw    scr_dump scroll
+        slk      termattr touch    util     window
+    ].map {|x| "pdcurses/#{x}.c"}
+    pdcurses_dir.each do |src|
+        file obj("build/pdcurses/#{src}") => "#{CONFIG[:PDCurses]}/#{src}" do |x|
+            dir = File.dirname(x.name)
+            mkdir_p dir unless File.directory?(dir)
+            sh slash("#{CONFIG[:CC]} -I#{CONFIG[:PDCurses]} -DPDC_WIDE #{min_flags} -c -o #{x.name} #{x.source}")
+        end
+    end
+
+    wingui_dir = %w[
+        pdcclip pdcdisp pdcgetsc pdckbd pdcscrn pdcsetsc pdcutil
+    ].map {|x| "wingui/#{x}.c"}
+    wingui_dir.each do |src|
+        file obj("build/pdcurses/#{src}") => "#{CONFIG[:PDCurses]}/#{src}" do |x|
+            dir = File.dirname(x.name)
+            mkdir_p dir unless File.directory?(dir)
+            sh slash("#{CONFIG[:CC]} -I#{CONFIG[:PDCurses]} -DPDC_WIDE #{min_flags} -c -o #{x.name} #{x.source}")
+        end
+    end
+end
+
 ##############################################################################
 #                             The NetHack binary                             #
 ##############################################################################
@@ -573,7 +604,8 @@ end
 if CONFIG[:Curses_graphics] then
     nethack_ofiles.merge(wincurses_dir.map {|x| obj("build/#{x}")})
     if PLATFORM == :windows then
-        # TODO: add the PDCurses sources here
+        nethack_ofiles.merge(
+            (pdcurses_dir + wingui_dir).map {|x| obj("build/pdcurses/#{x}")})
     end
 end
 if CONFIG[:SDL2_graphics] then

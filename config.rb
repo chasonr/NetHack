@@ -55,10 +55,10 @@ CONFIG[:TTY_graphics   ] = true
 # This should be the Bill Gray fork of PDCurses; see
 # https://www.projectpluto.com/win32a.htm
 # https://github.com/Bill-Gray/PDCurses/
-CONFIG[:PDCurses] = "#{ENV['USERPROFILE']}/PDCurses"
+CONFIG[:PDCurses] = "#{ENV['USERPROFILE']}/PDCurses-4.1.0"
 
 # This is the root of the SDL2 tree
-CONFIG[:SDL2] = "#{ENV['USERPROFILE']}/SDL2"
+CONFIG[:SDL2] = "#{ENV['USERPROFILE']}/SDL2-2.0.10"
 
 # This is the root of the Qt tree
 CONFIG[:Qt] = "C:/qt/Qt5.13.0/5.13.0/mingw73_32"
