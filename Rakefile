@@ -400,7 +400,7 @@ if CONFIG[:TTY_graphics] then
     if PLATFORM == :windows then
         tty_flags = ''
     else
-        tty_flags = `pkg-config --cflags ncursesw`
+        tty_flags = `pkg-config --cflags ncursesw`.chomp + " -DNOTPARMDECL"
     end
     wintty_dir.each do |src|
         compile_rule(src, tty_flags)
