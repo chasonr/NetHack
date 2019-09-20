@@ -430,7 +430,7 @@ if CONFIG[:SDL2_graphics] then
     ].map {|x| "win/sdl2/#{x}.c"}
     if PLATFORM == :windows then
         winsdl2_dir << 'win/sdl2/sdl2font_windows.c'
-        sdl2_flags = %Q[-I#{CONFIG[:SDL2]} -DPIXMAPDIR=\\".\\"]
+        sdl2_flags = %Q[-I#{CONFIG[:SDL2]}/include/SDL2 -DPIXMAPDIR=\\".\\"]
     elsif PLATFORM == :mac then
         winsdl2_dir << 'win/sdl2/sdl2font_mac.c'
         sdl2_flags = `pkg-config --cflags sdl2`
@@ -612,7 +612,8 @@ end
 if CONFIG[:SDL2_graphics] then
     nethack_ofiles.merge(winsdl2_dir.map {|x| obj("build/#{x}")})
     if PLATFORM == :windows then
-        nethack_libs << "-L#{CONFIG[:SDL2]}/libsdl2.a"
+        nethack_libs << "#{CONFIG[:SDL2]}/lib/libsdl2.a"
+        nethack_libs << '-lsetupapi -lwinmm -limm32 -lole32 -loleaut32 -lversion'
     elsif PLATFORM == :mac then
         nethack_libs << `pkg-config --libs sdl2`.chomp
     else
