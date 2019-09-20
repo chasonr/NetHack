@@ -2,8 +2,8 @@
 /* Copyright (C) 2001 by Alex Kompel 	 */
 /* NetHack may be freely redistributed.  See license for details. */
 
-#include "winMS.h"
 #include "winos.h"
+#include "winMS.h"
 #include "mhmsgwnd.h"
 #include "mhmsg.h"
 #include "mhfont.h"

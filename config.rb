@@ -59,6 +59,9 @@ CONFIG[:PDCurses] = "#{ENV['USERPROFILE']}/PDCurses-4.1.0"
 
 # This is the root of the SDL2 tree
 CONFIG[:SDL2] = "#{ENV['USERPROFILE']}/SDL2-2.0.10"
+# For Visual Studio: we need the directory where the libraries are found
+CONFIG[:architecture] = 'x86'
+# CONFIG[:architecture] = 'x64'
 
 # This is the root of the Qt tree
 CONFIG[:Qt] = "C:/qt/Qt5.13.0/5.13.0/mingw73_32"
