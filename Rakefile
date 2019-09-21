@@ -285,6 +285,21 @@ end
 task :default => targets.to_a do
 end
 
+# Some useful functions
+def make_dir(dir)
+    mkdir_p(dir) unless File.directory?(dir)
+end
+
+def in_dir(dir)
+    old_dir = Dir.getwd
+    begin
+        Dir.chdir(dir)
+        yield
+    ensure
+        Dir.chdir(old_dir)
+    end
+end
+
 # Build rules:
 def compile_rule(src, flags)
     # TODO set up autodepends
@@ -301,13 +316,13 @@ def compile_rule(src, flags)
         end
     end
     if src.end_with?('.cpp') then
-        file target => deps do
-            mkdir_p File.dirname(target) unless File.directory?(File.dirname(target))
+        file target => deps do |x|
+            make_dir File.dirname(x.name)
             sh slash("#{CONFIG[:CXX]} #{CXXFLAGS} #{flags.chomp} -c #{src} #{objflag(target)}")
         end
     else
-        file target => deps do
-            mkdir_p File.dirname(target) unless File.directory?(File.dirname(target))
+        file target => deps do |x|
+            make_dir File.dirname(x.name)
             sh slash("#{CONFIG[:CC]} #{CFLAGS} #{flags.chomp} -c #{src} #{objflag(target)}")
         end
     end
@@ -323,13 +338,13 @@ def link_rule(ofiles, exe, libs)
         end
     end
     if cpp then
-        file exe => ofiles do
-            mkdir_p File.dirname(exe) unless File.directory?(File.dirname(exe))
+        file exe => ofiles do |x|
+            make_dir File.dirname(x.name)
             sh slash("#{CONFIG[:link] || CONFIG[:CXX]} #{ofiles.join(' ')} #{exeflag(exe)} #{libs.join(' ')}")
         end
     else
-        file exe => ofiles do
-            mkdir_p File.dirname(exe) unless File.directory?(File.dirname(exe))
+        file exe => ofiles do |x|
+            make_dir File.dirname(x.name)
             sh slash("#{CONFIG[:link] || CONFIG[:CC]} #{ofiles.join(' ')} #{exeflag(exe)} #{libs.join(' ')}")
         end
     end
@@ -493,13 +508,13 @@ if CONFIG[:Qt_graphics] then
             mocfile = "build/win/Qt4/#{$1}.moc"
             deps << mocfile
             file mocfile => header do |x|
-                mkdir_p File.dirname(x.name) unless File.directory?(File.dirname(x.name))
+                make_dir File.dirname(x.name)
                 sh "#{CONFIG[:moc]} #{x.sources[0]} -o #{x.name}"
             end
             text2 = $'
         end
-        file target => deps do
-            mkdir_p File.dirname(target) unless File.directory?(File.dirname(target))
+        file target => deps do |x|
+            make_dir File.dirname(x.name)
             sh slash("#{CONFIG[:CXX]} #{CXXFLAGS} #{qt4_flags} -c #{src} #{objflag(target)}")
         end
     end
@@ -537,7 +552,7 @@ if PLATFORM == :windows and CONFIG[:Curses_graphics] then
     pdcurses_dir.each do |src|
         file obj("build/pdcurses/#{src}") => "#{CONFIG[:PDCurses]}/#{src}" do |x|
             dir = File.dirname(x.name)
-            mkdir_p dir unless File.directory?(dir)
+            make_dir File.dirname(x.name)
             sh slash("#{CONFIG[:CC]} -I#{CONFIG[:PDCurses]} -DPDC_WIDE #{min_flags} -c -o #{x.name} #{x.source}")
         end
     end
@@ -548,7 +563,7 @@ if PLATFORM == :windows and CONFIG[:Curses_graphics] then
     wingui_dir.each do |src|
         file obj("build/pdcurses/#{src}") => "#{CONFIG[:PDCurses]}/#{src}" do |x|
             dir = File.dirname(x.name)
-            mkdir_p dir unless File.directory?(dir)
+            make_dir File.dirname(x.name)
             sh slash("#{CONFIG[:CC]} -I#{CONFIG[:PDCurses]} -DPDC_WIDE #{min_flags} -c -o #{x.name} #{x.source}")
         end
     end
@@ -681,32 +696,13 @@ dat_files = %w[
     dungeon
 ]
 
-level_tags = %w[
-    build/Arch.tag
-    build/Barb.tag
-    build/bigroom.tag
-    build/castle.tag
-    build/Caveman.tag
-    build/endgame.tag
-    build/gehennom.tag
-    build/Healer.tag
-    build/Knight.tag
-    build/knox.tag
-    build/medusa.tag
-    build/mines.tag
-    build/Monk.tag
-    build/oracle.tag
-    build/Priest.tag
-    build/Ranger.tag
-    build/Rogue.tag
-    build/Samurai.tag
-    build/sokoban.tag
-    build/Tourist.tag
-    build/tower.tag
-    build/Valkyrie.tag
-    build/Wizard.tag
-    build/yendor.tag
+level_sources = %w[
+    bigroom  castle   endgame  gehennom knox     medusa   mines    oracle
+    sokoban  tower    yendor   Arch     Barb     Caveman  Healer   Knight
+    Monk     Priest   Ranger   Rogue    Samurai  Tourist  Valkyrie Wizard
 ]
+
+level_tags = level_sources.map {|x| File.join('build', "#{x}.tag")}
 
 level_files = %w[
     asmodeus.lev
@@ -833,8 +829,8 @@ level_files = %w[
 
 file 'binary/nhdat' => ([
     exe('build/dlb')
-] + dat_files.map {|x| "dat/#{x}"}) + level_tags do
-    mkdir_p 'binary' unless File.directory?('binary')
+] + dat_files.map {|x| "dat/#{x}"}) + level_tags do |x|
+    make_dir File.dirname(x.name)
     sh slash("build/dlb Ccf dat ../binary/nhdat #{dat_files.join(' ')} #{level_files.join(' ')}")
 end
 
@@ -853,81 +849,50 @@ link_rule(recover_ofiles, recover_exe, [])
 #                               Other targets                                #
 ##############################################################################
 
-file 'binary/logfile' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    touch 'binary/logfile' unless File.file?('binary/logfile')
-end
-
-file 'binary/perm' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    touch 'binary/perm' unless File.file?('binary/perm')
-end
-
-file 'binary/record' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    touch 'binary/record' unless File.file?('binary/record')
-end
-
-file 'binary/xlogfile' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    touch 'binary/xlogfile' unless File.file?('binary/xlogfile')
-end
-
-file 'binary/save' do
-    mkdir_p 'binary/save' unless File.directory?('binary/save')
-end
-
-file 'binary/license' => 'dat/license' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    cp('dat/license', 'binary/license')
-end
-
-file 'binary/symbols' => 'dat/symbols' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    cp('dat/symbols', 'binary/symbols')
-end
-
-file 'binary/NetHack.ad' => 'win/X11/NetHack.ad' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    cp('win/X11/NetHack.ad', 'binary/NetHack.ad')
-end
-
-file 'binary/nhsplash.xpm' => 'win/Qt/nhsplash.xpm' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    cp('win/Qt/nhsplash.xpm', 'binary/nhsplash.xpm')
-end
-
-file 'binary/pet_mark.xbm' => 'win/X11/pet_mark.xbm' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    cp('win/X11/pet_mark.xbm', 'binary/pet_mark.xbm')
-end
-
-file 'binary/pilemark.xbm' => 'win/X11/pilemark.xbm' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    cp('win/X11/pilemark.xbm', 'binary/pilemark.xbm')
-end
-
-file 'binary/rip.xpm' => 'win/X11/rip.xpm' do
-    mkdir_p 'binary' unless File.directory?('binary')
-    cp('win/X11/rip.xpm', 'binary/rip.xpm')
-end
-
 if PLATFORM == :windows then
     sysconf = 'sys/winnt/sysconf'
 else
     sysconf = 'sys/unix/sysconf'
 end
 
-file 'binary/sysconf' => sysconf do
-    mkdir_p 'binary' unless File.directory?('binary')
-    cp(sysconf, 'binary/sysconf')
+copy_targets = {
+    'dat/license' => 'binary/license',
+    'dat/symbols' => 'binary/symbols',
+    'win/X11/NetHack.ad' => 'binary/NetHack.ad',
+    'win/Qt/nhsplash.xpm' => 'binary/nhsplash.xpm',
+    'win/X11/pet_mark.xbm' => 'binary/pet_mark.xbm',
+    'win/X11/pilemark.xbm' => 'binary/pilemark.xbm',
+    'win/X11/rip.xpm' => 'binary/rip.xpm',
+    sysconf => 'binary/sysconf',
+    'binary/nhtiles.bmp' => 'build/tiles.bmp'
+}
+%w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
+    copy_targets[File.join(CONFIG[:Qt], 'bin', "#{name}.dll")] = "binary/#{name}.dll"
 end
 
-%w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
-    file "binary/#{name}.dll" => "#{CONFIG[:Qt]}/bin/#{name}.dll" do |x|
-        mkdir_p 'binary' unless File.directory?('binary')
+copy_targets.each do |from, to|
+    file to => from do |x|
+        make_dir File.dirname(x.name)
         cp(x.source, x.name)
     end
+end
+
+touch_targets = [
+    'binary/logfile',
+    'binary/perm',
+    'binary/record',
+    'binary/xlogfile'
+]
+
+touch_targets.each do |name|
+    file name do |x|
+        make_dir File.dirname(x.name)
+        touch x.name unless File.file?(x.name)
+    end
+end
+
+file 'binary/save' do |x|
+    make_dir x.name
 end
 
 ##############################################################################
@@ -941,11 +906,10 @@ tilemap_exe = exe('build/tilemap')
 
 link_rule(tilemap_ofiles, tilemap_exe, [])
 
-file 'src/tile.c' => tilemap_exe do
-    dir = Dir.getwd
-    Dir.chdir('src')
-    sh '../build/tilemap'
-    Dir.chdir(dir)
+file 'src/tile.c' => tilemap_exe do |x|
+    in_dir 'src' do
+        sh '../build/tilemap'
+    end
 end
 
 ##############################################################################
@@ -968,7 +932,7 @@ compile_rule('win/X11/tile2x11.c', x11_flags)
 
 file obj('build/win/share/tiletxt2.c') => %w[
     win/share/tilemap.c include/pm.h include/onames.h
-] do
+] do |x|
     sh slash("#{CONFIG[:CC]} #{CFLAGS} -DTILETEXT -c win/share/tilemap.c #{objflag(obj('build/win/share/tiletxt2.c'))}")
 end
 
@@ -977,12 +941,11 @@ link_rule(tile2x11_ofiles, tile2x11_exe, [])
 file 'binary/x11tiles' => [
     tile2x11_exe,
     'win/share/monsters.txt', 'win/share/objects.txt', 'win/share/other.txt'
-] do
-    dir = Dir.getwd
-    Dir.chdir('binary')
-	sh '../build/tile2x11 ../win/share/monsters.txt ../win/share/objects.txt ' \
-       '../win/share/other.txt -grayscale ../win/share/monsters.txt'
-    Dir.chdir(dir)
+] do |x|
+    in_dir 'binary' do
+        sh '../build/tile2x11 ../win/share/monsters.txt ../win/share/objects.txt ' \
+           '../win/share/other.txt -grayscale ../win/share/monsters.txt'
+    end
 end
 
 ##############################################################################
@@ -1004,7 +967,7 @@ compile_rule('win/share/tile2bmp.c', '-mno-ms-bitfields')
 
 file obj('build/win/share/tiletxt2.c') => %w[
     win/share/tilemap.c include/pm.h include/onames.h
-] do
+] do |x|
     sh slash("#{CONFIG[:CC]} #{CFLAGS} -DTILETEXT -c win/share/tilemap.c #{objflag(obj('build/win/share/tiletxt2.c'))}")
 end
 
@@ -1013,12 +976,10 @@ link_rule(tile2bmp_ofiles, tile2bmp_exe, [])
 file 'binary/nhtiles.bmp' => [
     tile2bmp_exe,
     'win/share/monsters.txt', 'win/share/objects.txt', 'win/share/other.txt'
-] do
-    mkdir_p 'binary' unless File.directory?('binary')
-    dir = Dir.getwd
-    Dir.chdir('build')
-    sh './tile2bmp ../binary/nhtiles.bmp'
-    Dir.chdir(dir)
+] do |x|
+    in_dir 'build' do
+        sh './tile2bmp ../binary/nhtiles.bmp'
+    end
 end
 
 ##############################################################################
@@ -1049,19 +1010,19 @@ if CONFIG[:lex] and CONFIG[:yacc] then
         sh slash("#{CONFIG[:CC]} #{CFLAGS} -c #{x.source} #{objflag(x.name)}")
     end
 
-    file 'build/util/dgn_lex.c' => 'util/dgn_comp.l' do
-        mkdir_p 'build/util' unless File.directory?('build/util')
+    file 'build/util/dgn_lex.c' => 'util/dgn_comp.l' do |x|
+        make_dir File.dirname(x.name)
         sh "#{CONFIG[:lex]} -o build/util/dgn_lex.c util/dgn_comp.l"
     end
 
-    file 'build/util/dgn_yacc.c' => 'util/dgn_comp.y' do
-        mkdir_p 'build/util' unless File.directory?('build/util')
+    file 'build/util/dgn_yacc.c' => 'util/dgn_comp.y' do |x|
+        make_dir File.dirname(x.name)
         sh "#{CONFIG[:yacc]} -d -o build/util/dgn_yacc.c util/dgn_comp.y"
         mv "build/util/dgn_yacc.h", "build/util/dgn_comp.h"
     end
 
-    file 'build/util/dgn_comp.h' => 'util/dgn_comp.y' do
-        mkdir_p 'build/util' unless File.directory?('build/util')
+    file 'build/util/dgn_comp.h' => 'util/dgn_comp.y' do |x|
+        make_dir File.dirname(x.name)
         sh "#{CONFIG[:yacc]} -d -o build/util/dgn_yacc.c util/dgn_comp.y"
         mv "build/util/dgn_yacc.h", "build/util/dgn_comp.h"
     end
@@ -1074,7 +1035,7 @@ end
 
 link_rule(dgn_comp_ofiles, dgn_comp_exe, [])
 
-file 'dat/dungeon' => [ dgn_comp_exe, 'dat/dungeon.pdf' ] do
+file 'dat/dungeon' => [ dgn_comp_exe, 'dat/dungeon.pdf' ] do |x|
     sh slash("build/dgn_comp dat/dungeon.pdf")
 end
 
@@ -1116,19 +1077,19 @@ if CONFIG[:lex] and CONFIG[:yacc] then
         sh slash("#{CONFIG[:CC]} #{CFLAGS} -c #{x.source} #{objflag(x.name)}")
     end
 
-    file 'build/util/lev_lex.c' => 'util/lev_comp.l' do
-        mkdir_p 'build/util' unless File.directory?('build/util')
+    file 'build/util/lev_lex.c' => 'util/lev_comp.l' do |x|
+        make_dir File.dirname(x.name)
         sh "#{CONFIG[:lex]} -o build/util/lev_lex.c util/lev_comp.l"
     end
 
-    file 'build/util/lev_yacc.c' => 'util/lev_comp.y' do
-        mkdir_p 'build/util' unless File.directory?('build/util')
+    file 'build/util/lev_yacc.c' => 'util/lev_comp.y' do |x|
+        make_dir File.dirname(x.name)
         sh "#{CONFIG[:yacc]} -d -o build/util/lev_yacc.c util/lev_comp.y"
         mv "build/util/lev_yacc.h", "build/util/lev_comp.h"
     end
 
-    file 'build/util/lev_comp.h' => 'util/lev_comp.y' do
-        mkdir_p 'build/util' unless File.directory?('build/util')
+    file 'build/util/lev_comp.h' => 'util/lev_comp.y' do |x|
+        make_dir File.dirname(x.name)
         sh "#{CONFIG[:yacc]} -d -o build/util/lev_yacc.c util/lev_comp.y"
         mv "build/util/lev_yacc.h", "build/util/lev_comp.h"
     end
@@ -1141,19 +1102,12 @@ end
 
 link_rule(lev_comp_ofiles, lev_comp_exe, [])
 
-level_sources = %w[
-bigroom  castle   endgame  gehennom knox     medusa   mines    oracle
-sokoban  tower    yendor   Arch     Barb     Caveman  Healer   Knight
-Monk     Priest   Ranger   Rogue    Samurai  Tourist  Valkyrie Wizard
-]
-
-level_sources.each do |x|
-    file "build/#{x}.tag" => [ lev_comp_exe, "dat/#{x}.des" ] do
-        dir = Dir.getwd
-        Dir.chdir('dat')
-        sh slash("../build/lev_comp #{x}.des")
-        Dir.chdir(dir)
-        touch "build/#{x}.tag"
+level_sources.each do |src|
+    file "build/#{src}.tag" => [ lev_comp_exe, "dat/#{src}.des" ] do |x|
+        in_dir 'dat' do
+            sh slash("../build/lev_comp #{src}.des")
+        end
+        touch x.name
     end
 end
 
@@ -1171,10 +1125,9 @@ makedefs_ofiles = %w[
 link_rule(makedefs_ofiles, makedefs_exe, [])
 
 def makedefs(flag)
-    dir = Dir.getwd
-    Dir.chdir "build"
-    sh "./makedefs #{flag}"
-    Dir.chdir dir
+    in_dir 'build' do
+        sh "./makedefs #{flag}"
+    end
 end
 
 file 'include/pm.h' => makedefs_exe do
@@ -1259,11 +1212,6 @@ file obj('build/win/win32/winhack.rc') => [
     sh slash("#{CONFIG[:rc]} -Ibuild -Iwin/win32 -o #{x.name} win/win32/winhack.rc")
 end
 
-file 'build/tiles.bmp' => 'binary/nhtiles.bmp' do
-    mkdir_p 'build' unless File.directory?('build')
-    cp 'binary/nhtiles.bmp', 'build/tiles.bmp'
-end
-
 ##############################################################################
 #                         uudecode and its products                          #
 ##############################################################################
@@ -1275,29 +1223,26 @@ uudecode_exe = exe('build/uudecode')
 
 link_rule(uudecode_ofiles, uudecode_exe, [])
 
-file 'build/nethack.ico' => [ uudecode_exe, 'sys/winnt/nhico.uu' ] do
-    mkdir_p 'build' unless File.directory?('build')
-    dir = Dir.getwd
-    Dir.chdir('build')
-    sh "./uudecode ../sys/winnt/nhico.uu"
-    Dir.chdir(dir)
+file 'build/nethack.ico' => [ uudecode_exe, 'sys/winnt/nhico.uu' ] do |x|
+    make_dir File.dirname(x.name)
+    in_dir 'build' do
+        sh "./uudecode ../sys/winnt/nhico.uu"
+    end
 end
 
-file 'build/nethack.ico' => [ uudecode_exe, 'sys/winnt/nhico.uu' ] do
-    mkdir_p 'build' unless File.directory?('build')
-    dir = Dir.getwd
-    Dir.chdir('build')
-    sh "./uudecode ../sys/winnt/nhico.uu"
-    Dir.chdir(dir)
+file 'build/nethack.ico' => [ uudecode_exe, 'sys/winnt/nhico.uu' ] do |x|
+    make_dir File.dirname(x.name)
+    in_dir 'build' do
+        sh "./uudecode ../sys/winnt/nhico.uu"
+    end
 end
 
 %w[mnsel mnunsel petmark pilemark mnselcnt rip splash].each do |name|
-    file "build/#{name}.bmp" => [ uudecode_exe, "win/win32/#{name}.uu" ] do
-        mkdir_p 'build' unless File.directory?('build')
-        dir = Dir.getwd
-        Dir.chdir('build')
-        sh "./uudecode ../win/win32/#{name}.uu"
-        Dir.chdir(dir)
+    file "build/#{name}.bmp" => [ uudecode_exe, "win/win32/#{name}.uu" ] do |x|
+        make_dir File.dirname(x.name)
+        in_dir 'build' do
+            sh "./uudecode ../win/win32/#{name}.uu"
+        end
     end
 end
 
