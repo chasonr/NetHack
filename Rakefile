@@ -167,6 +167,31 @@ else
     end
 end
 
+# Install path
+install_path = CONFIG[:install_dir]
+case PLATFORM
+when :windows then
+    # Path is absolute if it has a drive letter, or if it begins with a slash.
+    if install_path =~ %r[^[[:alpha]]:] then
+        # Drive letter is present; consider as relative to the root of the
+        # drive
+        install_path = $& + "\\" + $'
+    elsif install_path.start_with?("\\", "/") then
+        # No drive letter, but slash is present; install to drive C
+        install_path = "C:" + install_path
+    else
+        # Consider as relative to the home directory
+        install_path = File.join(ENV['USERPROFILE'], install_path)
+    end
+    install_path.gsub!("\\", "/")
+when :unix, :mac then
+    # Path is absolute if it begins with a slash
+    if not install_path.start_with?("/") then
+        install_path = File.join(ENV['HOME'], install_path)
+    end
+end
+HACKDIR = install_path.gsub(%r[///+], '/')
+
 # Compiler flags
 cflags = ""
 cxxflags = ""
@@ -210,9 +235,9 @@ end
 if PLATFORM == :unix then
     base_flags += %q[ -DCOMPRESS=\\"/bin/gzip\\"]
     base_flags += %q[ -DCOMPRESS_EXTENSION=\\".gz\\"]
-    base_flags += %Q[ -DSYSCF_FILE=\\"#{ENV["HOME"]}/nh/install/games/lib/nethackdir/sysconf\\"]
+    base_flags += %Q[ -DSYSCF_FILE=\\"#{HACKDIR}/sysconf\\"]
     base_flags += %q[ -DSECURE]
-    base_flags += %Q[ -DHACKDIR=\\"#{ENV["HOME"]}/nh/install/games/lib/nethackdir\\"]
+    base_flags += %Q[ -DHACKDIR=\\"#{HACKDIR}\\"]
     base_flags += %q[ -DDUMPLOG]
     base_flags += %q[ -DCONFIG_ERROR_SECURE=FALSE]
 end
@@ -916,7 +941,7 @@ copy_targets = {
     'binary/nhtiles.bmp' => 'build/tiles.bmp',
     File.join(CONFIG[:SDL2], 'lib', CONFIG[:architecture], 'SDL2.dll') => 'binary/SDL2.dll'
 }
-if CONFIG[:Qt_graphics] then
+if defined?(QTDIR) and QTDIR then
     %w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
         copy_targets[File.join(QTDIR, 'bin', "#{name}.dll")] = "binary/#{name}.dll"
     end
@@ -1299,6 +1324,28 @@ end
         make_dir File.dirname(x.name)
         in_dir 'build' do
             sh "./uudecode ../win/win32/#{name}.uu"
+        end
+    end
+end
+
+##############################################################################
+#                                Install task                                #
+##############################################################################
+
+task :install do
+    make_dir HACKDIR
+    targets.each do |target|
+        path = File.join(HACKDIR, File.basename(target))
+        case target
+        when 'binary/logfile', \
+             'binary/perm', \
+             'binary/record', \
+             'binary/xlogfile' then
+            touch path unless File.file?(path)
+        when 'binary/save' then
+            make_dir path
+        else
+            cp target, path
         end
     end
 end

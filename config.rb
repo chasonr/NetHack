@@ -19,6 +19,10 @@ CONFIG[:TTY_graphics   ] = true
 # CONFIG[:default_graphics] = 'X11'
 # CONFIG[:default_graphics] = 'mswin'
 
+# Define the installation directory. If this is a relative path, it is relative
+# to your home directory: %USERPROFILE% on Windows, or $HOME on Linux and Mac.
+CONFIG[:install_dir] = 'games/nethackdir'
+
 # Choose a compiler; if no entry, let the Rakefile try to detect one
 # CONFIG[:compiler] = :gcc      # Default on Linux; fallback on Windows
 # CONFIG[:compiler] = :clang    # Default on Mac; fallback on Linux
