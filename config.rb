@@ -19,6 +19,10 @@ CONFIG[:TTY_graphics   ] = true
 # CONFIG[:default_graphics] = 'X11'
 # CONFIG[:default_graphics] = 'mswin'
 
+# Optional features having additional dependencies
+# CONFIG[:png_tiles] = true # PNG support on SDL2, X11 and Win32
+# CONFIG[:zlib_compress] = true # ZLIB-based file compression
+
 # Define the installation directory. If this is a relative path, it is relative
 # to your home directory: %USERPROFILE% on Windows, or $HOME on Linux and Mac.
 CONFIG[:install_dir] = 'games/nethackdir'
@@ -69,3 +73,9 @@ CONFIG[:architecture] = 'x86'
 
 # This is the root of the Qt tree
 CONFIG[:Qt] = "C:/qt/Qt5.13.0/5.13.0/mingw73_32"
+
+# This is the root of the libpng tree
+CONFIG[:libpng] = "#{ENV['USERPROFILE']}/#{CONFIG[:architecture]}libs/libpng-1.6.37"
+
+# This is the root of the zlib tree
+CONFIG[:zlib] = "#{ENV['USERPROFILE']}/#{CONFIG[:architecture]}libs/zlib-1.2.11"

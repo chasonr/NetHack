@@ -227,18 +227,37 @@ base_flags += " -DQT_GRAPHICS" if CONFIG[:Qt_graphics]
 base_flags += " -DSDL2_GRAPHICS" if CONFIG[:SDL2_graphics]
 base_flags += " -DX11_GRAPHICS -DUSE_XPM= -DHAVE_XPM" if CONFIG[:X11_graphics]
 base_flags += %Q[ -DDEFAULT_WINDOW_SYS=\\"#{CONFIG[:default_graphics]}\\"]
+base_flags += " -DSYSCF -DDUMPLOG"
 if PLATFORM == :windows then
     base_flags += " -DMSWIN_GRAPHICS -DSAFEPROCS"
-else
-    base_flags += " -DSYSCF -DDUMPLOG"
 end
-if PLATFORM == :unix then
-    base_flags += %q[ -DCOMPRESS=\\"/bin/gzip\\"]
-    base_flags += %q[ -DCOMPRESS_EXTENSION=\\".gz\\"]
+if CONFIG[:zlib_compress] then
+    base_flags += %Q[ -DZLIB_COMP -DCOMPRESS_EXTENSION=\\".gz\\"]
+end
+if CONFIG[:png_tiles] then
+    base_flags += %Q[ -DHAVE_PNG]
+end
+case PLATFORM
+when :windows then
+    if CONFIG[:png_tiles] then
+        base_flags += %Q[ -I#{CONFIG[:libpng]}]
+    end
+    if CONFIG[:png_tiles] or CONFIG[:zlib_compress] then
+        base_flags += %Q[ -I#{CONFIG[:zlib]}]
+    end
+when :unix, :mac then
+    if CONFIG[:png_tiles] then
+        base_flags += " " + `pkg-config --cflags libpng`.chomp
+    end
+    if CONFIG[:zlib_compress] then
+        base_flags += " " + `pkg-config --cflags zlib`.chomp
+    else
+        base_flags += %q[ -DCOMPRESS=\\"/bin/gzip\\"]
+        base_flags += %q[ -DCOMPRESS_EXTENSION=\\".gz\\"]
+    end
     base_flags += %Q[ -DSYSCF_FILE=\\"#{HACKDIR}/sysconf\\"]
     base_flags += %q[ -DSECURE]
     base_flags += %Q[ -DHACKDIR=\\"#{HACKDIR}\\"]
-    base_flags += %q[ -DDUMPLOG]
     base_flags += %q[ -DCONFIG_ERROR_SECURE=FALSE]
 end
 
@@ -663,6 +682,22 @@ else
     ].map {|x| obj("build/#{x}")})
 end
 nethack_libs = []
+case PLATFORM
+when :windows then
+    if CONFIG[:png_tiles] then
+        nethack_libs << File.join(CONFIG[:libpng], 'libpng.a')
+    end
+    if CONFIG[:png_tiles] or CONFIG[:zlib_compress] then
+        nethack_libs << File.join(CONFIG[:zlib], 'libz.a')
+    end
+when :unix, :mac then
+    if CONFIG[:png_tiles] then
+        nethack_libs << `pkg-config --libs libpng`.chomp
+    end
+    if CONFIG[:zlib_compress] then
+        nethack_libs << `pkg-config --libs zlib`.chomp
+    end
+end
 if CONFIG[:SDL2_graphics] or CONFIG[:Qt_graphics] or CONFIG[:X11_graphics] \
     or PLATFORM == :windows then
     # At least one tiled configuration is being built
