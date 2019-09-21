@@ -62,11 +62,11 @@ when :clang then
 when :visualc then
     CONFIG[:CC] ||= 'cl'
     CONFIG[:CXX] ||= 'cl'
-    CONFIG[:rc] ||= 'todo'
+    CONFIG[:rc] ||= 'rc'
 when :watcom then
     CONFIG[:CC] ||= 'wcc386'
     CONFIG[:CXX] ||= 'wpp386'
-    CONFIG[:rc] ||= 'todo'
+    CONFIG[:rc] ||= 'wrc'
 when :cc then
     CONFIG[:CC] ||= 'cc'
     CONFIG[:CXX] ||= 'c++'
@@ -85,7 +85,11 @@ end
 # If Qt, look for the MOC
 if CONFIG[:Qt_graphics] then
     if not CONFIG[:moc] then
-        %w[moc-qt5 moc-qt4 moc].each do |moc|
+        mocs = %w[moc-qt5 moc-qt4 moc]
+        if PLATFORM == :windows then
+            mocs += mocs.map {|x| File.join(CONFIG[:Qt], 'bin', x)}
+        end
+        mocs.each do |moc|
             begin
                 text = `#{moc} -v 2>&1`
                 if text =~ /\b([45])\.[0-9]+\.[0-9]+\b/ then
@@ -143,8 +147,14 @@ if CONFIG[:compiler] == :visualc or CONFIG[:compiler] == :watcom then
     def obj(name)
         name + '.obj'
     end
+    def res(name)
+        name + '.res'
+    end
 else
     def obj(name)
+        name + '.o'
+    end
+    def res(name)
         name + '.o'
     end
 end
@@ -158,7 +168,7 @@ if CONFIG[:debug] then
         min_flags = "-Wall -g"
     when :cc then
         min_flags = "-g"
-    when :cl then
+    when :visualc then
         min_flags = "-Wall"
     when :watcom then
         min_flags = "-wx -g"
@@ -169,7 +179,7 @@ else
         min_flags = "-Wall -O2"
     when :cc then
         min_flags = "-O1"
-    when :cl then
+    when :visualc then
         min_flags = "-Wall -Ox"
     when :watcom then
         min_flags = "-wx -ox"
@@ -277,6 +287,9 @@ if CONFIG[:Qt_graphics] then
 end
 if CONFIG[:SDL2_graphics] then
     targets << 'binary/nhtiles.bmp'
+    if PLATFORM == :windows and CONFIG[:compiler] == :visualc then
+        targets << "binary/SDL2.dll"
+    end
 end
 if PLATFORM == :windows then
     targets << 'binary/nhtiles.bmp'
@@ -445,7 +458,12 @@ if CONFIG[:SDL2_graphics] then
     ].map {|x| "win/sdl2/#{x}.c"}
     if PLATFORM == :windows then
         winsdl2_dir << 'win/sdl2/sdl2font_windows.c'
-        sdl2_flags = %Q[-I#{CONFIG[:SDL2]}/include/SDL2 -DPIXMAPDIR=\\".\\"]
+        case CONFIG[:compiler]
+        when :visualc, :watcom then
+            sdl2_flags = %Q[-I#{CONFIG[:SDL2]}/include -DPIXMAPDIR=\\".\\"]
+        else
+            sdl2_flags = %Q[-I#{CONFIG[:SDL2]}/include/SDL2 -DPIXMAPDIR=\\".\\"]
+        end
     elsif PLATFORM == :mac then
         winsdl2_dir << 'win/sdl2/sdl2font_mac.c'
         sdl2_flags = `pkg-config --cflags sdl2`
@@ -553,7 +571,7 @@ if PLATFORM == :windows and CONFIG[:Curses_graphics] then
         file obj("build/pdcurses/#{src}") => "#{CONFIG[:PDCurses]}/#{src}" do |x|
             dir = File.dirname(x.name)
             make_dir File.dirname(x.name)
-            sh slash("#{CONFIG[:CC]} -I#{CONFIG[:PDCurses]} -DPDC_WIDE #{min_flags} -c -o #{x.name} #{x.source}")
+            sh slash("#{CONFIG[:CC]} -I#{CONFIG[:PDCurses]} -DPDC_WIDE #{min_flags} -c #{objflag(x.name)} #{x.source}")
         end
     end
 
@@ -564,7 +582,7 @@ if PLATFORM == :windows and CONFIG[:Curses_graphics] then
         file obj("build/pdcurses/#{src}") => "#{CONFIG[:PDCurses]}/#{src}" do |x|
             dir = File.dirname(x.name)
             make_dir File.dirname(x.name)
-            sh slash("#{CONFIG[:CC]} -I#{CONFIG[:PDCurses]} -DPDC_WIDE #{min_flags} -c -o #{x.name} #{x.source}")
+            sh slash("#{CONFIG[:CC]} -I#{CONFIG[:PDCurses]} -DPDC_WIDE #{min_flags} -c #{objflag(x.name)} #{x.source}")
         end
     end
 end
@@ -585,8 +603,8 @@ if PLATFORM == :windows then
         sys/winnt/windmain.c
         sys/winnt/winnt.c
         sys/share/cppregex.cpp
-        win/win32/winhack.rc
     ].map {|x| obj("build/#{x}")})
+    nethack_ofiles << res('build/win/win32/winhack.rc')
 else
     nethack_ofiles.merge(%w[
         sys/share/ioctl.c
@@ -627,8 +645,8 @@ end
 if CONFIG[:SDL2_graphics] then
     nethack_ofiles.merge(winsdl2_dir.map {|x| obj("build/#{x}")})
     if PLATFORM == :windows then
-        nethack_libs << "#{CONFIG[:SDL2]}/lib/libsdl2.a"
-        nethack_libs << '-lsetupapi -lwinmm -limm32 -lole32 -loleaut32 -lversion'
+        nethack_libs << "#{CONFIG[:SDL2]}/lib/#{CONFIG[:architecture]}/SDL2.lib"
+        nethack_libs << 'setupapi.lib winmm.lib imm32.lib ole32.lib oleaut32.lib version.lib'
     elsif PLATFORM == :mac then
         nethack_libs << `pkg-config --libs sdl2`.chomp
     else
@@ -664,8 +682,8 @@ end
 if PLATFORM == :windows then
     case CONFIG[:compiler]
     when :visualc, :watcom then
-        # TODO
-        nethack_libs << ''
+        #nethack_libs << 'user32.lib gdi32.lib comctl32.lib comdlg32.lib winmm.lib bcrypt.lib'
+        nethack_libs << 'kernel32.lib advapi32.lib gdi32.lib user32.lib comctl32.lib comdlg32.lib winspool.lib winmm.lib bcrypt.lib shell32.lib'
     else
         nethack_libs << '-lgdi32 -lcomctl32 -lcomdlg32 -lwinmm -lbcrypt'
     end
@@ -864,7 +882,8 @@ copy_targets = {
     'win/X11/pilemark.xbm' => 'binary/pilemark.xbm',
     'win/X11/rip.xpm' => 'binary/rip.xpm',
     sysconf => 'binary/sysconf',
-    'binary/nhtiles.bmp' => 'build/tiles.bmp'
+    'binary/nhtiles.bmp' => 'build/tiles.bmp',
+    File.join(CONFIG[:SDL2], 'lib', CONFIG[:architecture], 'SDL2.dll') => 'binary/SDL2.dll'
 }
 %w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
     copy_targets[File.join(CONFIG[:Qt], 'bin', "#{name}.dll")] = "binary/#{name}.dll"
@@ -963,7 +982,12 @@ tile2bmp_ofiles = %w[
 ].map {|x| obj('build/'+x)}
 tile2bmp_exe = exe('build/tile2bmp')
 
-compile_rule('win/share/tile2bmp.c', '-mno-ms-bitfields')
+tile2bmp_flags = '-Isys/winnt'
+case CONFIG[:compiler]
+when :gcc, :clang then
+    tile2bmp_flags += ' -mno-ms-bitfields'
+end
+compile_rule('win/share/tile2bmp.c', tile2bmp_flags)
 
 file obj('build/win/share/tiletxt2.c') => %w[
     win/share/tilemap.c include/pm.h include/onames.h
@@ -1197,7 +1221,7 @@ link_rule(dlb_ofiles, dlb_exe, [])
 #                              Win32 resources                               #
 ##############################################################################
 
-file obj('build/win/win32/winhack.rc') => [
+file res('build/win/win32/winhack.rc') => [
     'win/win32/winhack.rc',
     'build/nethack.ico',
     'build/tiles.bmp',
@@ -1209,7 +1233,7 @@ file obj('build/win/win32/winhack.rc') => [
     'build/rip.bmp',
     'build/splash.bmp'
 ] do |x|
-    sh slash("#{CONFIG[:rc]} -Ibuild -Iwin/win32 -o #{x.name} win/win32/winhack.rc")
+    sh slash("#{CONFIG[:rc]} -Ibuild -Iwin/win32 #{objflag(x.name)} win/win32/winhack.rc")
 end
 
 ##############################################################################
