@@ -84,10 +84,18 @@ end
 
 # If Qt, look for the MOC
 if CONFIG[:Qt_graphics] then
+    case PLATFORM
+    when :windows then
+        QTDIR = CONFIG[:Qt]
+    when :mac then
+        QTDIR = File.join(`brew --prefix`.chomp, 'opt/qt')
+    when :unix then
+        QTDIR = nil
+    end
     if not CONFIG[:moc] then
         mocs = %w[moc-qt5 moc-qt4 moc]
-        if PLATFORM == :windows then
-            mocs += mocs.map {|x| File.join(CONFIG[:Qt], 'bin', x)}
+        if QTDIR then
+            mocs += mocs.map {|x| File.join(QTDIR, 'bin', x)}
         end
         mocs.each do |moc|
             begin
@@ -211,6 +219,10 @@ end
 
 cflags += " " + (CONFIG[:CFLAGS] || "")
 cxxflags += " " + (CONFIG[:CXXFLAGS] || "")
+case CONFIG[:compiler]
+when :gcc, :clang then
+    cxxflags += " -std=gnu++11"
+end
 CFLAGS = (base_flags + " " + cflags).strip
 CXXFLAGS = (base_flags + " " + cxxflags).strip
 case CONFIG[:compiler]
@@ -425,9 +437,12 @@ if CONFIG[:TTY_graphics] then
     wintty_dir = %w[
         getline termcap topl wintty
     ].map {|x| "win/tty/#{x}.c"}
-    if PLATFORM == :windows then
+    case PLATFORM
+    when :windows then
         tty_flags = ''
-    else
+    when :mac then
+        tty_flags = "-DNOTPARMDECL"
+    when :unix then
         tty_flags = `pkg-config --cflags ncursesw`.chomp + " -DNOTPARMDECL"
     end
     wintty_dir.each do |src|
@@ -440,9 +455,12 @@ if CONFIG[:Curses_graphics] then
     wincurses_dir = %w[
         cursdial cursinit cursinvt cursmain cursmesg cursmisc cursstat curswins
     ].map {|x| "win/curses/#{x}.c"}
-    if PLATFORM == :windows then
+    case PLATFORM
+    when :windows then
         curses_flags = "-I#{CONFIG[:PDCurses]} -DPDC_WIDE"
-    else
+    when :mac then
+        curses_flags = ''
+    when :unix then
         curses_flags = `pkg-config --cflags ncursesw`
     end
     wincurses_dir.each do |src|
@@ -456,7 +474,8 @@ if CONFIG[:SDL2_graphics] then
         sdl2getlin sdl2map sdl2menu sdl2message sdl2plsel sdl2posbar sdl2status
         sdl2text sdl2unicode sdl2window
     ].map {|x| "win/sdl2/#{x}.c"}
-    if PLATFORM == :windows then
+    case PLATFORM
+    when :windows then
         winsdl2_dir << 'win/sdl2/sdl2font_windows.c'
         case CONFIG[:compiler]
         when :visualc, :watcom then
@@ -464,10 +483,10 @@ if CONFIG[:SDL2_graphics] then
         else
             sdl2_flags = %Q[-I#{CONFIG[:SDL2]}/include/SDL2 -DPIXMAPDIR=\\".\\"]
         end
-    elsif PLATFORM == :mac then
+    when :mac then
         winsdl2_dir << 'win/sdl2/sdl2font_mac.c'
-        sdl2_flags = `pkg-config --cflags sdl2`
-    else
+        sdl2_flags = `sdl2-config --cflags`
+    when :unix then
         winsdl2_dir << 'win/sdl2/sdl2font_pango.c'
         sdl2_flags = `pkg-config --cflags sdl2 pangocairo`
     end
@@ -499,15 +518,19 @@ if CONFIG[:Qt_graphics] then
         qt4line  qt4main  qt4map   qt4menu  qt4msg   qt4plsel qt4rip   qt4set
         qt4stat  qt4str   qt4streq qt4svsel qt4win   qt4xcmd  qt4yndlg
     ].map {|x| "win/Qt4/#{x}.cpp"}
-    if PLATFORM == :windows then
-        qt4_flags = %Q[-I#{CONFIG[:Qt]}/include -DPIXMAPDIR=\\".\\"]
-    else
+    case PLATFORM
+    when :windows then
+        qt4_flags = %Q[-I#{QTDIR}/include -DPIXMAPDIR=\\".\\"]
+    when :unix then
         if QT5 then
-            qt4_flags = `pkg-config --cflags Qt5Gui Qt5Widgets Qt5Multimedia`.chomp
+            qt4_flags = `pkg-config --cflags Qt5Gui Qt5Widgets Qt5Multimedia`
         else
-            qt4_flags = `pkg-config --cflags QtGui`.chomp
+            qt4_flags = `pkg-config --cflags QtGui`
         end
+    when :mac then
+        qt4_flags = `PKG_CONFIG_PATH=#{QTDIR}/lib/pkgconfig pkg-config --cflags Qt5Gui Qt5Widgets Qt5Multimedia`
     end
+    qt4_flags.chomp!
     qt4_flags += ' -Ibuild/win/Qt4'
     winQt4_dir.each do |src|
         text = File.read(src)
@@ -644,12 +667,14 @@ if CONFIG[:Curses_graphics] then
 end
 if CONFIG[:SDL2_graphics] then
     nethack_ofiles.merge(winsdl2_dir.map {|x| obj("build/#{x}")})
-    if PLATFORM == :windows then
+    case PLATFORM
+    when :windows then
         nethack_libs << "#{CONFIG[:SDL2]}/lib/#{CONFIG[:architecture]}/SDL2.lib"
         nethack_libs << 'setupapi.lib winmm.lib imm32.lib ole32.lib oleaut32.lib version.lib'
-    elsif PLATFORM == :mac then
-        nethack_libs << `pkg-config --libs sdl2`.chomp
-    else
+    when :mac then
+        nethack_libs << `sdl2-config --libs`.chomp
+        nethack_libs << '-Wl,-framework,Cocoa'
+    when :unix then
         nethack_libs << `pkg-config --libs sdl2 pangocairo`.chomp
     end
 end
@@ -659,23 +684,29 @@ if CONFIG[:X11_graphics] then
 end
 if CONFIG[:Qt_graphics] then
     nethack_ofiles.merge(winQt4_dir.map {|x| obj("build/#{x}")})
-    if PLATFORM == :windows then
+    case PLATFORM
+    when :windows then
         if QT5 then
-            nethack_libs << "#{CONFIG[:Qt]}/lib/libQt5Gui.a #{CONFIG[:Qt]}/lib/libQt5Widgets.a #{CONFIG[:Qt]}/lib/libQt5Multimedia.a #{CONFIG[:Qt]}/lib/libQt5Core.a"
+            nethack_libs << "#{QTDIR}/lib/libQt5Gui.a #{QTDIR}/lib/libQt5Widgets.a #{QTDIR}/lib/libQt5Multimedia.a #{QTDIR}/lib/libQt5Core.a"
         else
-            nethack_libs << "#{CONFIG[:Qt]}/lib/QtGui4.a #{CONFIG[:Qt]}/lib/QtCore4.a"
+            nethack_libs << "#{QTDIR}/lib/QtGui4.a #{QTDIR}/lib/QtCore4.a"
         end
-    else
+    when :unix then
         if QT5 then
             nethack_libs << `pkg-config --libs Qt5Gui Qt5Widgets Qt5Multimedia`.chomp
         else
             nethack_libs << `pkg-config --libs QtGui`.chomp
         end
+    when :mac then
+        nethack_libs << `PKG_CONFIG_PATH=#{QTDIR}/lib/pkgconfig pkg-config --libs Qt5Gui Qt5Widgets Qt5Multimedia`.chomp
     end
 end
 if CONFIG[:TTY_graphics] or CONFIG[:Curses_graphics] then
     # Curses library for Unix and Mac
-    if PLATFORM != :windows then
+    case PLATFORM
+    when :mac then
+        nethack_libs << '-lncurses'
+    when :unix then
         nethack_libs << `pkg-config --libs ncursesw`.chomp
     end
 end
@@ -885,8 +916,10 @@ copy_targets = {
     'binary/nhtiles.bmp' => 'build/tiles.bmp',
     File.join(CONFIG[:SDL2], 'lib', CONFIG[:architecture], 'SDL2.dll') => 'binary/SDL2.dll'
 }
-%w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
-    copy_targets[File.join(CONFIG[:Qt], 'bin', "#{name}.dll")] = "binary/#{name}.dll"
+if CONFIG[:Qt_graphics] then
+    %w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
+        copy_targets[File.join(QTDIR, 'bin', "#{name}.dll")] = "binary/#{name}.dll"
+    end
 end
 
 copy_targets.each do |from, to|
