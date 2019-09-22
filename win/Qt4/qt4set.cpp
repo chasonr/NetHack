@@ -4,7 +4,9 @@
 
 // qt4set.cpp -- the Qt settings
 
+extern "C" {
 #include "hack.h"
+}
 #undef Invisible
 #undef Warning
 #undef index
@@ -14,6 +16,7 @@
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
@@ -25,6 +28,7 @@
 #include "qt4str.h"
 
 /* Used by tile/font-size patch below and in ../../src/files.c */
+extern "C" {
 char *qt_tilewidth=NULL;
 char *qt_tileheight=NULL;
 char *qt_fontsize=NULL;
@@ -33,6 +37,7 @@ int qt_compact_mode = 1;
 #else
 int qt_compact_mode = 0;
 #endif
+}
 
 namespace nethack_qt4 {
 

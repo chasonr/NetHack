@@ -14,6 +14,7 @@
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #include "qt4delay.h"

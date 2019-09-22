@@ -16,6 +16,7 @@ extern "C" {
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
@@ -27,8 +28,10 @@ extern "C" {
 #include "qt4str.h"
 #include "qt_xpms.h"
 
+extern "C" {
 extern const char *enc_stat[]; /* from botl.c */
 extern const char *hu_stat[]; /* from eat.c */
+}
 
 namespace nethack_qt4 {
 

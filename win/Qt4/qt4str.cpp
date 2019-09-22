@@ -11,6 +11,7 @@ extern "C" {
 #undef max
 #undef index
 #undef rindex
+#undef Protection
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include "qt4str.h"

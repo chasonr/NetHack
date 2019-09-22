@@ -56,6 +56,7 @@
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
@@ -77,7 +78,9 @@
 
 #include "qt4clust.h"
 
+#ifndef _MSC_VER
 #include <dirent.h>
+#endif
 
 #ifdef _WS_X11_
 // For userid control

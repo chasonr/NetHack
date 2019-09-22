@@ -17,6 +17,7 @@ extern "C" {
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
@@ -26,7 +27,9 @@ extern "C" {
 #include "qt4set.h"
 #include "qt4str.h"
 
+extern "C" {
 extern short glyph2tile[]; // from tile.c
+};
 
 namespace nethack_qt4 {
 

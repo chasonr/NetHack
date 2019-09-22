@@ -16,6 +16,7 @@ extern "C" {
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000

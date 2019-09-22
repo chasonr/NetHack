@@ -94,7 +94,7 @@ if CONFIG[:Qt_graphics] then
         mocs.each do |moc|
             begin
                 text = `#{moc} -v 2>&1`
-                if text =~ /\b([45])\.[0-9]+\.[0-9]+\b/ then
+                if $? == 0 and text =~ /\b([45])\.[0-9]+\.[0-9]+\b/ then
                     CONFIG[:moc] = moc
                     QT5 = $1 == '5'
                     break
@@ -744,10 +744,16 @@ if CONFIG[:Qt_graphics] then
     case PLATFORM
     when :windows then
         if QT5 then
-            nethack_libs << "#{QTDIR}/lib/libQt5Gui.a #{QTDIR}/lib/libQt5Widgets.a #{QTDIR}/lib/libQt5Multimedia.a #{QTDIR}/lib/libQt5Core.a"
+            qt_libs = %w[Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core]
         else
-            nethack_libs << "#{QTDIR}/lib/QtGui4.a #{QTDIR}/lib/QtCore4.a"
+            qt_libs = %w[QtGui4 QtCore4]
         end
+        if CONFIG[:compiler] == :visualc then
+            qt_libs.map! {|x| "#{x}.lib"}
+        else
+            qt_libs.map! {|x| "lib#{x}.a"}
+        end
+        nethack_libs << (qt_libs.map {|x| "#{QTDIR}/lib/#{x}"}).join(' ')
     when :unix then
         if QT5 then
             nethack_libs << `pkg-config --libs Qt5Gui Qt5Widgets Qt5Multimedia`.chomp

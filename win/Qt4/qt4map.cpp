@@ -16,6 +16,7 @@ extern "C" {
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
@@ -30,7 +31,9 @@ extern "C" {
 #include "qt4str.h"
 
 // temporary
+extern "C" {
 extern int qt_compact_mode;
+};
 // end temporary
 
 namespace nethack_qt4 {

@@ -4,7 +4,9 @@
 
 // qt4yndlg.cpp -- yes/no dialog
 
+extern "C" {
 #include "hack.h"
+}
 #undef Invisible
 #undef Warning
 #undef index
@@ -14,6 +16,7 @@
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
@@ -24,7 +27,9 @@
 #include "qt4str.h"
 
 // temporary
+extern "C" {
 extern int qt_compact_mode;
+}
 // end temporary
 
 namespace nethack_qt4 {

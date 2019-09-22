@@ -4,8 +4,10 @@
 
 // qt4xcmd.cpp -- extended command widget
 
+extern "C" {
 #include "hack.h"
 #include "func_tab.h"
+}
 #undef Invisible
 #undef Warning
 #undef index
@@ -15,6 +17,7 @@
 #undef yn
 #undef min
 #undef max
+#undef Protection
 
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000

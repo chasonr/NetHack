@@ -49,7 +49,9 @@ extern "C" {
 }
 
 // temporary
+extern "C" {
 extern int qt_compact_mode;
+}
 // end temporary
 
 namespace nethack_qt4 {
@@ -724,7 +726,7 @@ static void Qt_positionbar(char *) {}
 
 } // namespace nethack_qt4
 
-struct window_procs Qt_procs = {
+extern "C" struct window_procs Qt_procs = {
     "Qt",
     WC_COLOR | WC_HILITE_PET
     | WC_ASCII_MAP | WC_TILED_MAP

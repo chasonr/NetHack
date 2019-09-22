@@ -61,8 +61,8 @@
  * since otherwise comparisons with signed quantities are done incorrectly
  */
 typedef schar xchar;
-#if defined(__GNUC__) && defined(WIN32) && defined(__cplusplus)
-/* Resolve conflict with Qt 5 and MinGW-w32 */
+#if defined(WIN32) && defined(__cplusplus)
+/* Resolve conflict with Qt 5 and Win32 */
 typedef uchar boolean; /* 0 or 1 */
 #else
 #ifndef SKIP_BOOLEAN
