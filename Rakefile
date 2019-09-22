@@ -34,7 +34,7 @@ if not CONFIG[:compiler] then
         when :clang then
             cmd = 'clang --version'
         when :visualc then
-            cmd = 'cl'
+            cmd = 'cl -nologo'
         end
         begin
             banner = `#{cmd}`
@@ -208,6 +208,14 @@ else
         min_flags = "-Wall -Ox"
     end
 end
+if CONFIG[:compiler] == :visualc then
+    # TODO: 4131, old-style function
+    # TODO: 4242 and 4244, loss of data when converting numeric types
+    # TODO: 4255, no function prototype given
+    # TODO: 4706, assignment within conditional expression
+    min_flags += " -nologo -wd4820 -wd4711 -wd4131 -wd4710 -wd4242 -wd4244 -wd5045 -wd4255 -wd4668 -wd4514 -wd4706 -wd4996"
+    cxxflags += " -EHsc -wd4623 -wd4625 -wd4626 -wd5026 -wd5027"
+end
 base_flags = min_flags
 base_flags += ' -DDLB -DTIMED_DELAY'
 base_flags += " -Iinclude"
@@ -217,7 +225,7 @@ base_flags += " -DQT_GRAPHICS" if CONFIG[:Qt_graphics]
 base_flags += " -DSDL2_GRAPHICS" if CONFIG[:SDL2_graphics]
 base_flags += " -DX11_GRAPHICS -DUSE_XPM= -DHAVE_XPM" if CONFIG[:X11_graphics]
 base_flags += %Q[ -DDEFAULT_WINDOW_SYS=\\"#{CONFIG[:default_graphics]}\\"]
-base_flags += " -DSYSCF -DDUMPLOG -DSTATUES_LOOK_LIKE_MONSTERS -DPOSITIONBAR"
+base_flags += " -DSYSCF= -DDUMPLOG= -DSTATUES_LOOK_LIKE_MONSTERS= -DPOSITIONBAR"
 if PLATFORM == :windows then
     base_flags += " -DMSWIN_GRAPHICS -DSAFEPROCS"
 end
@@ -762,6 +770,7 @@ end
 if PLATFORM == :windows then
     case CONFIG[:compiler]
     when :visualc then
+        nethack_libs << '-link -subsystem:windows'
         nethack_libs << 'kernel32.lib advapi32.lib gdi32.lib user32.lib comctl32.lib comdlg32.lib winspool.lib winmm.lib bcrypt.lib shell32.lib'
     else
         nethack_libs << '-lgdi32 -lcomctl32 -lcomdlg32 -lwinmm -lbcrypt'
