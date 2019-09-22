@@ -35,6 +35,7 @@ if not CONFIG[:compiler] then
             cmd = 'clang --version'
         when :visualc then
             cmd = 'cl'
+        end
         begin
             banner = `#{cmd}`
             CONFIG[:compiler] = c
@@ -196,6 +197,7 @@ if CONFIG[:debug] then
         min_flags = "-g"
     when :visualc then
         min_flags = "-Wall"
+    end
 else
     case CONFIG[:compiler]
     when :gcc, :clang then
@@ -204,6 +206,7 @@ else
         min_flags = "-O1"
     when :visualc then
         min_flags = "-Wall -Ox"
+    end
 end
 base_flags = min_flags
 base_flags += ' -DDLB -DTIMED_DELAY'
