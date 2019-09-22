@@ -214,7 +214,7 @@ base_flags += " -DQT_GRAPHICS" if CONFIG[:Qt_graphics]
 base_flags += " -DSDL2_GRAPHICS" if CONFIG[:SDL2_graphics]
 base_flags += " -DX11_GRAPHICS -DUSE_XPM= -DHAVE_XPM" if CONFIG[:X11_graphics]
 base_flags += %Q[ -DDEFAULT_WINDOW_SYS=\\"#{CONFIG[:default_graphics]}\\"]
-base_flags += " -DSYSCF -DDUMPLOG"
+base_flags += " -DSYSCF -DDUMPLOG -DSTATUES_LOOK_LIKE_MONSTERS -DPOSITIONBAR"
 if PLATFORM == :windows then
     base_flags += " -DMSWIN_GRAPHICS -DSAFEPROCS"
 end
