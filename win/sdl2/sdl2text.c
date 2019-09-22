@@ -129,9 +129,9 @@ sdl2_text_redraw(struct SDL2Window *win)
         char page[QBUFSZ];
 
         y = height - win->m_line_height - margin;
-        snprintf(page, SIZE(page), "Page %u of %u",
-                (unsigned) (data->m_first_line / data->m_page_size + 1),
-                (unsigned) ((data->m_num_lines + data->m_page_size - 1) / data->m_page_size));
+        snprintf(page, SIZE(page), "Page %lu of %lu",
+                (unsigned long) (data->m_first_line / data->m_page_size + 1),
+                (unsigned long) ((data->m_num_lines + data->m_page_size - 1) / data->m_page_size));
         sdl2_window_renderStrBG(win, page, margin, y,
                                 foreground, background);
     }

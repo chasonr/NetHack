@@ -235,9 +235,9 @@ sdl2_menu_redraw(struct SDL2Window *win)
     if (data->m_page_size < data->m_menu_size) {
         /* Display the page indicator */
         char page[BUFSZ];
-        snprintf(page, SIZE(page), "Page %u of %u",
-                (unsigned) (data->m_first_line / data->m_page_size + 1),
-                (unsigned) ((data->m_menu_size + data->m_page_size - 1) / data->m_page_size));
+        snprintf(page, SIZE(page), "Page %lu of %lu",
+                (unsigned long) (data->m_first_line / data->m_page_size + 1),
+                (unsigned long) ((data->m_menu_size + data->m_page_size - 1) / data->m_page_size));
         sdl2_window_renderStrBG(win, page, 1, y + data->m_page_size*win->m_line_height,
                                 foreground, background);
     }

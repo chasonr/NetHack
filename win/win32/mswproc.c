@@ -2161,9 +2161,9 @@ initMapTiles(void)
         char errmsg[BUFSZ];
 
         errcode = GetLastError();
-        Sprintf(errmsg, "%s (0x%x).",
+        Sprintf(errmsg, "%s (0x%lx).",
             "Cannot load tiles from the file. Reverting back to default",
-            errcode);
+            (unsigned long) errcode);
         raw_print(errmsg);
         return FALSE;
     }
