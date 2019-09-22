@@ -669,8 +669,14 @@ if CONFIG[:SDL2_graphics] then
     nethack_ofiles.merge(winsdl2_dir.map {|x| obj("build/#{x}")})
     case PLATFORM
     when :windows then
-        nethack_libs << "#{CONFIG[:SDL2]}/lib/#{CONFIG[:architecture]}/SDL2.lib"
-        nethack_libs << 'setupapi.lib winmm.lib imm32.lib ole32.lib oleaut32.lib version.lib'
+        case CONFIG[:compiler]
+        when :visualc, :watcom then
+            nethack_libs << "#{CONFIG[:SDL2]}/lib/#{CONFIG[:architecture]}/SDL2.lib"
+            nethack_libs << 'setupapi.lib winmm.lib imm32.lib ole32.lib oleaut32.lib version.lib'
+        else
+            nethack_libs << "#{CONFIG[:SDL2]}/lib/libSDL2.a"
+            nethack_libs << '-lsetupapi -lwinmm -limm32 -lole32 -loleaut32 -lversion'
+        end
     when :mac then
         nethack_libs << `sdl2-config --libs`.chomp
         nethack_libs << '-Wl,-framework,Cocoa'
