@@ -19,11 +19,11 @@ end
 if not CONFIG[:compiler] then
     case PLATFORM
     when :windows then
-        compilers = [ :visualc, :gcc, :clang, :watcom ]
+        compilers = [ :visualc, :gcc, :clang ]
     when :mac then
         compilers = [ :clang, :gcc ]
     when :unix then
-        compilers = [ :gcc, :clang, :watcom ]
+        compilers = [ :gcc, :clang ]
     else
         raise RuntimeError, %Q[Unknown platform "#{PLATFORM}"]
     end
@@ -35,9 +35,6 @@ if not CONFIG[:compiler] then
             cmd = 'clang --version'
         when :visualc then
             cmd = 'cl'
-        when :watcom then
-            cmd = 'wcc386'
-        end
         begin
             banner = `#{cmd}`
             CONFIG[:compiler] = c
@@ -63,10 +60,6 @@ when :visualc then
     CONFIG[:CC] ||= 'cl'
     CONFIG[:CXX] ||= 'cl'
     CONFIG[:rc] ||= 'rc'
-when :watcom then
-    CONFIG[:CC] ||= 'wcc386'
-    CONFIG[:CXX] ||= 'wpp386'
-    CONFIG[:rc] ||= 'wrc'
 when :cc then
     CONFIG[:CC] ||= 'cc'
     CONFIG[:CXX] ||= 'c++'
@@ -146,7 +139,7 @@ else
         name
     end
 end
-if CONFIG[:compiler] == :visualc or CONFIG[:compiler] == :watcom then
+if CONFIG[:compiler] == :visualc then
     if PLATFORM == :windows then
         def slash(name)
             name.gsub('/', "\\");
@@ -203,9 +196,6 @@ if CONFIG[:debug] then
         min_flags = "-g"
     when :visualc then
         min_flags = "-Wall"
-    when :watcom then
-        min_flags = "-wx -g"
-    end
 else
     case CONFIG[:compiler]
     when :gcc, :clang then
@@ -214,9 +204,6 @@ else
         min_flags = "-O1"
     when :visualc then
         min_flags = "-Wall -Ox"
-    when :watcom then
-        min_flags = "-wx -ox"
-    end
 end
 base_flags = min_flags
 base_flags += ' -DDLB -DTIMED_DELAY'
@@ -270,13 +257,6 @@ end
 CFLAGS = (base_flags + " " + cflags).strip
 CXXFLAGS = (base_flags + " " + cxxflags).strip
 case CONFIG[:compiler]
-when :watcom then
-    def objflag(name)
-        "-fo=" + name
-    end
-    def exeflag(name)
-        "-fe=" + name
-    end
 when :visualc then
     def objflag(name)
         "-Fo" + name
@@ -522,7 +502,7 @@ if CONFIG[:SDL2_graphics] then
     when :windows then
         winsdl2_dir << 'win/sdl2/sdl2font_windows.c'
         case CONFIG[:compiler]
-        when :visualc, :watcom then
+        when :visualc then
             sdl2_flags = %Q[-I#{CONFIG[:SDL2]}/include -DPIXMAPDIR=\\".\\"]
         else
             sdl2_flags = %Q[-I#{CONFIG[:SDL2]}/include/SDL2 -DPIXMAPDIR=\\".\\"]
@@ -729,8 +709,14 @@ if CONFIG[:SDL2_graphics] then
     nethack_ofiles.merge(winsdl2_dir.map {|x| obj("build/#{x}")})
     case PLATFORM
     when :windows then
-        nethack_libs << "#{CONFIG[:SDL2]}/lib/#{CONFIG[:architecture]}/SDL2.lib"
-        nethack_libs << 'setupapi.lib winmm.lib imm32.lib ole32.lib oleaut32.lib version.lib'
+        case CONFIG[:compiler]
+        when :visualc then
+            nethack_libs << "#{CONFIG[:SDL2]}/lib/#{CONFIG[:architecture]}/SDL2.lib"
+            nethack_libs << 'setupapi.lib winmm.lib imm32.lib ole32.lib oleaut32.lib version.lib'
+        else
+            nethack_libs << "#{CONFIG[:SDL2]}/lib/libSDL2.a"
+            nethack_libs << '-lsetupapi -lwinmm -limm32 -lole32 -loleaut32 -lversion'
+        end
     when :mac then
         nethack_libs << `sdl2-config --libs`.chomp
         nethack_libs << '-Wl,-framework,Cocoa'
@@ -772,8 +758,7 @@ if CONFIG[:TTY_graphics] or CONFIG[:Curses_graphics] then
 end
 if PLATFORM == :windows then
     case CONFIG[:compiler]
-    when :visualc, :watcom then
-        #nethack_libs << 'user32.lib gdi32.lib comctl32.lib comdlg32.lib winmm.lib bcrypt.lib'
+    when :visualc then
         nethack_libs << 'kernel32.lib advapi32.lib gdi32.lib user32.lib comctl32.lib comdlg32.lib winspool.lib winmm.lib bcrypt.lib shell32.lib'
     else
         nethack_libs << '-lgdi32 -lcomctl32 -lcomdlg32 -lwinmm -lbcrypt'

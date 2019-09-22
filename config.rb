@@ -31,7 +31,6 @@ CONFIG[:install_dir] = 'games/nethackdir'
 # CONFIG[:compiler] = :gcc      # Default on Linux; fallback on Windows
 # CONFIG[:compiler] = :clang    # Default on Mac; fallback on Linux
 # CONFIG[:compiler] = :visualc  # Default on Windows
-# CONFIG[:compiler] = :watcom   # Available on Windows
 # CONFIG[:compiler] = :cc       # Last resort
 
 # Override the names of the compilers, e.g., to use "clang-6.0" instead
