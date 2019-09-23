@@ -1097,8 +1097,9 @@ file 'binary/nhtiles.bmp' => [
     tile2bmp_exe,
     'win/share/monsters.txt', 'win/share/objects.txt', 'win/share/other.txt'
 ] do |x|
+    make_dir File.dirname(x.name)
     in_dir 'build' do
-        sh './tile2bmp ../binary/nhtiles.bmp'
+        sh "./tile2bmp #{File.join('..', x.name)}"
     end
 end
 
