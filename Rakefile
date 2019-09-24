@@ -511,7 +511,7 @@ if CONFIG[:SDL2_graphics] then
     ].map {|x| "win/sdl2/#{x}.c"}
     case PLATFORM
     when :windows then
-        winsdl2_dir << 'win/sdl2/sdl2font_windows.c'
+        winsdl2_dir << 'win/sdl2/sdl2font_windows.cpp'
         case CONFIG[:compiler]
         when :visualc then
             sdl2_flags = %Q[-I#{CONFIG[:SDL2]}/include -DPIXMAPDIR=\\".\\"]

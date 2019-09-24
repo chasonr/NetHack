@@ -1601,7 +1601,7 @@ $(OBJ)/qt4yndlg.o : $(QT4)/qt4yndlg.cpp $(QT4)/qt4yndlg.moc
 endif
 
 ifeq "$(WANT_WIN_SDL2)" "Y"
-$(OBJ)/sdl2font_windows.o : $(SDL2)/sdl2font_windows.c
+$(OBJ)/sdl2font_windows.o : $(SDL2)/sdl2font_windows.cpp
 $(OBJ)/sdl2getlin.o : $(SDL2)/sdl2getlin.c
 $(OBJ)/sdl2map.o : $(SDL2)/sdl2map.c
 $(OBJ)/sdl2menu.o : $(SDL2)/sdl2menu.c
