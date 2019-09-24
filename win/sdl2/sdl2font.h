@@ -16,12 +16,6 @@ typedef struct SDL2Font_Impl SDL2Font;
 extern SDL2Font *sdl2_font_new(const char *name, int ptsize);
 extern void sdl2_font_free(SDL2Font *font);
 
-/* Font metrics */
-extern int sdl2_font_ascent(SDL2Font *font);
-extern int sdl2_font_descent(SDL2Font *font);
-extern int sdl2_font_lineSkip(SDL2Font *font);
-extern int sdl2_font_height(SDL2Font *font);
-
 /* Text rendering */
 /* If no background is given, background is transparent */
 extern SDL_Surface *sdl2_font_renderChar(SDL2Font *font, Uint32 ch, SDL_Color foreground);

@@ -109,34 +109,6 @@ sdl2_font_free(SDL2Font *mfont)
     free(mfont);
 }
 
-/* Font metrics */
-int
-sdl2_font_ascent(SDL2Font *mfont)
-{
-    return (int) CTFontGetAscent(mfont->font);
-}
-
-int
-sdl2_font_descent(SDL2Font *mfont)
-{
-    return (int) CTFontGetDescent(mfont->font);
-}
-
-int
-sdl2_font_lineSkip(SDL2Font *mfont)
-{
-    return (int) (CTFontGetAscent(mfont->font) +
-                  CTFontGetDescent(mfont->font));
-}
-
-int
-sdl2_font_height(SDL2Font *mfont)
-{
-    return (int) (CTFontGetAscent(mfont->font) +
-                  CTFontGetDescent(mfont->font) +
-                  CTFontGetLeading(mfont->font));
-}
-
 /* Text rendering */
 /* If no background is given, background is transparent */
 SDL_Surface *

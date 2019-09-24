@@ -50,45 +50,6 @@ sdl2_font_free(SDL2Font *font)
     free(font);
 }
 
-/* Font metrics */
-int
-sdl2_font_ascent(SDL2Font *font)
-{
-    PangoFontMetrics *metrics = getMetrics(font);
-    int ascent = pango_font_metrics_get_ascent(metrics);
-    pango_font_metrics_unref(metrics);
-    return ascent / PANGO_SCALE;
-}
-
-int
-sdl2_font_descent(SDL2Font *font)
-{
-    PangoFontMetrics *metrics = getMetrics(font);
-    int descent = pango_font_metrics_get_descent(metrics);
-    pango_font_metrics_unref(metrics);
-    return descent / PANGO_SCALE;
-}
-
-int
-sdl2_font_lineSkip(SDL2Font *font)
-{
-    PangoFontMetrics *metrics = getMetrics(font);
-    int skip = pango_font_metrics_get_ascent(metrics)
-             + pango_font_metrics_get_descent(metrics);
-    pango_font_metrics_unref(metrics);
-    return skip / PANGO_SCALE;
-}
-
-int
-sdl2_font_height(SDL2Font *font)
-{
-    PangoFontMetrics *metrics = getMetrics(font);
-    int height = pango_font_metrics_get_ascent(metrics)
-               + pango_font_metrics_get_descent(metrics);
-    pango_font_metrics_unref(metrics);
-    return height / PANGO_SCALE;
-}
-
 /* Text rendering */
 /* If no background is given, background is transparent */
 SDL_Surface *
