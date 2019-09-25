@@ -726,7 +726,8 @@ static void Qt_positionbar(char *) {}
 
 } // namespace nethack_qt4
 
-extern "C" struct window_procs Qt_procs = {
+extern "C" {
+struct window_procs Qt_procs = {
     "Qt",
     WC_COLOR | WC_HILITE_PET
     | WC_ASCII_MAP | WC_TILED_MAP
@@ -802,6 +803,7 @@ extern "C" struct window_procs Qt_procs = {
 #endif
     genl_can_suspend_yes,
 };
+}
 
 #ifndef WIN32
 extern "C" void play_usersound(const char* filename, int volume)
