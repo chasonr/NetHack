@@ -26,6 +26,7 @@ extern "C" {
 #include "qt4set.moc"
 #include "qt4glyph.h"
 #include "qt4str.h"
+#include "qt_vars.h"
 
 /* Used by tile/font-size patch below and in ../../src/files.c */
 extern "C" {

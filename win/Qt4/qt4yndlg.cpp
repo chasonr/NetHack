@@ -25,12 +25,7 @@ extern "C" {
 #include "qt4yndlg.h"
 #include "qt4yndlg.moc"
 #include "qt4str.h"
-
-// temporary
-extern "C" {
-extern int qt_compact_mode;
-}
-// end temporary
+#include "qt_vars.h"
 
 namespace nethack_qt4 {
 

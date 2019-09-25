@@ -28,10 +28,7 @@ extern "C" {
 #include "qt4set.h"
 #include "qt4streq.h"
 #include "qt4str.h"
-
-// temporary
-extern "C" int qt_compact_mode;
-// end temporary
+#include "qt_vars.h"
 
 extern "C" struct menucoloring *menu_colorings;
 

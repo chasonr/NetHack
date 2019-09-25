@@ -12,6 +12,10 @@
 #include "wintty.h" /* more() */
 #endif
 
+#ifdef QT_GRAPHICS
+#include "qt_vars.h"
+#endif
+
 #if (!defined(MAC) && !defined(O_WRONLY) && !defined(AZTEC_C)) \
     || defined(USE_FCNTL)
 #include <fcntl.h>

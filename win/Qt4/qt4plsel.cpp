@@ -28,6 +28,7 @@ extern "C" {
 #include "qt4glyph.h"
 #include "qt4set.h"
 #include "qt4str.h"
+#include "qt_vars.h"
 
 // Warwick prefers it this way...
 #define QT_CHOOSE_RACE_FIRST

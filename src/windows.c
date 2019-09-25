@@ -16,7 +16,7 @@ extern struct window_procs X11_procs;
 extern void FDECL(win_X11_init, (int));
 #endif
 #ifdef QT_GRAPHICS
-extern struct window_procs Qt_procs;
+#include "qt_vars.h"
 #endif
 #ifdef GEM_GRAPHICS
 #include "wingem.h"

@@ -43,16 +43,11 @@ extern "C" {
 #include "qt4streq.h"
 #include "qt4yndlg.h"
 #include "qt4str.h"
+#include "qt_vars.h"
 
 extern "C" {
 #include "dlb.h"
 }
-
-// temporary
-extern "C" {
-extern int qt_compact_mode;
-}
-// end temporary
 
 namespace nethack_qt4 {
 

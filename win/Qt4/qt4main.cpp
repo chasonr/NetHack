@@ -34,18 +34,11 @@ extern "C" {
 #include "qt4set.h"
 #include "qt4stat.h"
 #include "qt4str.h"
+#include "qt_vars.h"
 
 #ifndef KDE
 #include "qt4kde0.moc"
 #endif
-
-// temporary
-extern "C" {
-extern char *qt_tilewidth;
-extern char *qt_tileheight;
-extern int qt_compact_mode;
-}
-// end temporary
 
 namespace nethack_qt4 {
 

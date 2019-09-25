@@ -29,12 +29,7 @@ extern "C" {
 #include "qt_xpms.h"
 #include "qt4set.h"
 #include "qt4str.h"
-
-// temporary
-extern "C" {
-extern int qt_compact_mode;
-};
-// end temporary
+#include "qt_vars.h"
 
 namespace nethack_qt4 {
 

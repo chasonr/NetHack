@@ -23,6 +23,7 @@
 #include "qt4svsel.h"
 #include "qt4bind.h"
 #include "qt4str.h"
+#include "qt_vars.h"
 
 namespace nethack_qt4 {
 
