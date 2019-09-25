@@ -94,9 +94,13 @@ if CONFIG[:Qt_graphics] then
         mocs.each do |moc|
             begin
                 text = `#{moc} -v 2>&1`
-                if $? == 0 and text =~ /\b([45])\.[0-9]+\.[0-9]+\b/ then
+                if text =~ /moc 5\.[0-9]+\.[0-9]+/ then
                     CONFIG[:moc] = moc
-                    QT5 = $1 == '5'
+                    QT5 = true
+                    break
+                elsif text =~ /Qt Meta Object Compiler version [0-9]+ \(Qt 4\.[0-9]+\.[0-9]+\)/ then
+                    CONFIG[:moc] = moc
+                    QT5 = false
                     break
                 end
             rescue Errno::ENOENT
@@ -192,7 +196,7 @@ cxxflags = ""
 if CONFIG[:debug] then
     case CONFIG[:compiler]
     when :gcc, :clang then
-        min_flags = "-Wall -g"
+        min_flags = "-Wall -g -fPIC"
     when :cc then
         min_flags = "-g"
     when :visualc then
@@ -201,7 +205,7 @@ if CONFIG[:debug] then
 else
     case CONFIG[:compiler]
     when :gcc, :clang then
-        min_flags = "-Wall -O2"
+        min_flags = "-Wall -O2 -fPIC"
     when :cc then
         min_flags = "-O1"
     when :visualc then
