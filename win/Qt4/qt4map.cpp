@@ -135,7 +135,7 @@ void NetHackQtMapViewport::paintEvent(QPaintEvent* event)
 
 		painter.setPen( Qt::green );
 		/* map glyph to character and color */
-		mapglyph(g, &ch, &color, &special, i, j);
+		mapglyph(g, &ch, &color, &special, i, j, 0);
 		ch = cp437(ch);
 #ifdef TEXTCOLOR
 		painter.setPen( nhcolor_to_pen(color) );
@@ -174,7 +174,7 @@ void NetHackQtMapViewport::paintEvent(QPaintEvent* event)
 		int color;
 		int ch;
 		unsigned special;
-		mapglyph(g, &ch, &color, &special, i, j);
+		mapglyph(g, &ch, &color, &special, i, j, 0);
 		qt_settings->glyphs().drawCell(painter, g, i, j);
 #ifdef TEXTCOLOR
 		if (((special & MG_PET) != 0) && ::iflags.hilite_pet) {
@@ -827,7 +827,7 @@ void NetHackQtMapWindow::paintEvent(QPaintEvent* event)
 
 		painter.setPen( Qt::green );
 		/* map glyph to character and color */
-    		mapglyph(g, &ch, &color, &special, i, j);
+    		mapglyph(g, &ch, &color, &special, i, j, 0);
 #ifdef TEXTCOLOR
 		painter.setPen( nhcolor_to_pen(color) );
 #endif
@@ -857,7 +857,7 @@ void NetHackQtMapWindow::paintEvent(QPaintEvent* event)
 		int color;
 		int ch;
 		unsigned special;
-		mapglyph(g, &ch, &color, &special, i, j);
+		mapglyph(g, &ch, &color, &special, i, j, 0);
 		qt_settings->glyphs().drawCell(painter, g, i, j);
 #ifdef TEXTCOLOR
 		if (((special & MG_PET) != 0) && ::iflags.hilite_pet) {

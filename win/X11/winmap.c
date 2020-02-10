@@ -107,7 +107,7 @@ int bkglyph UNUSED;
 #endif
 
         /* map glyph to character and color */
-        (void) mapglyph(glyph, &och, &color, &special, x, y);
+        (void) mapglyph(glyph, &och, &color, &special, x, y, 0);
         if (och > 0xFFFF) och = 0xFFFD;
         ch.byte1 = och >> 8;
         ch.byte2 = och & 0xFF;

@@ -227,6 +227,7 @@ register int col, row;
     }
 }
 
+#if 0
 int
 has_color(int color)
 {
@@ -237,6 +238,7 @@ has_color(int color)
     return 0;
 #endif
 }
+#endif
 
 void
 home()
@@ -571,11 +573,13 @@ const char *s;
     }
 }
 
-void
+/* same signature as 'putchar()' with potential failure result ignored */
+int
 xputc(ch) /* write out character (and attribute) */
-char ch;
+int ch;
 {
     g_putch((unsigned char)ch);
+    return 0;
 }
 
 void
@@ -601,14 +605,14 @@ int ch;
     }
 }
 
-void xputg(glyphnum, ch,
-           special) /* write out a glyph picture at current location */
+/* write out a glyph picture at current location */
+void xputg(glyphnum, ch, special)
 int glyphnum;
 int ch;
 unsigned special;
 {
     if (!iflags.grmode || !iflags.tile_view) {
-        xputc((char) ch);
+        (void) xputc((char) ch);
 #ifdef SCREEN_VGA
     } else if (iflags.grmode && iflags.usevga) {
         vga_xputg(glyphnum, ch, special);

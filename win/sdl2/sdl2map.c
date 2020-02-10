@@ -559,7 +559,7 @@ sdl2_map_draw(struct SDL2Window *win, int x, int y, boolean cursor)
         /* Overlay possible characters on this background */
         for (i = 0; i < SIZE(glyphs); ++i) {
             if (glyphs[i] != NO_GLYPH) {
-                mapglyph(glyphs[i], &ch, &ocolor, &ospecial, x, y);
+                mapglyph(glyphs[i], &ch, &ocolor, &ospecial, x, y, 0);
                 ochar = sdl2_chr_convert(ch);
                 text_fg = sdl2_colors[ocolor];
                 if (!sdl2_map_wall_draw(win, ochar, &cell, text_fg)) {

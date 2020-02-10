@@ -1236,7 +1236,7 @@ sdl2_window_render_mixed(struct SDL2Window *win, const char *str, int x, int y,
         glyph = strtol(hex, NULL, 16);
 
         /* Render the glyph */
-        mapglyph(glyph, &ch, &oc, &os, 0, 0);
+        mapglyph(glyph, &ch, &oc, &os, 0, 0, 0);
         ch32 = sdl2_chr_convert(ch);
         txt_rect = sdl2_window_renderCharBG(win, ch32,
                 x + all_rect.w, y,
@@ -2006,6 +2006,8 @@ struct window_procs sdl2_procs = {
     WC_PLAYER_SELECTION,
     WC2_FULLSCREEN|
     WC2_HILITE_STATUS,
+    { TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+      TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE },
     sdl2_init_nhwindows,
     sdl2_player_selection,
     sdl2_askname,
