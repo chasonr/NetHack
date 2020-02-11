@@ -115,15 +115,16 @@ void win10_monitor_info(HWND hWnd, MonitorInfo * monitorInfo)
 BOOL
 win10_is_desktop_bridge_application()
 {
+#ifdef _MSC_VER
     if (gWin10.Valid) {
         UINT32 length = 0;
         LONG rc = gWin10.GetCurrentPackageFullName(&length, NULL);
 
         return (rc == ERROR_INSUFFICIENT_BUFFER);
     }
+#endif /* _MSC_VER */
 
     return FALSE;
 }
 
 
-#endif /* _MSC_VER */
