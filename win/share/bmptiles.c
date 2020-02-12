@@ -598,7 +598,7 @@ uint32 color;
     if (mask == 0) return 0;
     bits = 0xFFFF; /* 0xFF, 0xF, 0x3, 0x1 */
     shift = 16;    /*    8,   4,   2,   1 */
-    while (bits != 0) {
+    while (shift != 0) {
         if ((mask & bits) == 0) {
             mask >>= shift;
             color >>= shift;
