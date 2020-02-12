@@ -9,6 +9,8 @@ require './config.rb'
 # Detect the running operating system
 if Rake::Win32.windows? then
     PLATFORM = :windows
+elsif RUBY_PLATFORM == 'i386-msys' then
+    PLATFORM = :windows
 elsif RUBY_PLATFORM =~ /^[^-]*-darwin[0-9.]+/ then
     PLATFORM = :mac
 else
@@ -296,12 +298,23 @@ targets = Set.new([
     'binary/logfile',
     'binary/record',
     'binary/save',
-    'binary/symbols',
-    'binary/sysconf',
     'binary/xlogfile'
 ])
 if PLATFORM == :unix or PLATFORM == :mac then
-    targets.merge(['binary/perm', exe('binary/recover')])
+    targets.merge(%w[
+        binary/perm
+        binary/recover
+        binary/symbols
+        binary/sysconf
+    ])
+else
+    targets.merge(%w[
+        binary/symbols.template
+        binary/sysconf.template
+        binary/.nethackrc.template
+        binary/Guidebook.txt
+        binary/opthelp
+    ])
 end
 if CONFIG[:X11_graphics] then
     targets.merge(%w[
@@ -612,7 +625,7 @@ if PLATFORM == :windows then
     compile_rule('sys/winnt/stubs.c', win32_flags + ' -DTTYSTUB')
     win32_dir = %w[
         mhaskyn  mhdlg    mhfont   mhinput  mhmain   mhmap    mhmenu
-        mhmsgwnd mhrip    mhsplash mhstatus mhtext   mswproc  winhack
+        mhmsgwnd mhrip    mhsplash mhstatus mhtext   mswproc  NetHackW
     ].map {|x| "win/win32/#{x}.c"}
     win32_dir.each do |src|
         compile_rule(src, win32_flags)
@@ -666,7 +679,7 @@ if PLATFORM == :windows then
         sys/winnt/winnt.c
         sys/share/cppregex.cpp
     ].map {|x| obj("build/#{x}")})
-    nethack_ofiles << res('build/win/win32/winhack.rc')
+    nethack_ofiles << res('build/win/win32/NetHackW.rc')
 else
     nethack_ofiles.merge(%w[
         sys/share/ioctl.c
@@ -727,10 +740,10 @@ if CONFIG[:SDL2_graphics] then
         case CONFIG[:compiler]
         when :visualc then
             nethack_libs << "#{CONFIG[:SDL2]}/lib/#{CONFIG[:architecture]}/SDL2.lib"
-            nethack_libs << 'setupapi.lib winmm.lib imm32.lib ole32.lib oleaut32.lib version.lib'
+            nethack_libs << 'setupapi.lib winmm.lib imm32.lib oleaut32.lib version.lib'
         else
             nethack_libs << "#{CONFIG[:SDL2]}/lib/libSDL2.a"
-            nethack_libs << '-lsetupapi -lwinmm -limm32 -lole32 -loleaut32 -lversion'
+            nethack_libs << '-lsetupapi -lwinmm -limm32 -loleaut32 -lversion'
         end
     when :mac then
         nethack_libs << `sdl2-config --libs`.chomp
@@ -781,9 +794,9 @@ if PLATFORM == :windows then
     case CONFIG[:compiler]
     when :visualc then
         nethack_libs << '-link -subsystem:windows'
-        nethack_libs << 'kernel32.lib advapi32.lib gdi32.lib user32.lib comctl32.lib comdlg32.lib winspool.lib winmm.lib bcrypt.lib shell32.lib'
+        nethack_libs << 'kernel32.lib advapi32.lib gdi32.lib user32.lib comctl32.lib comdlg32.lib winspool.lib winmm.lib bcrypt.lib shell32.lib ole32.lib'
     else
-        nethack_libs << '-lgdi32 -lcomctl32 -lcomdlg32 -lwinmm -lbcrypt'
+        nethack_libs << '-lgdi32 -lcomctl32 -lcomdlg32 -lwinmm -lbcrypt -lshell32 -lole32'
     end
 end
 link_rule(nethack_ofiles.to_a, exe('binary/nethack'), nethack_libs)
@@ -965,24 +978,25 @@ link_rule(recover_ofiles, recover_exe, [])
 #                               Other targets                                #
 ##############################################################################
 
-if PLATFORM == :windows then
-    sysconf = 'sys/winnt/sysconf'
-else
-    sysconf = 'sys/unix/sysconf'
-end
-
 copy_targets = {
     'dat/license' => 'binary/license',
     'dat/symbols' => 'binary/symbols',
+    'dat/opthelp' => 'binary/opthelp',
+    'doc/Guidebook.txt' => 'binary/Guidebook.txt',
     'win/X11/NetHack.ad' => 'binary/NetHack.ad',
     'win/Qt/nhsplash.xpm' => 'binary/nhsplash.xpm',
     'win/X11/pet_mark.xbm' => 'binary/pet_mark.xbm',
     'win/X11/pilemark.xbm' => 'binary/pilemark.xbm',
     'win/X11/rip.xpm' => 'binary/rip.xpm',
-    sysconf => 'binary/sysconf',
+    'sys/unix/sysconf' => 'binary/sysconf',
+    'sys/winnt/sysconf.template' => 'binary/sysconf.template',
+    'sys/winnt/.nethackrc.template' => 'binary/.nethackrc.template',
     'binary/nhtiles.bmp' => 'build/tiles.bmp',
     File.join(CONFIG[:SDL2], 'lib', CONFIG[:architecture], 'SDL2.dll') => 'binary/SDL2.dll'
 }
+if PLATFORM == :windows then
+    copy_targets['dat/symbols'] = 'binary/symbols.template'
+end
 if defined?(QTDIR) and QTDIR then
     %w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
         copy_targets[File.join(QTDIR, 'bin', "#{name}.dll")] = "binary/#{name}.dll"
@@ -1322,8 +1336,8 @@ link_rule(dlb_ofiles, dlb_exe, [])
 #                              Win32 resources                               #
 ##############################################################################
 
-file res('build/win/win32/winhack.rc') => [
-    'win/win32/winhack.rc',
+file res('build/win/win32/NetHackW.rc') => [
+    'win/win32/NetHackW.rc',
     'build/nethack.ico',
     'build/tiles.bmp',
     'build/mnsel.bmp',
@@ -1334,7 +1348,7 @@ file res('build/win/win32/winhack.rc') => [
     'build/rip.bmp',
     'build/splash.bmp'
 ] do |x|
-    sh slash("#{CONFIG[:rc]} -Ibuild -Iwin/win32 #{objflag(x.name)} win/win32/winhack.rc")
+    sh slash("#{CONFIG[:rc]} -Ibuild -Iwin/win32 #{objflag(x.name)} win/win32/NetHackW.rc")
 end
 
 ##############################################################################
