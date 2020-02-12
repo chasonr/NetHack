@@ -65,13 +65,15 @@ CONFIG[:install_dir] = 'games/nethackdir'
 CONFIG[:PDCurses] = "#{ENV['USERPROFILE']}/PDCurses-4.1.0"
 
 # This is the root of the SDL2 tree
-CONFIG[:SDL2] = "#{ENV['USERPROFILE']}/SDL2-2.0.10"
+#CONFIG[:SDL2] = "#{ENV['USERPROFILE']}/SDL2-2.0.10/i686-w64-mingw32"
+CONFIG[:SDL2] = "#{ENV['USERPROFILE']}/SDL2-2.0.10-MSC"
 # For Visual Studio: we need the directory where the libraries are found
 CONFIG[:architecture] = 'x86'
 # CONFIG[:architecture] = 'x64'
 
 # This is the root of the Qt tree
-CONFIG[:Qt] = "C:/qt/Qt5.13.0/5.13.0/mingw73_32"
+#CONFIG[:Qt] = "C:/qt/5.14.1/mingw73_32"
+CONFIG[:Qt] = "C:/qt/5.14.1/msvc2017"
 
 # This is the root of the libpng tree
 CONFIG[:libpng] = "#{ENV['USERPROFILE']}/#{CONFIG[:architecture]}libs/libpng-1.6.37"
