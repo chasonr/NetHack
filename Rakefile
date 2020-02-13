@@ -662,6 +662,38 @@ if PLATFORM == :windows and CONFIG[:Curses_graphics] then
     end
 end
 
+# libpng sources
+if PLATFORM == :windows and CONFIG[:png_tiles] then
+    libpng_dir = %w[
+        png.c      pngerror.c pngget.c   pngmem.c   pngpread.c pngread.c
+        pngrio.c   pngrtran.c pngrutil.c pngset.c   pngtrans.c pngwio.c
+        pngwrite.c pngwtran.c pngwutil.c
+    ]
+    libpng_dir.each do |src|
+        file obj("build/libpng/#{src}") => "#{CONFIG[:libpng]}/#{src}" do |x|
+            dir = File.dirname(x.name)
+            make_dir File.dirname(x.name)
+            sh slash("#{CONFIG[:CC]} -I#{CONFIG[:libpng]} -I#{CONFIG[:zlib]} #{min_flags} -c #{objflag(x.name)} #{x.source}")
+        end
+    end
+end
+
+# zlib sources
+if PLATFORM == :windows and (CONFIG[:png_tiles] or CONFIG[:zlib_compress]) then
+    zlib_dir = %w[
+        adler32.c  compress.c crc32.c    deflate.c  gzclose.c  gzlib.c
+        gzread.c   gzwrite.c  infback.c  inffast.c  inflate.c  inftrees.c
+        trees.c    uncompr.c  zutil.c
+    ]
+    zlib_dir.each do |src|
+        file obj("build/zlib/#{src}") => "#{CONFIG[:zlib]}/#{src}" do |x|
+            dir = File.dirname(x.name)
+            make_dir File.dirname(x.name)
+            sh slash("#{CONFIG[:CC]} -I#{CONFIG[:zlib]} #{min_flags} -c #{objflag(x.name)} #{x.source}")
+        end
+    end
+end
+
 ##############################################################################
 #                             The NetHack binary                             #
 ##############################################################################
@@ -693,10 +725,12 @@ nethack_libs = []
 case PLATFORM
 when :windows then
     if CONFIG[:png_tiles] then
-        nethack_libs << File.join(CONFIG[:libpng], 'libpng.a')
+        nethack_ofiles.merge(
+            libpng_dir.map {|x| obj("build/libpng/#{x}")})
     end
     if CONFIG[:png_tiles] or CONFIG[:zlib_compress] then
-        nethack_libs << File.join(CONFIG[:zlib], 'libz.a')
+        nethack_ofiles.merge(
+            zlib_dir.map {|x| obj("build/zlib/#{x}")})
     end
 when :unix, :mac then
     if CONFIG[:png_tiles] then
