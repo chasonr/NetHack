@@ -334,14 +334,7 @@ if CONFIG[:Qt_graphics] then
         binary/rip.xpm
     ])
     if PLATFORM == :windows then
-        if QT5 then
-            targets.merge(%w[
-                binary/Qt5Gui.dll
-                binary/Qt5Widgets.dll
-                binary/Qt5Multimedia.dll
-                binary/Qt5Core.dll
-            ])
-        else
+        if not QT5 then
             targets.merge(%w[
                 binary/QtGui4.dll
                 binary/QtCore4.dll
@@ -360,6 +353,11 @@ if PLATFORM == :windows then
 end
 
 task :default => targets.to_a do
+    if PLATFORM == :windows and CONFIG[:Qt_graphics] and QT5 then
+        in_dir 'binary' do
+            sh "windeployqt #{exe('nethack')}"
+        end
+    end
 end
 
 # Some useful functions
@@ -1032,7 +1030,7 @@ if PLATFORM == :windows then
     copy_targets['dat/symbols'] = 'binary/symbols.template'
 end
 if defined?(QTDIR) and QTDIR then
-    %w[QtCore4 QtGui4 Qt5Gui Qt5Widgets Qt5Multimedia Qt5Core].each do |name|
+    %w[QtCore4 QtGui4].each do |name|
         copy_targets[File.join(QTDIR, 'bin', "#{name}.dll")] = "binary/#{name}.dll"
     end
 end
