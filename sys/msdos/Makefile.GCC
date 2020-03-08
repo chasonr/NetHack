@@ -425,7 +425,7 @@ endif
 #==========================================
 #
 ifeq "$(ADD_CURSES)" "Y"
-CURSESDEF=-D"CURSES_GRAPHICS" -D"CURSES_BRIEF_INCLUDE"
+CURSESDEF=-D"CURSES_GRAPHICS" -D"CURSES_BRIEF_INCLUDE" -DNO_WIDE_CURSES
 else
 CURSESDEF=
 CURSESLIB=
@@ -575,7 +575,7 @@ endif
 	@$(subst /,\,copy $(SSHR)/NetHack.cnf  $(GAMEDIR)/defaults.nh)
 	-@$(subst /,\,touch $(GAMEDIR)/record)
 	@$(subst /,\,copy $(DOC)/guideb*.txt  $(GAMEDIR))
-	@$(subst /,\,copy ../sys/winnt/sysconf  $(GAMEDIR))
+	@$(subst /,\,touch $(GAMEDIR)/sysconf)
 	@$(subst /,\,if exist $(DOC)/nethack.txt copy $(DOC)/nethack.txt $(GAMEDIR))
 	@$(subst /,\,copy ../win/share/*.psf $(GAMEDIR))
 ifdef CWSDPMI
@@ -590,7 +590,7 @@ endif
 #==========================================
 
 $(GAMEFILE): $(O)obj.tag $(PATCHLEV_H) $(PDCLIB) \
-	$(O)utility.tag $(ALLOBJ) $(O)$(GAME).lnk
+	$(O)utility.tag $(ALLOBJ)
 	 @if exist temp.a del temp.a
 	 @ar ruS temp.a $(VOBJ01)
 	 @ar ruS temp.a $(VOBJ02)
@@ -1061,7 +1061,6 @@ clean:
 	$(subst /,\,if exist $(O)*.o del $(O)*.o)
 	$(subst /,\,if exist $(O)dat.tag del $(O)dat.tag)
 	$(subst /,\,if exist $(O)install.tag del $(O)install.tag)
-	$(subst /,\,if exist $(O)$(GAME).lnk del $(O)$(GAME).lnk)
 	$(subst /,\,if exist $(O)obj.tag del $(O)obj.tag)
 	$(subst /,\,if exist $(O)sp_lev.tag del $(O)sp_lev.tag)
 	$(subst /,\,if exist $(O)thintile.tag del $(O)thintile.tag)
