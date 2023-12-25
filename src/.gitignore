@@ -13,4 +13,6 @@ nhdat
 o
 nhdat*
 *.tag
-
+#address san
+*.exp
+*.lib
