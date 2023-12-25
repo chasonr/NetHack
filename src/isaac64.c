@@ -12,14 +12,15 @@
 #include "config.h"
 
 #ifdef USE_ISAAC64
-#include <math.h>
 #include <string.h>
 #include "isaac64.h"
 
 #define ISAAC64_MASK ((uint64_t)0xFFFFFFFFFFFFFFFFULL)
 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
+#if !defined(HAS_INLINE)
 #define HAS_INLINE
+#endif
 #else
 # if (defined(__GNUC__) && __GNUC__ >= 2 && !defined(inline))
 # define inline __inline__

@@ -11,6 +11,10 @@ tiles.bmp
 graphicschk
 nhdat
 o
+nhdat*
+#address san
+*.exp
+*.lib
 *.tag
 *.map
 *.err

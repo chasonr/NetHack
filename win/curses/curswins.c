@@ -87,7 +87,7 @@ curses_create_window(int width, int height, orient orientation)
     switch (orientation) {
     default:
         impossible("curses_create_window: Bad orientation");
-        /* fall through to centre */
+        /*FALLTHRU*/
     case CENTER:
         startx = (term_cols / 2) - (width / 2);
         starty = (term_rows / 2) - (height / 2);
@@ -173,12 +173,18 @@ curses_refresh_nethack_windows()
         touchwin(stdscr);
         refresh();
     } else {
-        touchwin(status_window);
-        wnoutrefresh(status_window);
-        touchwin(map_window);
-        wnoutrefresh(map_window);
-        touchwin(message_window);
-        wnoutrefresh(message_window);
+        if (status_window) {
+            touchwin(status_window);
+            wnoutrefresh(status_window);
+        }
+        if (map_window) {
+            touchwin(map_window);
+            wnoutrefresh(map_window);
+        }
+        if (message_window) {
+            touchwin(message_window);
+            wnoutrefresh(message_window);
+        }
         if (inv_window) {
             touchwin(inv_window);
             wnoutrefresh(inv_window);
@@ -352,6 +358,8 @@ curses_del_wid(winid wid)
 void
 curs_destroy_all_wins()
 {
+    curses_count_window((char *) 0); /* clean up orphan */
+
     while (nhwids)
         curses_del_wid(nhwids->nhwid);
 }
@@ -361,10 +369,10 @@ curs_destroy_all_wins()
 void
 curses_putch(winid wid, int x, int y, int ch, int color, int attr)
 {
+    static boolean map_initted = FALSE;
     int sx, sy, ex, ey;
     boolean border = curses_window_has_border(wid);
     nethack_char nch;
-    static boolean map_initted = FALSE;
 /*
     if (wid == STATUS_WIN) {
         curses_update_stats();
@@ -379,6 +387,7 @@ curses_putch(winid wid, int x, int y, int ch, int color, int attr)
         map_initted = TRUE;
     }
 
+    --x; /* map column [0] is not used; draw column [1] in first screen col */
     map[y][x].ch = ch;
     map[y][x].color = color;
     map[y][x].attr = attr;
@@ -483,6 +492,10 @@ curses_puts(winid wid, int attr, const char *text)
     }
 
     if (wid == MESSAGE_WIN) {
+        /* if a no-history message is being shown, remove it */
+        if (counting)
+            curses_count_window((char *) 0);
+
         curses_message_win_puts(text, FALSE);
         return;
     }
@@ -497,7 +510,7 @@ curses_puts(winid wid, int attr, const char *text)
     if (curses_is_menu(wid) || curses_is_text(wid)) {
         if (!curses_menu_exists(wid)) {
             impossible(
-                     "curses_puts: Attempted write to nonexistant window %d!",
+                     "curses_puts: Attempted write to nonexistent window %d!",
                        wid);
             return;
         }
@@ -617,9 +630,14 @@ curses_draw_map(int sx, int sy, int ex, int ey)
     vsb_bar.attr = A_NORMAL;
 
     /* Horizontal scrollbar */
-    if ((sx > 0) || (ex < (COLNO - 1))) {
-        sbsx = (sx * ((long) (ex - sx + 1) / COLNO));
-        sbex = (ex * ((long) (ex - sx + 1) / COLNO));
+    if (sx > 0 || ex < (COLNO - 1)) {
+         sbsx = (int) (((long) sx * (long) (ex - sx + 1)) / (long) COLNO);
+         sbex = (int) (((long) ex * (long) (ex - sx + 1)) / (long) COLNO);
+
+        if (sx > 0 && sbsx == 0)
+            ++sbsx;
+        if (ex < ROWNO - 1 && sbex == ROWNO - 1)
+            --sbex;
 
         for (count = 0; count < sbsx; count++) {
             write_char(mapwin, count + bspace, ey - sy + 1 + bspace, hsb_back);
@@ -635,9 +653,14 @@ curses_draw_map(int sx, int sy, int ex, int ey)
     }
 
     /* Vertical scrollbar */
-    if ((sy > 0) || (ey < (ROWNO - 1))) {
-        sbsy = (sy * ((long) (ey - sy + 1) / ROWNO));
-        sbey = (ey * ((long) (ey - sy + 1) / ROWNO));
+    if (sy > 0 || ey < (ROWNO - 1)) {
+        sbsy = (int) (((long) sy * (long) (ey - sy + 1)) / (long) ROWNO);
+        sbey = (int) (((long) ey * (long) (ey - sy + 1)) / (long) ROWNO);
+
+        if (sy > 0 && sbsy == 0)
+            ++sbsy;
+        if (ey < ROWNO - 1 && sbey == ROWNO - 1)
+            --sbey;
 
         for (count = 0; count < sbsy; count++) {
             write_char(mapwin, ex - sx + 1 + bspace, count + bspace, vsb_back);
