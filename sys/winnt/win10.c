@@ -8,13 +8,25 @@
 
 #include "hack.h"
 
-#ifdef _MSC_VER
+typedef DPI_AWARENESS_CONTEXT(WINAPI *GetThreadDpiAwarenessContextProc)(VOID);
+typedef BOOL(WINAPI *AreDpiAwarenessContextsEqualProc)(
+    DPI_AWARENESS_CONTEXT dpiContextA, DPI_AWARENESS_CONTEXT dpiContextB);
+typedef UINT(WINAPI *GetDpiForWindowProc)(HWND hwnd);
+typedef LONG (WINAPI *GetCurrentPackageFullNameProc)(UINT32 *packageFullNameLength,
+    PWSTR  packageFullName);
+
+typedef struct {
+    BOOL Valid;
+    GetThreadDpiAwarenessContextProc GetThreadDpiAwarenessContext;
+    AreDpiAwarenessContextsEqualProc AreDpiAwarenessContextsEqual;
+    GetDpiForWindowProc GetDpiForWindow;
+    GetCurrentPackageFullNameProc GetCurrentPackageFullName;
+} Win10;
+
 Win10 gWin10 = { 0 };
-#endif /* _MSC_VER */
 
 void win10_init()
 {
-#ifdef _MSC_VER
     if (IsWindows10OrGreater())
     {
         HINSTANCE hUser32 = LoadLibraryA("user32.dll");
@@ -36,6 +48,17 @@ void win10_init()
 
         FreeLibrary(hUser32);
 
+        HINSTANCE hKernel32 = LoadLibraryA("kernel32.dll");
+
+        if (hKernel32 == NULL) 
+            panic("Unable to load kernel32.dll");
+
+        gWin10.GetCurrentPackageFullName = (GetCurrentPackageFullNameProc) GetProcAddress(hKernel32, "GetCurrentPackageFullName");
+        if (gWin10.GetCurrentPackageFullName == NULL)
+            panic("Unable to get address of GetCurrentPackageFullName");
+
+        FreeLibrary(hKernel32);
+
         gWin10.Valid = TRUE;
     }
 
@@ -45,7 +68,6 @@ void win10_init()
                 DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
             panic("Unexpected DpiAwareness state");
     }
-#endif /* _MSC_VER */
 
 }
 
@@ -53,7 +75,6 @@ int win10_monitor_dpi(HWND hWnd)
 {
     UINT monitorDpi = 96;
 
-#ifdef _MSC_VER
     if (gWin10.Valid) {
         monitorDpi = gWin10.GetDpiForWindow(hWnd);
         if (monitorDpi == 0)
@@ -61,7 +82,6 @@ int win10_monitor_dpi(HWND hWnd)
     }
 
     monitorDpi = max(96, monitorDpi);
-#endif /* _MSC_VER */
 
     return monitorDpi;
 }
@@ -84,4 +104,17 @@ void win10_monitor_info(HWND hWnd, MonitorInfo * monitorInfo)
     monitorInfo->height = info.rcMonitor.bottom - info.rcMonitor.top;
     monitorInfo->left = info.rcMonitor.left;
     monitorInfo->top = info.rcMonitor.top;
+}
+
+BOOL
+win10_is_desktop_bridge_application()
+{
+    if (gWin10.Valid) {
+        UINT32 length = 0;
+        LONG rc = gWin10.GetCurrentPackageFullName(&length, NULL);
+
+        return (rc == ERROR_INSUFFICIENT_BUFFER);
+    }
+
+    return FALSE;
 }
