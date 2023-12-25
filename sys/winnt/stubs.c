@@ -10,7 +10,6 @@
 #error You cannot compile this with both GUISTUB and TTYSTUB defined.
 #endif
 
-int GUILaunched;
 struct window_procs mswin_procs = { "-guistubs" };
 
 #ifdef QT_GRAPHICS
