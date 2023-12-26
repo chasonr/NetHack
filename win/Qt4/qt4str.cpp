@@ -7,13 +7,10 @@
 extern "C" {
 #include "hack.h"
 }
-#undef min
-#undef max
-#undef index
-#undef rindex
-#undef Protection
+#include "qt4pre.h"
 #include <QtCore/QString>
 #include <QtCore/QStringList>
+#include <cstdarg>
 #include "qt4str.h"
 
 namespace nethack_qt4 {
@@ -106,6 +103,22 @@ int cp437(int ch)
     } else {
         return (unsigned char)ch;
     }
+}
+
+QString
+nh_qsprintf(const char *format, ...)
+{
+    QString msg;
+    std::va_list args;
+
+    va_start(args, format);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
+    msg = QString::vasprintf(format, args);
+#else
+    msg.vsprintf(format, args);
+#endif
+    va_end(args);
+    return msg;
 }
 
 } // namespace nethack_qt4

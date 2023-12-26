@@ -73,8 +73,8 @@
  */
 typedef schar xchar;
 
-#if defined(WIN32) && defined(__cplusplus)
-/* Resolve conflict with Qt 5 and Win32 */
+#ifdef __MINGW32__
+/* Resolve conflict with Qt 5 and MinGW-w32 */
 typedef unsigned char boolean; /* 0 or 1 */
 #else
 #ifndef SKIP_BOOLEAN

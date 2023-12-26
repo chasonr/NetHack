@@ -35,6 +35,10 @@
 #include "hack.h"
 #include "color.h"
 
+#ifndef WM_DPICHANGED
+# define WM_DPICHANGED 0x02E0
+#endif
+
 /* Create an array to keep track of the various windows */
 
 #ifndef MAXWINDOWS

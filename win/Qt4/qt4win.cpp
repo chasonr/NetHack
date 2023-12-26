@@ -47,17 +47,8 @@
 
 #define QT_DEPRECATED_WARNINGS
 #include "hack.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -87,7 +78,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef USER_SOUNDS
+#if defined(USER_SOUNDS) && QT_VERSION < 0x060000
 #if QT_VERSION >= 0x050000
 #  include <QtMultimedia/QSound>
 # else
@@ -105,9 +96,10 @@ namespace nethack_qt4 {
 void
 centerOnMain( QWidget* w )
 {
+    QPoint p(0, 0);
     QWidget* m = NetHackQtBind::mainWidget();
-    if (!m) m = qApp->desktop();
-    QPoint p = m->mapToGlobal(QPoint(0,0));
+    if (m)
+        p = m->mapToGlobal(p);
     w->move( p.x() + m->width()/2  - w->width()/2,
               p.y() + m->height()/2 - w->height()/2 );
 }

@@ -5,17 +5,8 @@
 // qt4key.cpp -- a key buffer
 
 #include "hack.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #include "qt4key.h"
 
@@ -65,7 +56,7 @@ int NetHackQtKeyBuffer::GetAscii()
 
 Qt::KeyboardModifiers NetHackQtKeyBuffer::GetState()
 {
-    if ( Empty() ) return 0;
+    if ( Empty() ) return Qt::NoModifier;
     Qt::KeyboardModifiers r=TopState();
     out=(out+1)%maxkey;
     return r;
@@ -85,7 +76,7 @@ int NetHackQtKeyBuffer::TopAscii() const
 
 Qt::KeyboardModifiers NetHackQtKeyBuffer::TopState() const
 {
-    if ( Empty() ) return 0;
+    if ( Empty() ) return Qt::NoModifier;
     return state[out];
 }
 

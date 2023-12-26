@@ -7,17 +7,8 @@
 extern "C" {
 #include "hack.h"
 }
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -376,13 +367,13 @@ void NetHackQtStatusWindow::updateStats()
     if (cursy != 0) return;    /* do a complete update when line 0 is done */
 
     if (ACURR(A_STR) > 118) {
-	buf.sprintf("STR:%d",ACURR(A_STR)-100);
+	buf = nh_qsprintf("STR:%d",ACURR(A_STR)-100);
     } else if (ACURR(A_STR)==118) {
-	buf.sprintf("STR:18/**");
+	buf = nh_qsprintf("STR:18/**");
     } else if(ACURR(A_STR) > 18) {
-	buf.sprintf("STR:18/%02d",ACURR(A_STR)-18);
+	buf = nh_qsprintf("STR:18/%02d",ACURR(A_STR)-18);
     } else {
-	buf.sprintf("STR:%d",ACURR(A_STR));
+	buf = nh_qsprintf("STR:%d",ACURR(A_STR));
     }
     str.setLabel(buf,NetHackQtLabelledIcon::NoNum,ACURR(A_STR));
 
@@ -437,14 +428,14 @@ void NetHackQtStatusWindow::updateStats()
 	buf = rank_of(u.ulevel, pl_character[0], ::flags.female);
     }
     QString buf2;
-    buf2.sprintf("%s the %s", plname, buf.toLatin1().constData());
+    buf2 = nh_qsprintf("%s the %s", plname, buf.toLatin1().constData());
     name.setLabel(buf2, NetHackQtLabelledIcon::NoNum, u.ulevel);
 
     char buf3[BUFSZ];
     if (describe_level(buf3)) {
 	dlevel.setLabel(buf3,true);
     } else {
-	buf.sprintf("%s, level ", dungeons[u.uz.dnum].dname);
+	buf = nh_qsprintf("%s, level ", dungeons[u.uz.dnum].dname);
 	dlevel.setLabel(buf,(long)::depth(&u.uz));
     }
 
@@ -453,17 +444,17 @@ void NetHackQtStatusWindow::updateStats()
     if (u.mtimedone) {
 	// You're a monster!
 
-	buf.sprintf("/%d", u.mhmax);
+	buf = nh_qsprintf("/%d", u.mhmax);
 	hp.setLabel("HP:", u.mh  > 0 ? u.mh  : 0, buf);
 	level.setLabel("HD:",(long)mons[u.umonnum].mlevel);
     } else {
 	// You're normal.
 
-	buf.sprintf("/%d", u.uhpmax);
+	buf = nh_qsprintf("/%d", u.uhpmax);
 	hp.setLabel("HP:", u.uhp > 0 ? u.uhp : 0, buf);
 	level.setLabel("Level:",(long)u.ulevel);
     }
-    buf.sprintf("/%d", u.uenmax);
+    buf = nh_qsprintf("/%d", u.uenmax);
     power.setLabel("Pow:", u.uen, buf);
     ac.setLabel("AC:",(long)u.uac);
 #ifdef EXP_ON_BOTL

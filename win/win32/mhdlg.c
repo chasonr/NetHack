@@ -808,7 +808,6 @@ PlayerSelectorDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-#ifdef _MSC_VER
     case WM_DPICHANGED:
         {
             data = (struct plsel_data *) GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -817,7 +816,6 @@ PlayerSelectorDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             InvalidateRect(hWnd, NULL, TRUE);
         } break;
-#endif
     }
 
     return FALSE;

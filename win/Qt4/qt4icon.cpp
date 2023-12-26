@@ -5,22 +5,14 @@
 // qt4icon.cpp -- a labelled icon
 
 #include "hack.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
 #endif
 #include "qt4icon.h"
+#include "qt4str.h"
 
 namespace nethack_qt4 {
 
@@ -72,7 +64,7 @@ void NetHackQtLabelledIcon::setLabel(const QString& t, long v, long cv, const QS
     if (v==NoNum) {
 	buf = "";
     } else {
-	buf.sprintf("%ld", v);
+	buf = nh_qsprintf("%ld", v);
     }
     setLabel(t + buf + tail, cv < prev_value);
     prev_value=cv;

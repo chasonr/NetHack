@@ -7,17 +7,8 @@
 extern "C" {
 #include "hack.h"
 }
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -116,7 +107,7 @@ void NetHackQtMapViewport::paintEvent(QPaintEvent* event)
 		QFont f(fontfamily, pts, bold ? QFont::Bold : QFont::Normal);
 		painter.setFont(QFont(fontfamily, pts));
 		QFontMetrics fm = painter.fontMetrics();
-		if ( fm.width("M") > qt_settings->glyphs().width() )
+		if ( fm.QFM_WIDTH("M") > qt_settings->glyphs().width() )
 		    break;
 		if ( fm.height() > qt_settings->glyphs().height() )
 		    break;

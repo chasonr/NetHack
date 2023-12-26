@@ -8,17 +8,8 @@ extern "C" {
 #include "hack.h"
 }
 #include "tile2x11.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -54,8 +45,7 @@ NetHackQtGlyphs::NetHackQtGlyphs()
     if (!img.load(tile_file)) {
 	tile_file = PIXMAPDIR "/x11tiles";
 	if (!img.load(tile_file)) {
-	    QString msg;
-	    msg.sprintf("Cannot load x11tiles or nhtiles.bmp");
+	    QString msg = nh_qsprintf("Cannot load x11tiles or nhtiles.bmp");
 	    QMessageBox::warning(0, "IO Error", msg);
 	} else {
 	    tiles_per_row = TILES_PER_ROW;

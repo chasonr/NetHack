@@ -7,22 +7,15 @@
 extern "C" {
 #include "hack.h"
 }
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #include <QtCore/QStringList>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
+#if QT_VERSION < 0x060000
 #include <QtMultimedia/QSound>
+#endif
 #else
 #include <QtGui/QSound>
 #endif
@@ -92,10 +85,15 @@ NetHackQtBind::NetHackQtBind(int& argc, char** argv) :
 	capt->setAlignment(Qt::AlignCenter);
 	if ( !pm.isNull() ) {
 	    lsplash->setFixedSize(pm.size());
-	    lsplash->setMask(pm);
+	    //lsplash->setMask(pm);
 	}
-	splash->move((QApplication::desktop()->width()-pm.width())/2,
-		      (QApplication::desktop()->height()-pm.height())/2);
+#if QT_VERSION < 0x060000
+    QSize screensize = QApplication::desktop()->size();
+#else
+    QSize screensize = splash->screen()->size();
+#endif
+	splash->move((screensize.width()-pm.width())/2,
+		      (screensize.height()-pm.height())/2);
 	//splash->setGeometry(0,0,100,100);
 	if ( qt_compact_mode ) {
 	    splash->showMaximized();
@@ -110,7 +108,7 @@ NetHackQtBind::NetHackQtBind(int& argc, char** argv) :
 	splash->repaint();
 	lsplash->repaint();
 	capt->repaint();
-	qApp->flush();
+	qApp->processEvents();
 
     } else {
 	splash = 0;
@@ -142,7 +140,6 @@ void NetHackQtBind::qt_init_nhwindows(int* argc, char** argv)
     seteuid(getuid());
 #endif
 
-    QApplication::setColorSpec(ManyColor);
     instance=new NetHackQtBind(*argc,argv);
 
 #ifdef UNIX
@@ -360,8 +357,7 @@ void NetHackQtBind::qt_display_file(const char *filename, BOOLEAN_P must_exist)
     }
 
     if (complain) {
-	QString message;
-	message.sprintf("File not found: %s\n",filename);
+	QString message = nh_qsprintf("File not found: %s\n",filename);
 	QMessageBox::warning(NULL, "File Error", message, QMessageBox::Ignore);
     }
 }
@@ -702,12 +698,12 @@ bool NetHackQtBind::notify(QObject *receiver, QEvent *event)
 		}
 	    }
 	    QString key=key_event->text();
-	    QChar ch = !key.isEmpty() ? key.at(0) : 0;
-	    if (ch > 128) ch = 0;
+	    QChar ch = !key.isEmpty() ? key.at(0) : QChar(0);
+	    if (ch > QChar(128)) ch = QChar(0);
 	    if ( ch == 0 && (key_event->modifiers() & Qt::ControlModifier) ) {
 		// On Mac, ascii control codes are not sent, force them.
 		if ( k>=Qt::Key_A && k<=Qt::Key_Z )
-		    ch = k - Qt::Key_A + 1;
+		    ch = (QChar) (k - (Qt::Key_A - 1));
 	    }
 	    if (!macro && ch != 0) {
 		bool alt = (key_event->modifiers()&Qt::AltModifier) ||

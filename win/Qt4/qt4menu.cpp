@@ -7,17 +7,8 @@
 extern "C" {
 #include "hack.h"
 }
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -115,7 +106,7 @@ NetHackQtMenuWindow::NetHackQtMenuWindow(QWidget *parent) :
 
     QPoint pos(0,ok->height());
     move(pos);
-    prompt.setParent(this,0);
+    prompt.setParent(this);
     prompt.move(pos);
 
     grid->addWidget(ok, 0, 0);
@@ -244,7 +235,7 @@ int NetHackQtMenuWindow::SelectMenu(int h, MENU_ITEM_P **menu_list)
             continue;
         }
 	for (std::size_t j = 0U; j < columns.size(); ++j) {
-	    int w = fm.width(columns[j] + "  \t");
+	    int w = fm.QFM_WIDTH(columns[j] + "  \t");
 	    if (j >= col_widths.size()) {
 		col_widths.push_back(w);
 	    } else if (col_widths[j] < w) {
@@ -262,13 +253,13 @@ int NetHackQtMenuWindow::SelectMenu(int h, MENU_ITEM_P **menu_list)
 	for (std::size_t j = 0U; j+1U < columns.size(); ++j) {
 	    columns[j] += "\t";
 	    int width = col_widths[j];
-	    while (fm.width(columns[j]) < width) {
+	    while (fm.QFM_WIDTH(columns[j]) < width) {
 		columns[j] += "\t";
 	    }
 	}
 	text = columns.join("");
 	twi->setText(text);
-	WidenColumn(4, fm.width(text));
+	WidenColumn(4, fm.QFM_WIDTH(text));
     }
 
     // FIXME:  size for compact mode
@@ -345,7 +336,7 @@ void NetHackQtMenuWindow::AddRow(int row, const MenuItem& mi)
 	twi = new QTableWidgetItem("");
 	table->setItem(row, 0, twi);
 	twi->setFlags(Qt::ItemIsEnabled);
-	WidenColumn(0, fm.width("999999"));
+	WidenColumn(0, fm.QFM_WIDTH("999999"));
 	// Check box, set if selected
 	QCheckBox *cb = new QCheckBox();
 	cb->setChecked(mi.selected);
@@ -384,11 +375,11 @@ void NetHackQtMenuWindow::AddRow(int row, const MenuItem& mi)
     twi = new QTableWidgetItem(letter);
     table->setItem(row, 3, twi);
     table->item(row, 3)->setFlags(Qt::ItemIsEnabled);
-    WidenColumn(3, fm.width(letter));
+    WidenColumn(3, fm.QFM_WIDTH(letter));
     twi = new QTableWidgetItem(text);
     table->setItem(row, 4, twi);
     table->item(row, 4)->setFlags(Qt::ItemIsEnabled);
-    WidenColumn(4, fm.width(text));
+    WidenColumn(4, fm.QFM_WIDTH(text));
 
     if (mi.color != -1) {
 	twi->setForeground(colors[mi.color]);
@@ -729,7 +720,12 @@ void NetHackQtTextWindow::Display(bool block)
 	search.show();
 	rip.hide();
     }
-    int mh = QApplication::desktop()->height()*3/5;
+#if QT_VERSION < 0x060000
+    QSize screensize = QApplication::desktop()->size();
+#else
+    QSize screensize = screen()->size();
+#endif
+    int mh = screensize.height()*3/5;
     if ( (qt_compact_mode && lines->TotalHeight() > mh) || use_rip ) {
 	// big, so make it fill
 	showMaximized();

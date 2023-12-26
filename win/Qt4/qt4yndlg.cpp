@@ -7,17 +7,8 @@
 extern "C" {
 #include "hack.h"
 }
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
-#undef Protection
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -62,7 +53,7 @@ char NetHackQtYnDialog::Exec()
 		if ( question[c] == '-' ) {
 		    from = question[c-1].unicode();
 		} else if ( from != 0 ) {
-		    for (unsigned f=from+1; f<=question[c]; f++)
+		    for (unsigned f=from+1; QChar(f)<=question[c]; f++)
 			ch.append(QChar(f));
 		    from = 0;
 		} else {
@@ -114,7 +105,7 @@ char NetHackQtYnDialog::Exec()
 	    q->setMargin(4);
 	    vb->addWidget(q);
 	}
-	QGroupBox *group = new QGroupBox(bigq ? QString::null : qlabel, this);
+	QGroupBox *group = new QGroupBox(bigq ? QString() : qlabel, this);
 	vb->addWidget(group);
 	QHBoxLayout *groupbox = new QHBoxLayout();
 	group->setLayout(groupbox);
@@ -204,7 +195,7 @@ char NetHackQtYnDialog::Exec()
 	QPushButton cancel("Dismiss",this);
 	label.setFrameStyle(QFrame::Box|QFrame::Sunken);
 	label.setAlignment(Qt::AlignCenter);
-	label.resize(fontMetrics().width(qlabel)+60,30+fontMetrics().height());
+	label.resize(fontMetrics().QFM_WIDTH(qlabel)+60,30+fontMetrics().height());
 	cancel.move(width()/2-cancel.width()/2,label.geometry().bottom()+8);
 	connect(&cancel,SIGNAL(clicked()),this,SLOT(reject()));
 	centerOnMain(this);

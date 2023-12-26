@@ -90,8 +90,8 @@ TARGET_CPU=x86
 #    PDCurses source tree, which must already be resident on your
 #    machine.
 #
-# ADD_CURSES=Y
-# PDCURSES_TOP=../../pdcurses
+ADD_CURSES=Y
+PDCURSES_TOP=../../pdcurses
 # If you want the NetHackW binary to support Curses, enable ADD_WCURSES and
 # use the win32a fork of PDCurses. See:
 # https://www.projectpluto.com/win32a.htm
@@ -102,18 +102,27 @@ TARGET_CPU=x86
 #
 #WANT_WIN_QT4 = N
 
-# WANT_WIN_QT4 requires Qt 4 or Qt 5, see
+# WANT_WIN_QT4 requires Qt 4, 5 or 6, see
 # https://www.qt.io/download-open-source/
 # Earlier versions of Qt are not compatible with Windows
-# For Qt 5, use:
+# For Qt 6, use:
 #
-#QT4_DIRECTORY = C:/qt/Qt5.13.0/5.13.0/mingw73_32
-#HAVE_QT5 = Y
+#QT4_DIRECTORY = c:/Qt/6.6.1/mingw_64
+#QT_VERSION = 6
 
-# For Qt 4, comment out the above two lines and use:
+# For Qt 5, install Qt by running:
+#    https://download.qt.io/archive/qt/5.12/5.12.12/qt-opensource-windows-x86-5.12.12.exe
+#QT4_DIRECTORY = c:/Qt/Qt5.12.12/5.12.12/mingw73_64
+#QT_VERSION = 5
+
+# For Qt 4, install Qt by running:
+#    https://download.qt.io/archive/qt/4.8/4.8.7/qt-opensource-windows-x86-mingw482-4.8.7.exe
+# and MinGW by extracting to C:\ :
+#    https://phoenixnap.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/8.1.0/threads-posix/dwarf/i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
+# (this is a later version than the Qt installer will recommend)
 #
-#QT4_DIRECTORY = c:/Qt/4.8.6
-#HAVE_QT5 = N
+#QT4_DIRECTORY = c:/Qt/4.8.7
+#QT_VERSION = 4
 
 # 4c SDL2
 # The directory assumes that the SDL2 development tarball is unpacked under
@@ -166,7 +175,7 @@ SKIP_NETHACKW=Y
 #==============================================================================
 
 #  The version of the game this Makefile was designed for
-NETHACK_VERSION="3.6.6"
+NETHACK_VERSION="3.6.7"
 
 # A brief version for use in macros
 NHV1=$(subst .,,$(NETHACK_VERSION))
@@ -217,7 +226,7 @@ RANDOM  = $(OBJ)/random.o
 #RANDOM =
 BCRYPT=-lbcrypt
 
-WINPFLAG   = -DTILES -DMSWIN_GRAPHICS -DWIN32CON -D_WIN32_IE=0x0400 -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
+WINPFLAG   = -DTILES -DMSWIN_GRAPHICS -DWIN32CON -D_WIN32_IE=0x0400 -D_WIN32_WINNT=0x0602 -DWINVER=0x0602
 ifeq "$(WANT_WIN_QT4)" "Y"
     WINPFLAG += -DQT_GRAPHICS -DPIXMAPDIR='"."'
 endif
@@ -426,9 +435,6 @@ endif
 
 COMCTRL = comctl32.lib
 
-KEYDLLS = $(GAMEDIR)/nhdefkey.dll $(GAMEDIR)/nh340key.dll \
-	  $(GAMEDIR)/nhraykey.dll
-
 TILEUTIL16  = $(UTIL)/tile2bmp.exe
 TILEBMP16   = $(SRC)/tiles.bmp
 
@@ -540,6 +546,11 @@ endif
 #==========================================
 #==========================================
 
+ifeq "$(TARGET_CPU)" "x64"
+PREFIX = x86_64-w64-mingw32
+else
+PREFIX = i686-w64-mingw32
+endif
 ifndef TRAVIS_COMPILER
 cc     = $(PREFIX)-gcc
 cxx    = $(PREFIX)-g++
@@ -573,16 +584,21 @@ baselibs = -lwinmm -lshell32 -lole32 -luuid
 conlibs = -lgdi32 $(baselibs) $(BCRYPT)
 guilibs = -lcomctl32 $(baselibs) $(BCRYPT)
 ifeq "$(WANT_WIN_QT4)" "Y"
-    # Might be either Qt 4 or Qt 5
-    ifeq "$(HAVE_QT5)" "Y"
-	guilibs += $(QT4_DIRECTORY)/lib/libQt5Core.a
-	guilibs += $(QT4_DIRECTORY)/lib/libQt5Gui.a
-	guilibs += $(QT4_DIRECTORY)/lib/libQt5Widgets.a
-	conlibs += $(QT4_DIRECTORY)/lib/libQt5Core.a
+    # Might be either Qt 4, 5 or 6
+    ifeq "$(QT_VERSION)" "6"
+        guilibs += $(QT4_DIRECTORY)/lib/libQt6Core.a
+        guilibs += $(QT4_DIRECTORY)/lib/libQt6Gui.a
+        guilibs += $(QT4_DIRECTORY)/lib/libQt6Widgets.a
+        conlibs += $(QT4_DIRECTORY)/lib/libQt6Core.a
+    else ifeq "$(QT_VERSION)" "5"
+        guilibs += $(QT4_DIRECTORY)/lib/libQt5Core.a
+        guilibs += $(QT4_DIRECTORY)/lib/libQt5Gui.a
+        guilibs += $(QT4_DIRECTORY)/lib/libQt5Widgets.a
+        conlibs += $(QT4_DIRECTORY)/lib/libQt5Core.a
     else
-	guilibs += $(QT4_DIRECTORY)/lib/libQtCore4.a
-	guilibs += $(QT4_DIRECTORY)/lib/libQtGui4.a
-	conlibs += $(QT4_DIRECTORY)/lib/libQtCore4.a
+        guilibs += $(QT4_DIRECTORY)/lib/libQtCore4.a
+        guilibs += $(QT4_DIRECTORY)/lib/libQtGui4.a
+        conlibs += $(QT4_DIRECTORY)/lib/libQtCore4.a
     endif
 endif
 ifeq "$(WANT_WIN_SDL2)" "Y"
@@ -598,14 +614,18 @@ endif
 #==========================================
 EXTRA_FILES =
 ifeq "$(WANT_WIN_QT4)" "Y"
-    ifeq "$(HAVE_QT5)" "Y"
-	EXTRA_FILES += $(GAMEDIR)/Qt5Core.dll
-	EXTRA_FILES += $(GAMEDIR)/Qt5Gui.dll
-	EXTRA_FILES += $(GAMEDIR)/Qt5Widgets.dll
+    ifeq "$(QT_VERSION)" "6"
+        EXTRA_FILES += $(GAMEDIR)/platforms/qwindows.dll
+        EXTRA_FILES += $(GAMEDIR)/Qt6Core.dll
+        EXTRA_FILES += $(GAMEDIR)/Qt6Gui.dll
+        EXTRA_FILES += $(GAMEDIR)/Qt6Widgets.dll
+    else ifeq "$(QT_VERSION)" "5"
+        EXTRA_FILES += $(GAMEDIR)/Qt5Core.dll
+        EXTRA_FILES += $(GAMEDIR)/Qt5Gui.dll
+        EXTRA_FILES += $(GAMEDIR)/Qt5Widgets.dll
     else
-    # TODO: define QT 4 DLLs here
-	EXTRA_FILES += $(GAMEDIR)/QtCore4.dll
-	EXTRA_FILES += $(GAMEDIR)/QtGui4.dll
+        EXTRA_FILES += $(GAMEDIR)/QtCore4.dll
+        EXTRA_FILES += $(GAMEDIR)/QtGui4.dll
     endif
     EXTRA_FILES += $(GAMEDIR)/rip.xpm
     EXTRA_FILES += $(GAMEDIR)/nhtiles.bmp
@@ -642,9 +662,6 @@ endif
 #==========================================
 # Rules for files in src
 #==========================================
-
-$(OBJ)/%.o : /%.c
-	$(cc) $(CFLAGS)  -o$@ $<
 
 $(OBJ)/%.o : $(SRC)/%.c
 	$(cc) $(CFLAGS)   -o$@  $<
@@ -776,7 +793,9 @@ export LEXYYC
 # Rules for files in win/Qt4
 #==========================================
 
-ifeq "$(HAVE_QT5)" "Y"
+ifeq "$(QT_VERSION)" "6"
+QT4_CXXFLAGS = -std=c++17
+else ifeq "$(QT_VERSION)" "5"
 QT4_CXXFLAGS = -std=c++11
 else
 QT4_CXXFLAGS =
@@ -936,7 +955,7 @@ gamedir.tag:
 	@if exist $(GAMEDIR) echo directory created > $@
 
 $(GAMEDIR)/NetHack.exe : gamedir.tag $(PDCLIB) $(O)tile.o $(O)nttty.o $(O)guistub.o \
-			$(ALLOBJ) $(TTYOBJ) $(GUIOBJ) $(O)conres.o $(KEYDLLS)
+			$(ALLOBJ) $(TTYOBJ) $(GUIOBJ) $(O)conres.o
 	@echo Linking $@...
 	$(link) $(lflags) -o$@ $(ALLOBJ) $(TTYOBJ) $(O)nttty.o $(O)tile.o \
 		$(O)guistub.o $(O)conres.o $(PDCLIB) $(conlibs) -static -lstdc++
@@ -952,36 +971,12 @@ $(GAMEDIR)/NetHack.exe : gamedir.tag $(PDCLIB) $(O)tile.o $(O)nttty.o $(O)guistu
 
 ifneq "$(SKIP_NETHACKW)" "Y"
 $(GAMEDIR)/NetHackW.exe : gamedir.tag $(WPDCLIB) $(O)tile.o $(O)ttystub.o \
-			$(ALLOBJ) $(TTYOBJ) $(GUIOBJ) $(O)winres.o $(KEYDLLS)
+			$(ALLOBJ) $(TTYOBJ) $(GUIOBJ) $(O)winres.o
 	@echo Linking $@...
 	$(link) $(lflags) -mwindows -o$@ $(ALLOBJ) $(GUIOBJ) $(O)tile.o $(O)ttystub.o \
 		$(O)winres.o $(WPDCLIB) $(guilibs) -static -lstdc++
 	$(subst /,\,@if exist $(O)install.tag del $(O)install.tag)
 endif
-
-$(O)nhdefkey.o:
-	$(cc) $(CFLAGS) -DBUILD_DLL -o$@ $(MSWSYS)/nhdefkey.c 
-
-$(GAMEDIR)/nhdefkey.dll : $(O)nhdefkey.o gamedir.tag
-	@echo Linking $@
-	$(cc) -shared -Wl,--export-all-symbols \
-		-Wl,--add-stdcall-alias -o $@ $<
-
-$(O)nh340key.o:
-	$(cc) $(CFLAGS) -DBUILD_DLL -o$@ $(MSWSYS)/nh340key.c 
-
-$(GAMEDIR)/nh340key.dll : $(O)nh340key.o gamedir.tag
-	@echo Linking $@
-	$(cc) -shared -Wl,--export-all-symbols \
-		-Wl,--add-stdcall-alias -o $@ $<
-
-$(O)nhraykey.o:
-		$(cc) $(CFLAGS) -DBUILD_DLL -o$@ $(MSWSYS)/nhraykey.c 
-
-$(GAMEDIR)/nhraykey.dll : $(O)nhraykey.o gamedir.tag
-	@echo Linking $@
-	$(cc) -shared -Wl,--export-all-symbols \
-		-Wl,--add-stdcall-alias -o $@ $<
 
 $(GAME)_.ico : $(MSWSYS)/$(GAME).ico
 	$(subst /,\,@copy $(MSWSYS)/$(GAME).ico $@)
@@ -1345,9 +1340,6 @@ spotless: clean
 	if exist sp_lev.tag del sp_lev.tag
 ifneq "$(W_GAMEDIR)" ""
 	if exist $(W_GAMEDIR)\NetHack.exe  del $(W_GAMEDIR)\NetHack.exe
-	if exist $(W_GAMEDIR)\nhdefkey.dll del $(W_GAMEDIR)\nhdefkey.dll
-	if exist $(W_GAMEDIR)\nh340key.dll del $(W_GAMEDIR)\nh340key.dll
-	if exist $(W_GAMEDIR)\nhraykey.dll del $(W_GAMEDIR)\nhraykey.dll
 	if exist $(W_GAMEDIR)\NetHack.exe  del $(W_GAMEDIR)\NetHack.exe
 	if exist $(W_GAMEDIR)\NetHack.pdb  del $(W_GAMEDIR)\NetHack.pdb
 	if exist $(W_GAMEDIR)\nhdat$(NHV)  del $(W_GAMEDIR)\nhdat$(NHV)
@@ -1446,14 +1438,11 @@ ifneq "$(W_QT4)" ""
 	if exist $(W_QT4)\*.moc            del $(W_QT4)\*.moc
 endif
 	if exist $(W_GAMEDIR)\license. del $(W_GAMEDIR)\license.
-	if exist $(W_GAMEDIR)\nh340key.dll del $(W_GAMEDIR)\nh340key.dll
-	if exist $(W_GAMEDIR)\nhdefkey.dll del $(W_GAMEDIR)\nhdefkey.dll
-	if exist $(W_GAMEDIR)\nhraykey.dll del $(W_GAMEDIR)\nhraykey.dll
 
 clean:
 	if exist initialchk del initialchk
-	if exist $(O)install.tag del $(O)install.tag
-	if exist $(O)utility.tag del $(O)utility.tag
+	$(subst /,\,if exist $(O)install.tag del $(O)install.tag)
+	$(subst /,\,if exist $(O)utility.tag del $(O)utility.tag)
 ifneq "$(W_UTIL)" ""
 	if exist $(W_UTIL)\makedefs.exe    del $(W_UTIL)\makedefs.exe
 	if exist $(W_UTIL)\levcomp.exe     del $(W_UTIL)\levcomp.exe
@@ -1478,21 +1467,6 @@ ifneq "$(W_OBJ)" ""
 	if exist $(W_OBJ)\makedefs.MAP     del $(W_OBJ)\makedefs.MAP
 	if exist $(W_OBJ)\makedefs.PDB     del $(W_OBJ)\makedefs.PDB
 	if exist $(W_OBJ)\NetHack.MAP      del $(W_OBJ)\NetHack.MAP
-	if exist $(W_OBJ)\nh340key.def     del $(W_OBJ)\nh340key.def
-	if exist $(W_OBJ)\nh340key.exp     del $(W_OBJ)\nh340key.exp
-	if exist $(W_OBJ)\nh340key.lib     del $(W_OBJ)\nh340key.lib
-	if exist $(W_OBJ)\nh340key.map     del $(W_OBJ)\nh340key.map
-	if exist $(W_OBJ)\nh340key.PDB     del $(W_OBJ)\nh340key.PDB
-	if exist $(W_OBJ)\nhdefkey.def     del $(W_OBJ)\nhdefkey.def
-	if exist $(W_OBJ)\nhdefkey.exp     del $(W_OBJ)\nhdefkey.exp
-	if exist $(W_OBJ)\nhdefkey.lib     del $(W_OBJ)\nhdefkey.lib
-	if exist $(W_OBJ)\nhdefkey.map     del $(W_OBJ)\nhdefkey.map
-	if exist $(W_OBJ)\nhdefkey.PDB     del $(W_OBJ)\nhdefkey.PDB
-	if exist $(W_OBJ)\nhraykey.def     del $(W_OBJ)\nhraykey.def
-	if exist $(W_OBJ)\nhraykey.exp     del $(W_OBJ)\nhraykey.exp
-	if exist $(W_OBJ)\nhraykey.lib     del $(W_OBJ)\nhraykey.lib
-	if exist $(W_OBJ)\nhraykey.map     del $(W_OBJ)\nhraykey.map
-	if exist $(W_OBJ)\nhraykey.PDB     del $(W_OBJ)\nhraykey.PDB
 	if exist $(W_OBJ)\envchk.tag       del $(W_OBJ)\envchk.tag
 	if exist $(W_OBJ)\obj.tag          del $(W_OBJ)\obj.tag
 	if exist $(W_OBJ)\sp_lev.tag       del $(W_OBJ)\sp_lev.tag
@@ -1581,6 +1555,25 @@ endif
 
 ifeq "$(WANT_WIN_QT4)" "Y"
 # Qt dependencies
+
+$(GAMEDIR)/platforms/qwindows.dll : $(QT4_DIRECTORY)/plugins/platforms/qwindows.dll
+	$(subst /,\,if not exist $(GAMEDIR)/platforms mkdir $(GAMEDIR)/platforms)
+	$(subst /,\,@xcopy $(QT4_DIRECTORY)/plugins/platforms $(GAMEDIR)/platforms >nul)
+	$(subst /,\,if not exist $(GAMEDIR)/iconengines mkdir $(GAMEDIR)/iconengines)
+	$(subst /,\,@xcopy $(QT4_DIRECTORY)/plugins/iconengines $(GAMEDIR)/iconengines >nul)
+	$(subst /,\,if not exist $(GAMEDIR)/imageformats mkdir $(GAMEDIR)/imageformats)
+	$(subst /,\,@xcopy $(QT4_DIRECTORY)/plugins/imageformats $(GAMEDIR)/imageformats >nul)
+	$(subst /,\,if not exist $(GAMEDIR)/styles mkdir $(GAMEDIR)/styles)
+	$(subst /,\,@xcopy $(QT4_DIRECTORY)/plugins/styles $(GAMEDIR)/styles >nul)
+
+$(GAMEDIR)/Qt6Core.dll : $(QT4_DIRECTORY)/bin/Qt6Core.dll
+	$(subst /,\,@copy $< $@ >nul)
+
+$(GAMEDIR)/Qt6Gui.dll : $(QT4_DIRECTORY)/bin/Qt6Gui.dll
+	$(subst /,\,@copy $< $@ >nul)
+
+$(GAMEDIR)/Qt6Widgets.dll : $(QT4_DIRECTORY)/bin/Qt6Widgets.dll
+	$(subst /,\,@copy $< $@ >nul)
 
 $(GAMEDIR)/Qt5Core.dll : $(QT4_DIRECTORY)/bin/Qt5Core.dll
 	$(subst /,\,@copy $< $@ >nul)
