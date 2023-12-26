@@ -5,16 +5,8 @@
 // qt4click.cpp -- a mouse click buffer
 
 #include "hack.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #include "qt4click.h"
 

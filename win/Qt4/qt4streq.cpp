@@ -5,16 +5,8 @@
 // qt4streq.cpp -- string requestor
 
 #include "hack.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -78,9 +70,9 @@ bool NetHackQtStringRequestor::Get(char* buffer, int maxchar)
 {
     input.setMaxLength(maxchar);
     if (prompt.text().size() > 16) {
-	resize(fontMetrics().width(prompt.text())+50,fontMetrics().height()*6);
+	resize(fontMetrics().QFM_WIDTH(prompt.text())+50,fontMetrics().height()*6);
     } else {
-	resize(fontMetrics().width(prompt.text())*2+50,fontMetrics().height()*4);
+	resize(fontMetrics().QFM_WIDTH(prompt.text())*2+50,fontMetrics().height()*4);
     }
 
 #ifdef EDIT_GETLIN

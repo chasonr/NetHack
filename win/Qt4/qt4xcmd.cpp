@@ -6,16 +6,8 @@
 
 #include "hack.h"
 #include "func_tab.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -53,7 +45,7 @@ NetHackQtExtCmdRequestor::NetHackQtExtCmdRequestor(QWidget *parent) :
     int butw=50;
     QFontMetrics fm = fontMetrics();
     for (i=0; extcmdlist[i].ef_txt; i++) {
-	butw = std::max(butw,30+fm.width(extcmdlist[i].ef_txt));
+	butw = std::max(butw,30+fm.QFM_WIDTH(extcmdlist[i].ef_txt));
     }
     int ncols=4;
 

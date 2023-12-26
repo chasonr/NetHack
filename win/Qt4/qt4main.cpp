@@ -8,16 +8,8 @@ extern "C" {
 #include "hack.h"
 }
 #include "patchlevel.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -438,8 +430,7 @@ static const char * cast_c_xpm[] = {
 static QString
 aboutMsg()
 {
-    QString msg;
-    msg.sprintf(
+    QString msg = nh_qsprintf(
     "Qt NetHack is a version of NetHack built\n"
 #ifdef KDE
     "using KDE and the Qt GUI toolkit.\n"
@@ -636,7 +627,11 @@ NetHackQtMainWindow::NetHackQtMainWindow(NetHackQtKeyBuffer& ks) :
                 if (actchar[0]) {
                     QString name = menuitem;
                     QAction *action = item[i].menu->addAction(name);
+#if QT_VERSION < 0x060000
                     action->setData(actchar);
+#else
+                    action->setData(QString(actchar));
+#endif
                 }
 	    } else {
 		item[i].menu->addSeparator();
@@ -728,9 +723,14 @@ NetHackQtMainWindow::NetHackQtMainWindow(NetHackQtKeyBuffer& ks) :
     setMenu (menubar);
 #endif
 
+#if QT_VERSION < 0x060000
+    QSize screensize = QApplication::desktop()->size();
+#else
+    QSize screensize = screen()->size();
+#endif
     int x=0,y=0;
-    int w=QApplication::desktop()->width()-10; // XXX arbitrary extra space for frame
-    int h=QApplication::desktop()->height()-50;
+    int w=screensize.width()-10; // XXX arbitrary extra space for frame
+    int h=screensize.height()-50;
 
     int maxwn;
     int maxhn;

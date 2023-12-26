@@ -270,7 +270,6 @@ NHSplashWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-#ifdef _MSC_VER
     case WM_DPICHANGED: {
         SplashData *splashData = (SplashData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
@@ -281,7 +280,6 @@ NHSplashWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         InvalidateRect(hWnd, NULL, TRUE);
     } break;
-#endif // _MSC_VER
 
     }
     return FALSE;

@@ -5,16 +5,8 @@
 // qt4rip.cpp -- tombstone window
 
 #include "hack.h"
-#undef Invisible
-#undef Warning
-#undef index
-#undef msleep
-#undef rindex
-#undef wizard
-#undef yn
-#undef min
-#undef max
 
+#include "qt4pre.h"
 #include <QtGui/QtGui>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QtWidgets>
@@ -41,7 +33,7 @@ tryload(QPixmap& pm, const char* fn)
 {
     if (!pm.load(fn)) {
 	QString msg;
-	msg.sprintf("Cannot load \"%s\"", fn);
+	msg = nh_qsprintf("Cannot load \"%s\"", fn);
 	QMessageBox::warning(NetHackQtBind::mainWidget(), "IO Error", msg);
     }
 }
