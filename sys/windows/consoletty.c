@@ -1368,7 +1368,7 @@ console_g_putch(int in_ch)
     if (console.current_nhattr[ATR_BOLD])
         console.attr |= (inverse) ? BACKGROUND_INTENSITY : FOREGROUND_INTENSITY;
     cell.attribute = console.attr;
-    cell.character = (console.has_unicode ? cp437[ch] : ch);
+    cell.character = (console.has_unicode ? cp437_table[ch] : ch);
 #else
     cell.attr = console.attr;
     cell.colorseq = esc_seq_colors[console.current_nhcolor];
@@ -2169,7 +2169,7 @@ check_font_widths(void)
     wchar_t wcUsed[256];
     for (int i = 0; i < (int) sizeof(used); i++)
         if (used[i])
-            wcUsed[wcUsedCount++] = cp437[i];
+            wcUsed[wcUsedCount++] = cp437_table[i];
 
     all_glyphs_fit = TRUE;
 
@@ -2295,7 +2295,7 @@ void set_cp_map(void)
 #else
         if (console.code_page == 437) {
 #endif
-            memcpy(console.cpMap, cp437, sizeof(console.cpMap));
+            memcpy(console.cpMap, cp437_table, sizeof(console.cpMap));
         } else {
             for (int i = 0; i < 256; i++) {
                 char c = (char)i;
@@ -2312,7 +2312,7 @@ void set_cp_map(void)
                 // remap to the appropriate unicode character per our
                 // code page 437 mappings.
                 if (console.cpMap[i] < 32)
-                    console.cpMap[i] = cp437[console.cpMap[i]];
+                    console.cpMap[i] = cp437_table[console.cpMap[i]];
             }
         }
 

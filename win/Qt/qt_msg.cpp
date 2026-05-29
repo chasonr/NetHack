@@ -116,7 +116,7 @@ void NetHackQtMessageWindow::PutStr(int attr, const QString& text)
     // as a symbol
     QString text2;
     if (text.mid(1, 3) == "   ") {
-	text2 = QChar(cp437(text.at(0).unicode())) + text.mid(1);
+	text2 = QChar(cp437_table[text.at(0).unicode()]) + text.mid(1);
     } else {
 	text2 = text;
     }

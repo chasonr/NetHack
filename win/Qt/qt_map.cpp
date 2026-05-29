@@ -158,7 +158,7 @@ void NetHackQtMapViewport::paintEvent(QPaintEvent* event)
 
                 special = Glyphflags(i, j);
                 if (SYMHANDLING(H_IBM)) {
-                    ch = cp437(ch);
+                    ch = cp437_table[ch];
                 }
                 color = Glyphcolor(i, j);
                 painter.setPen(NetHackQtBind::nhcolor_to_pen(color));

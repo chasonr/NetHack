@@ -11,8 +11,6 @@
 #define PATH_SEPARATOR '\\'
 #endif
 
-extern const WCHAR cp437[256];
-
 WCHAR *
 winos_ascii_to_wide_str(const unsigned char * src, WCHAR * dst, size_t dstLength);
 

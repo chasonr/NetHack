@@ -16,9 +16,6 @@ extern size_t str_copy(char *dest, const char *src, size_t max);
 extern QString str_titlecase(const QString& str);
 extern QString nh_capitalize_words(const QString& str);
 
-// Map symbol conversion
-extern int cp437(int ch);
-
 // sprintf
 extern QString nh_qsprintf(const char *format, ...)
 #if defined(__GNUC__) && (__GNUC__ >= 2)

@@ -1300,4 +1300,6 @@ extern const struct const_globals cg;
 
 extern struct obj hands_obj;
 
+extern const uint16 cp437_table[256];
+
 #endif /* DECL_H */
