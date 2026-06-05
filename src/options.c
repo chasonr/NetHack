@@ -4600,7 +4600,7 @@ optfn_videoshades(
 }
 #endif /* VIDEOSHADES */
 
-#ifdef MSDOS
+#if defined(MSDOS) || defined(SDL2_GRAPHICS)
 staticfn int
 optfn_video_width(
     int optidx UNUSED, int req, boolean negated,
@@ -4642,7 +4642,9 @@ optfn_video_height(
     }
     return optn_ok;
 }
+#endif /* MSDOS || SDL2_GRAPHICS */
 
+#ifdef MSDOS
 #ifdef NO_TERMS
 staticfn int
 optfn_video(

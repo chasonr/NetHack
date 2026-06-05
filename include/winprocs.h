@@ -11,6 +11,7 @@
 #endif
 
 enum wp_ids { wp_tty = 1, wp_X11, wp_Qt, wp_mswin, wp_curses,
+              wp_sdl2,
               wp_chainin, wp_chainout, wp_shim,
               wp_hup, wp_guistubs, wp_ttystubs,
 #if defined(AMIGA)

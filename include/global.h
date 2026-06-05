@@ -259,7 +259,7 @@ typedef uchar nhsym;
 #endif
 
 #if defined(X11_GRAPHICS) || defined(QT_GRAPHICS) || defined(GNOME_GRAPHICS) \
-    || defined(MSWIN_GRAPHICS)
+    || defined(MSWIN_GRAPHICS) || defined(SDL2_GRAPHICS)
 #ifndef NO_TILE_C
 #ifndef TILES_IN_GLYPHMAP
 #define TILES_IN_GLYPHMAP

@@ -484,9 +484,18 @@ else    # WANT_WIN_QT
 LINK = $(CC)
 endif	# !WANT_WIN_QT
 
+ifdef WANT_WIN_SDL2
+SDL2CFLAGS = $(shell pkg-config sdl2 pangocairo --cflags)
+WINSDL2LIB = $(shell pkg-config sdl2 pangocairo --libs)
+WINLIB += $(WINSDL2LIB)
+WINSDL2FONT = sdl2font_pango
+VARDATND0 += nhtiles.bmp rip.xpm nhsplash.xpm
+GENTILEOFILE = $(SRCDIR)/tile.o
+endif	# WANT_WIN_SDL2
+
 # prevent duplicate tile.o in WINOBJ
 WINOBJ = $(WINOBJ0)
-# prevent duplicates in VARDATND if both X11 and Qt are being supported
+# prevent duplicates in VARDATND if multiple graphical interfaces are being supported
 VARDATND += $(sort $(VARDATND0))
 
 GIT_HASH := $(shell echo `git rev-parse --verify HEAD` 2>&1)

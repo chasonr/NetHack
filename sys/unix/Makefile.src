@@ -265,6 +265,21 @@ WINX11OBJ ?= $(TARGETPFX)Window.o $(TARGETPFX)dialogs.o $(TARGETPFX)winX.o \
 	$(TARGETPFX)winmisc.o $(TARGETPFX)winstat.o $(TARGETPFX)wintext.o \
 	$(TARGETPFX)winval.o
 #
+# files for an SDL2 port
+# (tile.c is a generated source file)
+WINSDL2SRC ?= ../win/sdl2/$(WINSDL2FONT).c ../win/sdl2/sdl2getlin.c \
+	../win/sdl2/sdl2map.c ../win/sdl2/sdl2menu.c ../win/sdl2/sdl2message.c \
+	../win/sdl2/sdl2plsel.c ../win/sdl2/sdl2posbar.c \
+	../win/sdl2/sdl2status.c ../win/sdl2/sdl2text.c \
+	../win/sdl2/sdl2unicode.c ../win/sdl2/sdl2window.c $(GENTILECFILE) \
+	../win/share/tileset.c ../win/share/bmptiles.c ../win/share/giftiles.c
+WINSDL2OBJ ?= $(TARGETPFX)$(WINSDL2FONT).o $(TARGETPFX)sdl2getlin.o \
+	$(TARGETPFX)sdl2map.o $(TARGETPFX)sdl2menu.o $(TARGETPFX)sdl2message.o \
+	$(TARGETPFX)sdl2plsel.o $(TARGETPFX)sdl2posbar.o \
+	$(TARGETPFX)sdl2status.o $(TARGETPFX)sdl2text.o \
+	$(TARGETPFX)sdl2unicode.o $(TARGETPFX)sdl2window.o \
+	$(TARGETPFX)tileset.o $(TARGETPFX)bmptiles.o $(TARGETPFX)giftiles.o
+#
 # Files for a Qt 3 interface (renamed since nethack 3.6.x)
 #
 #WINQT3SRC = ../win/Qt3/qt3_win.cpp ../win/Qt3/qt3_clust.cpp \
@@ -1099,6 +1114,70 @@ $(TARGETPFX)wintext.o: ../win/X11/wintext.c $(HACK_H) ../include/winX.h \
 	$(TARGET_CC) $(TARGET_CFLAGS) $(X11CFLAGS) -c -o $@ ../win/X11/wintext.c
 $(TARGETPFX)winval.o: ../win/X11/winval.c $(HACK_H) ../include/winX.h
 	$(TARGET_CC) $(TARGET_CFLAGS) $(X11CFLAGS) -c -o $@ ../win/X11/winval.c
+$(TARGETPFX)sdl2font_mac.o : ../win/sdl2/sdl2font_mac.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2font.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2font_mac.c
+$(TARGETPFX)sdl2font_pango.o : ../win/sdl2/sdl2font_pango.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2font.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2font_pango.c
+$(TARGETPFX)sdl2getlin.o : ../win/sdl2/sdl2getlin.c $(HACK_H) \
+		../include/func_tab.h ../win/sdl2/sdl2.h \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2getlin.h \
+		../win/sdl2/sdl2window.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2getlin.c
+$(TARGETPFX)sdl2map.o : ../win/sdl2/sdl2map.c $(HACK_H) ../win/sdl2/sdl2.h \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2map.h \
+		../win/sdl2/sdl2window.h tileset.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2map.c
+$(TARGETPFX)sdl2menu.o : ../win/sdl2/sdl2menu.c $(HACK_H) ../win/sdl2/sdl2.h \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2map.h \
+		../win/sdl2/sdl2menu.h ../win/sdl2/sdl2window.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2menu.c
+$(TARGETPFX)sdl2message.o : ../win/sdl2/sdl2message.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2font.h \
+		../win/sdl2/sdl2map.h ../win/sdl2/sdl2message.h \
+		../win/sdl2/sdl2window.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2message.c
+$(TARGETPFX)sdl2plsel.o : ../win/sdl2/sdl2plsel.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2font.h \
+		../win/sdl2/sdl2menu.h ../win/sdl2/sdl2plsel.h \
+		../win/sdl2/sdl2window.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2plsel.c
+$(TARGETPFX)sdl2posbar.o : ../win/sdl2/sdl2posbar.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2font.h \
+		../win/sdl2/sdl2map.h ../win/sdl2/sdl2posbar.h \
+		../win/sdl2/sdl2window.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2posbar.c
+$(TARGETPFX)sdl2status.o : ../win/sdl2/sdl2status.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2font.h \
+		../win/sdl2/sdl2status.h ../win/sdl2/sdl2window.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2status.c
+$(TARGETPFX)sdl2text.o : ../win/sdl2/sdl2text.c $(HACK_H) ../win/sdl2/sdl2.h \
+		../win/sdl2/sdl2font.h ../win/sdl2/sdl2text.h \
+		../win/sdl2/sdl2window.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2text.c
+$(TARGETPFX)sdl2unicode.o : ../win/sdl2/sdl2unicode.c $(HACK_H) \
+		../win/sdl2/sdl2.h ../win/sdl2/sdl2unicode.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2unicode.c
+$(TARGETPFX)sdl2window.o : ../win/sdl2/sdl2window.c $(HACK_H) \
+		../include/dlb.h ../win/sdl2/sdl2.h ../win/sdl2/sdl2font.h \
+		../win/sdl2/sdl2getlin.h ../win/sdl2/sdl2map.h \
+		../win/sdl2/sdl2menu.h ../win/sdl2/sdl2message.h \
+		../win/sdl2/sdl2plsel.h ../win/sdl2/sdl2posbar.h \
+		../win/sdl2/sdl2status.h ../win/sdl2/sdl2text.h \
+		../win/sdl2/sdl2unicode.h ../win/sdl2/sdl2window.h
+	$(TARGET_CC) $(TARGET_CFLAGS) $(SDL2CFLAGS) -c -o $@ ../win/sdl2/sdl2window.c
+$(TARGETPFX)tileset.o : ../win/share/tileset.c $(CONFIG_H) \
+		../include/optlist.h ../include/objclass.h \
+		../include/defsym.h ../include/objects.h ../include/flag.h \
+		../include/tileset.h
+	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ ../win/share/tileset.c
+$(TARGETPFX)bmptiles.o : ../win/share/bmptiles.c $(CONFIG_H) \
+		../include/optlist.h ../include/tileset.h
+	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ ../win/share/bmptiles.c
+$(TARGETPFX)giftiles.o : ../win/share/giftiles.c $(CONFIG_H) \
+		../include/optlist.h ../include/tileset.h
+	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ ../win/share/giftiles.c
 $(TARGETPFX)wc_chainin.o: ../win/chain/wc_chainin.c $(HACK_H)
 	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ ../win/chain/wc_chainin.c
 $(TARGETPFX)wc_chainout.o: ../win/chain/wc_chainout.c $(HACK_H)

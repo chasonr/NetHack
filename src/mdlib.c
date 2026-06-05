@@ -139,6 +139,9 @@ static struct win_information window_opts[] = {
 #ifdef MSWIN_GRAPHICS /* win32 */
     { "mswin", "Windows GUI", TRUE },
 #endif
+#ifdef SDL2_GRAPHICS
+    { "sdl2", "SDL2", TRUE },
+#endif
 #ifdef SHIM_GRAPHICS
     { "shim", "NetHack Library Windowing Shim", TRUE },
 #endif

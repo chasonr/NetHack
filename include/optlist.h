@@ -831,7 +831,7 @@ static int optfn_##a(int, int, boolean, char *, char *);
                 No, Yes, No, No, NoAlias,
                 "gray shades to map to black/gray/white")
 #endif
-#ifdef MSDOS
+#if defined(MSDOS) || defined(SDL2_GRAPHICS)
     NHOPTC(video_width, Advanced, 10, opt_in, set_gameview,
                 No, Yes, No, No, NoAlias, "video width")
     NHOPTC(video_height, Advanced, 10, opt_in, set_gameview,
