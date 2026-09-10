@@ -280,6 +280,8 @@
     <ClCompile Include="$(WinWin32Dir)mhtext.c" />
     <ClCompile Include="$(WinWin32Dir)mswproc.c" />
     <ClCompile Include="$(WinWin32Dir)NetHackW.c" />
+    <ClCompile Include="$(WinShareDir)giftiles.c" />
+    <ClCompile Include="$(WinShareDir)tileset.c" />
     <ClCompile Include="$(SrcDir)sfbase.c" />
     <ClCompile Include="$(SrcDir)revision.c" />
   </ItemGroup>

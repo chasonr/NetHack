@@ -373,6 +373,15 @@ split_tiles(const struct TileSetImage *image)
 }
 #endif /* USE_TILE_SPLITTING */
 
+#ifdef WIN32 /* Win32 uses its native facilities for BMPs */
+boolean
+read_bmp_tiles(const char *filename UNUSED, struct TileSetImage *image UNUSED)
+{
+    /* stub */
+    return FALSE;
+}
+#endif /* !USE_PNG */
+
 #ifndef USE_PNG
 boolean
 read_png_tiles(const char *filename UNUSED, struct TileSetImage *image UNUSED)
