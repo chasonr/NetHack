@@ -74,6 +74,13 @@ DEBUGINFO=Y
 
 #
 #------------------------------------------------------------------------------
+# Do you want support for PNG tilesets?
+#
+
+WANT_PNG=Y
+
+#
+#------------------------------------------------------------------------------
 # Do you want to include the address sanitizer?
 #
 
@@ -465,6 +472,8 @@ DLBDEF =
 # If necessary, prefix explicit path information to the file name
 # otherwise it assumes the NetHack src directory.
 #
+# TODO: PNG support uses zlib, and it is specified elsewhere.
+#
 
 #ZLIB = zlib.lib
 
@@ -486,6 +495,8 @@ R_OBJLUA_B    = objlua
 R_OBJPDC_B    = objpdc
 R_OBJPDCTXT_B = objpdctxt
 R_OBJPDCGUI_B = objpdcgui
+R_OBJLIBPNG_B = objlibpng
+R_OBJZLIB_B   = objzlib
 
 OBJTTY_B  = $(R_OBJTTY_B)$(BACKSLASH)
 OBJGUI_B  = $(R_OBJGUI_B)$(BACKSLASH)
@@ -494,6 +505,8 @@ OBJLUA_B  = $(R_OBJLUA_B)$(BACKSLASH)
 OBJPDC_B  = $(R_OBJPDC_B)$(BACKSLASH)
 OBJPDCTXT_B = $(R_OBJPDCTXT_B)$(BACKSLASH)
 OBJPDCGUI_B = $(R_OBJPDCGUI_B)$(BACKSLASH)
+OBJLIBPNG_B = $(R_OBJLIBPNG_B)$(BACKSLASH)
+OBJZLIB_B = $(R_OBJZLIB_B)$(BACKSLASH)
 
 R_OBJTTY  = $(OBJTTY_B)$(TARGET_CPU)
 R_OBJGUI  = $(OBJGUI_B)$(TARGET_CPU)
@@ -502,6 +515,8 @@ R_OBJLUA  = $(OBJLUA_B)$(TARGET_CPU)
 R_OBJPDC  = $(OBJPDC_B)$(TARGET_CPU)
 R_OBJPDCTXT = $(OBJPDCTXT_B)$(TARGET_CPU)
 R_OBJPDCGUI = $(OBJPDCGUI_B)$(TARGET_CPU)
+R_OBJLIBPNG = $(OBJLIBPNG_B)$(TARGET_CPU)
+R_OBJZLIB = $(OBJZLIB_B)$(TARGET_CPU)
 
 OBJTTY    = $(R_OBJTTY)$(BACKSLASH)
 OBJGUI    = $(R_OBJGUI)$(BACKSLASH)
@@ -510,6 +525,8 @@ OBJLUA    = $(R_OBJLUA)$(BACKSLASH)
 OBJPDC    = $(R_OBJPDC)$(BACKSLASH)
 OBJPDCTXT   = $(R_OBJPDCTXT)$(BACKSLASH)
 OBJPDCGUI   = $(R_OBJPDCGUI)$(BACKSLASH)
+OBJLIBPNG   = $(R_OBJLIBPNG)$(BACKSLASH)
+OBJZLIB   = $(R_OBJZLIB)$(BACKSLASH)
 
 #
 # Shorten up the location for some files
@@ -522,6 +539,8 @@ OLUA   = $(OBJLUA)
 OPDC   = $(OBJPDC)
 OPDCTXT  = $(OBJPDCTXT)
 OPDCGUI  = $(OBJPDCGUI)
+OLIBPNG  = $(OBJLIBPNG)
+OZLIB  = $(OBJZLIB)
 
 U  = $(UTIL)
 
@@ -929,7 +948,11 @@ SOBJGUI   = $(OGUI)windmain.o $(OGUI)windsys.o $(OGUI)win10.o
 GUIOBJ	= $(OGUI)mhaskyn.o $(OGUI)mhdlg.o \
 	$(OGUI)mhfont.o $(OGUI)mhinput.o $(OGUI)mhmain.o $(OGUI)mhmap.o \
 	$(OGUI)mhmenu.o $(OGUI)mhmsgwnd.o $(OGUI)mhrip.o $(OGUI)mhsplash.o \
-	$(OGUI)mhstatus.o $(OGUI)mhtext.o $(OGUI)mswproc.o $(OGUI)NetHackW.o
+	$(OGUI)mhstatus.o $(OGUI)mhtext.o $(OGUI)mswproc.o $(OGUI)NetHackW.o \
+	$(OGUI)tileset.o $(OGUI)giftiles.o
+!IF "$(WANT_PNG)" == "Y"
+GUIOBJ = $(GUIOBJ) $(OGUI)pngtiles.o
+!ENDIF
 
 COREOBJGUI = \
 	$(OGUI)allmain.o  $(OGUI)alloc.o    $(OGUI)apply.o    $(OGUI)artifact.o \
@@ -1373,21 +1396,33 @@ conlibs     = $(baselibs)
 guilibs     = $(winlibs)
 #
 
-INCLUSIONS= /I$(R_INCL) /I$(R_MSWSYS) $(R_LUAINCL) $(R_SOUNDLIBINCL)
+!IF "$(WANT_PNG)" == "Y"
+PNGINCL = -I$(LIBDIR)libpng
+PNGDEF = -DUSE_PNG
+PNGLIB = $(LIBDIR)libpng.lib
+ZLIB = $(LIBDIR)zlib.lib
+!ELSE
+PNGINCL =
+PNGDEF =
+PNGLIB =
+ZLIB =
+!ENDIF
+
+INCLUSIONS= /I$(R_INCL) /I$(R_MSWSYS) $(R_LUAINCL) $(R_SOUNDLIBINCL) $(PNGINCL)
 
 #==========================================
 # Util and console builds
 #==========================================
 
-CFLAGS   = $(ctmpflags) $(INCLUSIONS) $(DLBDEF) $(SOUNDLIBDEFS)
-CPPFLAGS = $(cpptmpflags) $(INCLUSIONS) $(DLBDEF) $(SOUNDLIBDEFS)
+CFLAGS   = $(ctmpflags) $(INCLUSIONS) $(DLBDEF) $(PNGDEF) $(SOUNDLIBDEFS)
+CPPFLAGS = $(cpptmpflags) $(INCLUSIONS) $(DLBDEF) $(PNGDEF) $(SOUNDLIBDEFS)
 LFLAGS   = $(lflags) $(conlibs) $(MACHINE)
 
 #==========================================
 # - Game build
 #==========================================
 
-LIBS= user32.lib winmm.lib $(ZLIB)
+LIBS= user32.lib winmm.lib $(PNGLIB) $(ZLIB)
 
 ! IF ("$(USE_DLB)"=="Y")
 DLB = nhdat$(NHV)
@@ -1558,6 +1593,21 @@ DLB =
 !ENDIF
 !ENDIF
 
+#==========================================
+# Rules for libpng
+#==========================================
+!IF "$(WANT_PNG)" == "Y"
+{$(LIBDIR)libpng}.c{$(R_OBJLIBPNG)}.o:
+	$(Q)$(CC) $(CFLAGS) -I$(LIBDIR)zlib -wd4701 -wd4702 -wd4774 -wd4324 -wd5262 $(CROSSCOMPILE) $(CROSSCOMPILE_TARGET) -Fo$@ $<
+!ENDIF
+
+#==========================================
+# Rules for zlib
+#==========================================
+!IF "$(WANT_PNG)" == "Y"
+{$(LIBDIR)zlib}.c{$(R_OBJZLIB)}.o:
+	$(Q)$(CC) $(CFLAGS) -wd4701 -wd4702 -wd4774 -wd4324 -wd5262 $(CROSSCOMPILE) $(CROSSCOMPILE_TARGET) -Fo$@ $<
+!ENDIF
 
 #==========================================
 # Rules for LUA files
@@ -1719,7 +1769,8 @@ $(GAMEDIR)NetHackW.exe : gamedir.tag $(OGUI)tile.o \
 			$(ALLOBJGUI) $(GAMEOBJGUI) $(GUIOBJ) $(GUISOUNDOBJS) \
 			$(CURSESWINGUIOBJS) $(OGUI)date.o \
 			$(OGUI)NetHackW.res \
-			$(LUALIB) $(PDCGUILIB) $(PDCGUIOBJS) $(OGUIHACKLIB)
+			$(LUALIB) $(PDCGUILIB) $(PDCGUIOBJS) $(OGUIHACKLIB) \
+			$(PNGLIB) $(ZLIB)
 	@if not exist $(GAMEDIR)*.* mkdir $(R_GAMEDIR)
 	@echo   Linking $(@:\=/)
 	$(link) $(LFLAGS) $(guilflags) /STACK:2048 /PDB:$(GAMEDIR)$(@B).PDB \
@@ -1730,7 +1781,7 @@ $(GAMEDIR)NetHackW.exe : gamedir.tag $(OGUI)tile.o \
 		$(GAMEOBJGUI)
 		$(ALLOBJGUI)
 		$(GUIOBJ)
-		$(GUISOUNDOBJS) $(CURSESWINGUIOBJS) $(PDCGUIOBJS)
+		$(GUISOUNDOBJS) $(CURSESWINGUIOBJS) $(PDCGUIOBJS) $(PNGLIB) $(ZLIB)
 		$(OGUI)tile.o
 		$(OGUI)date.o
 		$(OGUI)NetHackW.res
@@ -2003,6 +2054,20 @@ opdcguidir$(TARGET_CPU).tag:
 	@if not exist $(OBJPDCGUI)*.* mkdir $(R_OBJPDCGUI)
 	@echo directory created >$@
 
+olibpngdir$(TARGET_CPU).tag:
+!If "$(WANT_PNG)" == "Y"
+	@if not exist $(OBJLIBPNG)*.* echo creating directory $(OBJLIBPNG:\=/)
+	@if not exist $(OBJLIBPNG)*.* mkdir $(R_OBJLIBPNG)
+!ENDIF
+	@echo directory created >$@
+
+ozlibdir$(TARGET_CPU).tag:
+!If "$(WANT_PNG)" == "Y"
+	@if not exist $(OBJZLIB)*.* echo creating directory $(OBJZLIB:\=/)
+	@if not exist $(OBJZLIB)*.* mkdir $(R_OBJZLIB)
+!ENDIF
+	@echo directory created >$@
+
 libdir.tag:
 	@if not exist $(LIBDIR)*.* echo creating directory $(LIB:\=/)
 	@if not exist $(LIBDIR)*.* mkdir $(R_LIBDIR)
@@ -2079,6 +2144,86 @@ fetch-pdcurses:
 	if exist .\$(PDCDIST).zip del .\$(PDCDIST).zip
 	cd $(R_SRC)
 	@echo $(PDCDIST) has been fetched into $(LIBDIR)$(PDCDIST)
+!ENDIF
+
+!IF "$(WANT_PNG)" == "Y"
+fetch-libpng:
+	PNGVERSION=1.6.58
+	@if not exist $(LIBDIR)*.* mkdir $(R_LIBDIR)
+	cd $(LIBDIR)
+	curl -L -R https://downloads.sourceforge.net/libpng/libpng-$(PNGVERSION).tar.gz
+	tar -C libpng --strip-components=1 -xvf libpng-$(PNGVERSION).tar.gz
+	cd $(R_SRC)
+	@echo libpng has been fetched into $(LIBDIR)libpng
+
+PNGOBJFILES = $(OLIBPNG)png.o $(OLIBPNG)pngerror.o $(OLIBPNG)pngget.o \
+$(OLIBPNG)pngmem.o $(OLIBPNG)pngpread.o $(OLIBPNG)pngread.o \
+$(OLIBPNG)pngrio.o $(OLIBPNG)pngrtran.o $(OLIBPNG)pngrutil.o \
+$(OLIBPNG)pngset.o $(OLIBPNG)pngtrans.o $(OLIBPNG)pngwio.o \
+$(OLIBPNG)pngwrite.o $(OLIBPNG)pngwtran.o $(OLIBPNG)pngwutil.o
+
+$(PNGLIB): $(PNGOBJFILES)
+	@$(librarian) /OUT:$@ $(PNGOBJFILES)
+
+$(OLIBPNG)png.o : $(LIBDIR)libpng/png.c
+$(OLIBPNG)pngerror.o : $(LIBDIR)libpng/pngerror.c
+$(OLIBPNG)pngget.o : $(LIBDIR)libpng/pngget.c
+$(OLIBPNG)pngmem.o : $(LIBDIR)libpng/pngmem.c
+$(OLIBPNG)pngpread.o : $(LIBDIR)libpng/pngpread.c
+$(OLIBPNG)pngread.o : $(LIBDIR)libpng/pngread.c
+$(OLIBPNG)pngrio.o : $(LIBDIR)libpng/pngrio.c
+$(OLIBPNG)pngrtran.o : $(LIBDIR)libpng/pngrtran.c
+$(OLIBPNG)pngrutil.o : $(LIBDIR)libpng/pngrutil.c
+$(OLIBPNG)pngset.o : $(LIBDIR)libpng/pngset.c
+$(OLIBPNG)pngtrans.o : $(LIBDIR)libpng/pngtrans.c
+$(OLIBPNG)pngwio.o : $(LIBDIR)libpng/pngwio.c
+$(OLIBPNG)pngwrite.o : $(LIBDIR)libpng/pngwrite.c
+$(OLIBPNG)pngwtran.o : $(LIBDIR)libpng/pngwtran.c
+$(OLIBPNG)pngwutil.o : $(LIBDIR)libpng/pngwutil.c
+
+!ENDIF
+
+# TODO: make this available for ZLIB_COMP support
+!IF "$(WANT_PNG)" == "Y"
+fetch-zlib:
+	ZLIBVERSION=1.3.2
+	@if not exist $(LIBDIR)*.* mkdir $(R_LIBDIR)
+	cd $(LIBDIR)
+	curl -L -R https://zlib.net/fossils/zlib-$(ZLIBVERSION).tar.gz
+	tar -C zlib --strip-components=1 -xvf zlib-$(ZLIBVERSION).tar.gz
+	cd $(R_SRC)
+	@echo zlib has been fetched into $(LIBDIR)libpng
+
+$(LIBDIR)zlib/zlib.lib:
+	cd $(LIBDIR)zlib
+	nmake -f win32/Makefile.msc
+	cd ..
+	cd $(R_SRC)
+
+ZLIBOBJFILES = $(OZLIB)adler32.o $(OZLIB)compress.o $(OZLIB)crc32.o \
+$(OZLIB)deflate.o $(OZLIB)gzclose.o $(OZLIB)gzlib.o $(OZLIB)gzread.o \
+$(OZLIB)gzwrite.o $(OZLIB)infback.o $(OZLIB)inffast.o $(OZLIB)inflate.o \
+$(OZLIB)inftrees.o $(OZLIB)trees.o $(OZLIB)uncompr.o $(OZLIB)zutil.o
+
+$(ZLIB): $(ZLIBOBJFILES)
+	@$(librarian) /OUT:$@ $(ZLIBOBJFILES)
+
+$(OZLIB)adler32.o : $(LIBDIR)zlib/adler32.c
+$(OZLIB)compress.o : $(LIBDIR)zlib/compress.c
+$(OZLIB)crc32.o : $(LIBDIR)zlib/crc32.c
+$(OZLIB)deflate.o : $(LIBDIR)zlib/deflate.c
+$(OZLIB)gzclose.o : $(LIBDIR)zlib/gzclose.c
+$(OZLIB)gzlib.o : $(LIBDIR)zlib/gzlib.c
+$(OZLIB)gzread.o : $(LIBDIR)zlib/gzread.c
+$(OZLIB)gzwrite.o : $(LIBDIR)zlib/gzwrite.c
+$(OZLIB)infback.o : $(LIBDIR)zlib/infback.c
+$(OZLIB)inffast.o : $(LIBDIR)zlib/inffast.c
+$(OZLIB)inflate.o : $(LIBDIR)zlib/inflate.c
+$(OZLIB)inftrees.o : $(LIBDIR)zlib/inftrees.c
+$(OZLIB)trees.o : $(LIBDIR)zlib/trees.c
+$(OZLIB)uncompr.o : $(LIBDIR)zlib/uncompr.c
+$(OZLIB)zutil.o : $(LIBDIR)zlib/zutil.c
+
 !ENDIF
 
 #https://github.com/universal-ctags/ctags/archive/refs/tags/v6.2.1.zip
@@ -2435,6 +2580,13 @@ $(OGUI)mhtext.o: $(MSWIN)mhtext.c $(MSWIN)$(@B).h $(MSWIN)mhmsg.h $(MSWIN)mhfont
 		$(WINDHDR) $(HACK_H)
 $(OGUI)mswproc.o: $(MSWIN)mswproc.c $(ALL_GUIHDR) $(MSWIN)resource.h $(WINDHDR) $(HACK_H)
 $(OGUI)NetHackW.o: $(MSWIN)NetHackW.c $(ALL_GUIHDR) $(MSWIN)resource.h $(WINDHDR) $(HACK_H)
+
+#===================================================================
+# win/share dependencies
+#===================================================================
+$(OGUI)tileset.o: $(WSHR)tileset.c $(HACK_H) $(INCL)tileset.h
+$(OGUI)giftiles.o: $(WSHR)giftiles.c $(HACK_H) $(INCL)tileset.h
+$(OGUI)pngtiles.o: $(WSHR)pngtiles.c $(HACK_H) $(INCL)tileset.h
 
 #===================================================================
 # sys/share dependencies
@@ -2824,6 +2976,7 @@ binary:  envchk.tag libdir.tag ottydir$(TARGET_CPU).tag \
 		outldir$(TARGET_CPU).tag oguidir$(TARGET_CPU).tag \
 		oluadir$(TARGET_CPU).tag opdcdir$(TARGET_CPU).tag \
 		opdctxtdir$(TARGET_CPU).tag opdcguidir$(TARGET_CPU).tag \
+		olibpngdir$(TARGET_CPU).tag ozlibdir$(TARGET_CPU).tag \
 		$(LUASRC)lua.h $(PDCDEP) \
 		$(INCL)nhlua.h $(OUTL)utility.tag \
 		$(DAT)data $(DAT)rumors $(DAT)oracles $(DAT)engrave \
@@ -2918,6 +3071,14 @@ spotless: clean
 	if exist $(OBJPDC_B)*           rmdir $(OBJPDC_B) /s /Q
 	if exist $(OBJPDCTXT_B)*        rmdir $(OBJPDCTXT_B) /s /Q
 	if exist $(OBJPDCGUI_B)*        rmdir $(OBJPDCGUI_B) /s /Q
+	if exist $(OBJPNGLIB_B)*        rmdir $(OBJPNGLIB_B) /s /Q
+	if exist $(OBJZLIB_B)*          rmdir $(OBJZLIB_B) /s /Q
+!IF "$(WANT_PNG)" == "Y"
+        if exist $(PNGLIB)              del $(PNGLIB)
+!ENDIF
+!IF "$(WANT_PNG)" == "Y"
+        if exist $(ZLIB)                del $(ZLIB)
+!ENDIF
 
 clean:
 	if exist binary.tag             del binary.tag
@@ -2944,6 +3105,8 @@ clean:
 	if exist $(OPDC)*.o             del $(OPDC)*.o
 	if exist $(OPDCTXT)*.o          del $(OPDCTXT)*.o
 	if exist $(OPDCGUI)*.o          del $(OPDCGUI)*.o
+	if exist $(OLIBPNG)*.o          del $(OLIBPNG)*.o
+	if exist $(OZLIB)*.o            del $(OZLIB)*.o
 	if exist $(OUTL)*.PDB           del $(OUTL)*.PDB
 	if exist $(OTTY)*.PDB           del $(OTTY)*.PDB
 	if exist $(OGUI)*.PDB           del $(OGUI)*.PDB
@@ -2951,6 +3114,8 @@ clean:
 	if exist $(OPDC)*.PDB           del $(OPDC)*.PDB
 	if exist $(OPDCTXT)*.PDB        del $(OPDCTXT)*.PDB
 	if exist $(OPDCGUI)*.PDB        del $(OPDCGUI)*.PDB
+	if exist $(OLIBPNG)*.PDB        del $(OLIBPNG)*.PDB
+	if exist $(OZLIB)*.PDB          del $(OZLIB)*.PDB
 	if exist $(OUTL)*.MAP           del $(OUTL)*.MAP
 	if exist $(OTTY)*.MAP           del $(OTTY)*.MAP
 	if exist $(OGUI)*.MAP           del $(OGUI)*.MAP
