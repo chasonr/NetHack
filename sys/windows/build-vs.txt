@@ -40,13 +40,23 @@ Prerequisite Requirements:
             sys\windows\fetch.cmd lua
   o pdcursesmod (Only required if curses interface support is desired)
         If you want to include curses interface support in NetHack 5.0 for
-        3rd part pdcursesmod source code is required and is not part of the
+        Windows, pdcursesmod source code is required and is not part of the
         NetHack distribution or repository.
 
         A windows cmd command procedure for fetching prerequisite
         sources is available, and can be run as follows from the top of
         the NetHack source tree to obtain pdcursesmod:
             sys\windows\fetch.cmd pdcursesmod
+  o libpng and zlib (Only required if PNG tileset support is desired)
+        If you want to include PNG tileset support in NetHack 5.0 for
+        Windows, libpng and zlib source code is required and is not part of
+        the NetHack distribution or repository.
+
+        A windows cmd command procedure for fetching prerequisite
+        sources is available, and can be run as follows from the top of
+        the NetHack source tree to obtain libpng and zlib:
+            sys\windows\fetch.cmd pdcursesmod
+            sys\windows\fetch.cmd zlib
 
 This processes produces a zip file containing two executable
 versions:
@@ -65,16 +75,16 @@ versions:
   |     |      |     |       |           |           |           |      |
  dat   doc  include lib     src         sys         win    submodules  util
                      |                   |           |           |
-               +----------+          +------+      +----+     +----+
-               |          |          |      |      |    |     |    |
-               |          |          |      |      |    |     |    |
-           lua-5.4.8  pdcursesmod  share windows  tty  win32 lua pdcursesmod
-                                                  |
-                                                  vs
-                                                  |
-    +----------+-------+--------+--------+-----------+-------+-----+------+
-    |          |       |        |        |           |       |     |      |
- makedefs NetHack NetHackW PDCurses PDCursesGui tile2bmp tilemap tiles uudecode
+    +----------+-------+-----+       +------+      +----+     +----+
+    |          |       |     |       |      |      |    |     |    |
+    |          |       |     |       |      |      |    |     |    |
+lua-5.4.8 pdcursesmod zlib libpng  share windows  tty  win32 lua pdcursesmod
+                                            |
+                                            vs
+                                            |
+  +-------+----------+-------+--------+--------+-----------+-------+-----+------+------+
+  |       |          |       |        |        |           |       |     |      |      |
+libpng makedefs NetHack NetHackW PDCurses PDCursesGui tile2bmp tilemap tiles uudecode zlib
 
 
 /-----------------------------------------------------------\
