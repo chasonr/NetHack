@@ -55,6 +55,25 @@
       <AdditionalDependencies>PDCursesGui.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="Exists('$(PngDir)') And Exists('$(ZLibDir)')">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(PngDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_PNG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(ToolsDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libpng.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="Exists('$(ZLibDir)')">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ZLibDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(ToolsDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="Exists('$(FMODINCDIR)\fmod.h') And Exists('$(FMODLIBLIB)') And Exists('$(FMODLIBDLL)')">
     <ClCompile>
       <AdditionalIncludeDirectories>$(FMODINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -281,6 +300,7 @@
     <ClCompile Include="$(WinWin32Dir)mswproc.c" />
     <ClCompile Include="$(WinWin32Dir)NetHackW.c" />
     <ClCompile Include="$(WinShareDir)giftiles.c" />
+    <ClCompile Condition="Exists('$(PngDir)') And Exists('$(ZLibDir)')" Include="$(WinShareDir)pngtiles.c" />
     <ClCompile Include="$(WinShareDir)tileset.c" />
     <ClCompile Include="$(SrcDir)sfbase.c" />
     <ClCompile Include="$(SrcDir)revision.c" />

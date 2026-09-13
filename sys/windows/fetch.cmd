@@ -13,6 +13,14 @@ set PDCVERSION=4.5.4
 set CURLPDCSRC=https://github.com/Bill-Gray/PDCursesMod/archive/refs/tags/v%PDCVERSION%.zip
 set CURLPDCDST=pdcursesmod.zip
 
+set ZLIBVERSION=1.3.2
+set CURLZLIBSRC=https://zlib.net/fossils/zlib-%ZLIBVERSION%.tar.gz
+set CURLZLIBDST=zlib-%ZLIBVERSION%.tar.gz
+
+set PNGVERSION=1.6.58
+set CURLPNGSRC=https://downloads.sourceforge.net/libpng/libpng-%PNGVERSION%.tar.gz
+set CURLPNGDST=libpng-%PNGVERSION%.tar.gz
+
 :proceed
 
 if not exist %LIBDIR%\* mkdir lib
@@ -36,6 +44,28 @@ if [%1] == [pdcursesmod] (
         popd
     )
     echo pdcursesmod placed in %LIBDIR%\pdcursesmod
+)
+
+if [%1] == [libpng] (
+    if NOT exist %LIBDIR%\libpng\png.h (
+        pushd %LIBDIR%
+        curl -L %CURLPNGSRC% -o %CURLPNGDST%
+        mkdir libpng
+        tar -C libpng --strip-components=1 -xvf %CURLPNGDST%
+        popd
+    )
+    echo libpng placed in %LIBDIR%\libpng
+)
+
+if [%1] == [zlib] (
+    if NOT exist %LIBDIR%\zlib\zlib.h (
+        pushd %LIBDIR%
+        curl -L %CURLZLIBSRC% -o %CURLZLIBDST%
+        mkdir zlib
+        tar -C zlib --strip-components=1 -xvf %CURLZLIBDST%
+        popd
+    )
+    echo zlib placed in %LIBDIR%\zlib
 )
 
 :done

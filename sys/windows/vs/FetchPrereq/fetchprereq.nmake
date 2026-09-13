@@ -33,7 +33,7 @@ SUBMDIR=$(ROOTDIR)\$(SUBMSDIR)
 
 default: fetchall
 
-fetchall: libdir fetch-Lua fetch-pdcurses
+fetchall: libdir fetch-Lua fetch-pdcurses fetch-libpng fetch-zlib
 
 fetch-lua: fetch-actual-Lua
 
@@ -56,6 +56,16 @@ fetch-pdcurses:
 	cd ..\sys\windows\vs\fetchprereq
 	@echo $(PDCDIST) has been fetched into $(LIBDIR)\$(PDCDIST)
 
+fetch-libpng:
+	cd $(ROOTDIR)
+	sys\windows\fetch.cmd libpng
+	cd sys\windows\vs\fetchprereq
+
+fetch-zlib:
+	cd $(ROOTDIR)
+	sys\windows\fetch.cmd zlib
+	cd sys\windows\vs\fetchprereq
+
 libdir: 
 	@if not exist $(LIBDIR)\*.* echo creating directory $(LIB:\=/)
 	@if not exist $(LIBDIR)\*.* mkdir $(LIBDIR)
@@ -63,8 +73,12 @@ libdir:
 clean:
 	@if exist $(LIBDIR)\$(PDCDIST) rmdir /Q $(LIBDIR)\$(PDCDIST) /s
 	@if exist $(LIBDIR)\lua-$(LUA_VERSION) rmdir /Q $(LIBDIR)\lua-$(LUA_VERSION) /s
+	@if exist $(LIBDIR)\libpng rmdir /Q $(LIBDIR)\libpng /s
+	@if exist $(LIBDIR)\zlib rmdir /Q $(LIBDIR)\zlib /s
 	@if exist ..\..\..\..\include\nhlua.h del /Q ..\..\..\..\include\nhlua.h
 
 rebuild:
 	@if exist $(LIBDIR)\$(PDCDIST) echo nothing to do for lib\$(PDCDIST)
 	@if exist $(LIBDIR)\lua-$(LUA_VERSION) echo nothing to do for lib\lua-$(LUA_VERSION)
+	@if exist $(LIBDIR)\libpng echo nothing to do for lib\libpng
+	@if exist $(LIBDIR)\zlib echo nothing to do for lib\zlib

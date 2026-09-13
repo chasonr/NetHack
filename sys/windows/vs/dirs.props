@@ -41,6 +41,18 @@
     <PDCURSESMOD>$(SubmodulesDir)pdcursesmod\</PDCURSESMOD>
     <PDCURSES>$(PDCURSESMOD)</PDCURSES>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(PngDir)'=='' AND Exists('$(LibDir)libpng\png.h')">
+    <PngDir>$(LibDir)libpng\</PngDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(PngDir)'=='' AND Exists('$(SubmodulesDir)libpng\png.h')">
+    <PngDir>$(SubmodulesDir)libpng\</PngDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ZLibDir)'=='' AND Exists('$(LibDir)zlib\zlib.h')">
+    <ZLibDir>$(LibDir)zlib\</ZLibDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ZLibDir)'=='' AND Exists('$(SubmodulesDir)zlib\zlib.h')">
+    <ZLibDir>$(SubmodulesDir)zlib\</ZLibDir>
+  </PropertyGroup>
   <PropertyGroup>
     <HostTools></HostTools>
     <Host>$(Platform)</Host>

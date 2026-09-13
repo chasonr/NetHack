@@ -68,13 +68,13 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="Exists('$(LibDir)pdcursesmod') AND Exists('$(LibDir)lua-$(LUA_VERSION)')">
-    <NMakeBuildCommandLine>echo lib\pdcursesmod and lib\lua-$(LUA_VERSION) are already present</NMakeBuildCommandLine>
+  <PropertyGroup Condition="Exists('$(LibDir)pdcursesmod') AND Exists('$(LibDir)lua-$(LUA_VERSION)') AND Exists('$(LibDir)libpng') AND Exists('$(LibDir)zlib')">
+    <NMakeBuildCommandLine>echo lib\pdcursesmod, lib\lua-$(LUA_VERSION), lib\libpng and lib\zlib are already present</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>pushd $(vsDir)fetchprereq %26%26 nmake -F fetchprereq.nmake clean %26%26 popd</NMakeCleanCommandLine>
-    <NMakeReBuildCommandLine>echo rebuilding lib\pdcursesmod and lib\lua-$(LUA_VERSION)</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>echo rebuilding lib\pdcursesmod, lib\lua-$(LUA_VERSION), lib\libpng and lib\zlib</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
-  <PropertyGroup Condition="!Exists('$(LibDir)pdcursesmod') OR !Exists('$(LibDir)lua-$(LUA_VERSION)')">
+  <PropertyGroup Condition="!Exists('$(LibDir)pdcursesmod') OR !Exists('$(LibDir)lua-$(LUA_VERSION)') OR !Exists('$(LibDir)libpng') OR !Exists('$(LibDir)zlib')">
     <NMakeBuildCommandLine>pushd $(vsDir)fetchprereq %26%26 nmake -F fetchprereq.nmake %26%26 popd</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>pushd $(vsDir)fetchprereq %26%26 nmake -F fetchprereq.nmake clean %26%26 popd</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>pushd $(vsDir)fetchprereq %26%26 nmake -F fetchprereq.nmake rebuild %26%26 popd</NMakeReBuildCommandLine>

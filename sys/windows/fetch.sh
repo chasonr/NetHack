@@ -34,3 +34,31 @@ if [ $1 == "pdcursesmod" ]; then
 	cd ..
  fi
 fi
+
+if [ $1 == "libpng" ]; then
+ export PNGVERSION=1.6.58
+ export CURLPNGSRC=https://downloads.sourceforge.net/libpng/libpng-${PNGVERSION}.tar.gz
+ export CURLPNGDST=libpng-${PNGVERSION}.tar.gz
+ if [ ! -f lib/libpng/png.h ] ; then
+	cd lib
+	curl -L $CURLPNGSRC -o $CURLPNGDST
+	/c/Windows/System32/tar -xvf $CURLPNGDST
+	mkdir -p libpng
+	/c/Windows/System32/tar -C libpng --strip-components=1 -xvf $CURLPNGDST
+	cd ..
+ fi
+fi
+
+if [ $1 == "zlib" ]; then
+ export ZLIBVERSION=1.3.2
+ export CURLZLIBSRC=https://zlib.net/fossils/zlib-${ZLIBVERSION}.tar.gz
+ export CURLZLIBDST=zlib-${ZLIBVERSION}.tar.gz
+ if [ ! -f lib/zlib/zlib.h ] ; then
+	cd lib
+	curl -L $CURLZLIBSRC -o $CURLZLIBDST
+	/c/Windows/System32/tar -xvf $CURLZLIBDST
+	mkdir -p zlib
+	/c/Windows/System32/tar -C zlib --strip-components=1 -xvf $CURLZLIBDST
+	cd ..
+ fi
+fi
