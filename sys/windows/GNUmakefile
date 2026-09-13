@@ -1243,7 +1243,7 @@ COREOBJS = $(addsuffix .o, allmain alloc apply artifact attrib ball bones botl \
 	   spell stairs steal steed strutil \
 	   symbols sys teleport timeout topten track trap u_init uhitm utf8map \
 	   vault version vision weapon were wield windmain windows windsys wizard \
-	   wizcmds worm worn write zap $(SOUNDLIBOBJS))
+	   wizcmds worm worn write zap tileset giftiles $(SOUNDLIBOBJS))
 
 CFLAGSW = $(CFLAGS) $(CFLAGSXTRA) $(SOUNDLIBINCL) $(COMMONDEF) $(DLBFLG) -DTILES -D_WINDOWS -DMSWIN_GRAPHICS -DNOTTYGRAPHICS $(SOUNDLIBDEFS)
 CPPFLAGSW = $(CFLAGS) $(CPPFLAGSXTRA) $(COMMONDEF) $(DLBFLG) -DTILES -D_WINDOWS -DMSWIN_GRAPHICS -DNOTTYGRAPHICS $(SOUNDLIBDEFS)
