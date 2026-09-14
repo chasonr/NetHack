@@ -1289,7 +1289,7 @@ ASAN=
 ccommon= -c -nologo -D"_CRT_NONSTDC_NO_DEPRECATE" -D"_CRT_SECURE_NO_DEPRECATE" \
 	-D"_LIB" -D"_SCL_SECURE_NO_DEPRECATE" -D"_VC80_UPGRADE=0x0600" -D"_MBCS" \
 	-DCRTAPI1=_cdecl -DCRTAPI2=_cdecl -D"NDEBUG" -D"YY_NO_UNISTD_H" \
-	-DHAS_STDINT_H -DHAS_INLINE $(RUNTIMEOPTDEF) \
+	-DHAS_STDINT_H -DHAS_INTTYPES_H -DHAS_INLINE $(RUNTIMEOPTDEF) \
 	-EHsc -fp:precise -Gd -GF -GS -Gy \
 	$(CL_RECENT) -WX- -Zc:forScope -Zc:wchar_t -Zi
 cdebug= -analyze- -D"_DEBUG" -MTd -RTC1 -Od $(ASAN)
@@ -2165,21 +2165,24 @@ $(OLIBPNG)pngwrite.o $(OLIBPNG)pngwtran.o $(OLIBPNG)pngwutil.o
 $(PNGLIB): $(PNGOBJFILES)
 	@$(librarian) /OUT:$@ $(PNGOBJFILES)
 
-$(OLIBPNG)png.o : $(LIBDIR)libpng/png.c
-$(OLIBPNG)pngerror.o : $(LIBDIR)libpng/pngerror.c
-$(OLIBPNG)pngget.o : $(LIBDIR)libpng/pngget.c
-$(OLIBPNG)pngmem.o : $(LIBDIR)libpng/pngmem.c
-$(OLIBPNG)pngpread.o : $(LIBDIR)libpng/pngpread.c
-$(OLIBPNG)pngread.o : $(LIBDIR)libpng/pngread.c
-$(OLIBPNG)pngrio.o : $(LIBDIR)libpng/pngrio.c
-$(OLIBPNG)pngrtran.o : $(LIBDIR)libpng/pngrtran.c
-$(OLIBPNG)pngrutil.o : $(LIBDIR)libpng/pngrutil.c
-$(OLIBPNG)pngset.o : $(LIBDIR)libpng/pngset.c
-$(OLIBPNG)pngtrans.o : $(LIBDIR)libpng/pngtrans.c
-$(OLIBPNG)pngwio.o : $(LIBDIR)libpng/pngwio.c
-$(OLIBPNG)pngwrite.o : $(LIBDIR)libpng/pngwrite.c
-$(OLIBPNG)pngwtran.o : $(LIBDIR)libpng/pngwtran.c
-$(OLIBPNG)pngwutil.o : $(LIBDIR)libpng/pngwutil.c
+$(OLIBPNG)png.o : $(LIBDIR)libpng/png.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngerror.o : $(LIBDIR)libpng/pngerror.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngget.o : $(LIBDIR)libpng/pngget.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngmem.o : $(LIBDIR)libpng/pngmem.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngpread.o : $(LIBDIR)libpng/pngpread.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngread.o : $(LIBDIR)libpng/pngread.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngrio.o : $(LIBDIR)libpng/pngrio.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngrtran.o : $(LIBDIR)libpng/pngrtran.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngrutil.o : $(LIBDIR)libpng/pngrutil.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngset.o : $(LIBDIR)libpng/pngset.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngtrans.o : $(LIBDIR)libpng/pngtrans.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngwio.o : $(LIBDIR)libpng/pngwio.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngwrite.o : $(LIBDIR)libpng/pngwrite.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngwtran.o : $(LIBDIR)libpng/pngwtran.c $(LIBDIR)libpng/pnglibconf.h
+$(OLIBPNG)pngwutil.o : $(LIBDIR)libpng/pngwutil.c $(LIBDIR)libpng/pnglibconf.h
+
+$(LIBDIR)libpng/pnglibconf.h : $(LIBDIR)libpng/scripts/pnglibconf.h.prebuilt
+	@copy /y $(LIBDIR)libpng\scripts\pnglibconf.h.prebuilt $(LIBDIR)libpng\pnglibconf.h
 
 !ENDIF
 
@@ -2586,7 +2589,7 @@ $(OGUI)NetHackW.o: $(MSWIN)NetHackW.c $(ALL_GUIHDR) $(MSWIN)resource.h $(WINDHDR
 #===================================================================
 $(OGUI)tileset.o: $(WSHR)tileset.c $(HACK_H) $(INCL)tileset.h
 $(OGUI)giftiles.o: $(WSHR)giftiles.c $(HACK_H) $(INCL)tileset.h
-$(OGUI)pngtiles.o: $(WSHR)pngtiles.c $(HACK_H) $(INCL)tileset.h
+$(OGUI)pngtiles.o: $(WSHR)pngtiles.c $(HACK_H) $(INCL)tileset.h $(LIBDIR)libpng/pnglibconf.h
 
 #===================================================================
 # sys/share dependencies
